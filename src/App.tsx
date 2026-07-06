@@ -1,0 +1,95 @@
+import { useEffect, useState } from 'react';
+import type { Role, Step } from './types';
+import { alternatives, candidates, initialAttendees } from './data/mockData';
+import Header from './components/Header';
+import Sidebar from './components/Sidebar';
+import CalendarGrid from './components/CalendarGrid';
+import MeetingPanel from './components/MeetingPanel';
+import ParticipantView from './components/ParticipantView';
+
+export default function App() {
+  const [step, setStep] = useState<Step>(1);
+  const [attendees, setAttendees] = useState(initialAttendees);
+  const [selectedId, setSelectedId] = useState('c1');
+  // 제안 시점의 후보를 고정 (이후 단계에서 계속 참조)
+  const [proposedId, setProposedId] = useState('c1');
+  // 회의 확정 후 도착하는 변경 알림
+  const [alertReady, setAlertReady] = useState(false);
+  // 참여자(정하늘) 화면 전환과 응답 상태
+  const [participantOpen, setParticipantOpen] = useState(false);
+  const [jungAnswer, setJungAnswer] = useState<'ok' | 'busy' | null>(null);
+
+  const proposed = candidates.find((c) => c.id === proposedId) ?? candidates[0];
+
+  useEffect(() => {
+    if (step !== 7) return;
+    const t = setTimeout(() => setAlertReady(true), 3000);
+    return () => clearTimeout(t);
+  }, [step]);
+
+  const hasAlert = alertReady && step === 7;
+  const openAlert = () => setStep(8);
+
+  const handleChangeRole = (id: string, role: Role) => {
+    setAttendees((prev) => prev.map((a) => (a.id === id ? { ...a, role } : a)));
+  };
+
+  const handleNext = (next: Step) => {
+    if (next === 5) setProposedId(selectedId);
+    setStep(next);
+  };
+
+  const handleReset = () => {
+    setStep(1);
+    setAttendees(initialAttendees);
+    setSelectedId('c1');
+    setProposedId('c1');
+    setAlertReady(false);
+    setParticipantOpen(false);
+    setJungAnswer(null);
+  };
+
+  // 참여자 화면이 열려 있으면 앱 전체가 정하늘의 화면으로 전환된다
+  if (participantOpen) {
+    return (
+      <ParticipantView
+        proposedLabel={proposed.label}
+        onComplete={setJungAnswer}
+        onReturn={() => setParticipantOpen(false)}
+      />
+    );
+  }
+
+  return (
+    <div className="flex h-full flex-col">
+      <Header hasAlert={hasAlert} onAlertClick={openAlert} />
+      <div className="flex min-h-0 flex-1">
+        <Sidebar attendees={attendees} />
+        <CalendarGrid
+          step={step}
+          candidates={candidates}
+          selectedId={selectedId}
+          proposed={proposed}
+          alternatives={alternatives}
+          onSelectCandidate={setSelectedId}
+        />
+        <MeetingPanel
+          step={step}
+          hasAlert={hasAlert}
+          onOpenAlert={openAlert}
+          jungAnswer={jungAnswer}
+          onEnterParticipant={() => setParticipantOpen(true)}
+          attendees={attendees}
+          candidates={candidates}
+          alternatives={alternatives}
+          selectedId={selectedId}
+          proposed={proposed}
+          onChangeRole={handleChangeRole}
+          onSelectCandidate={setSelectedId}
+          onNext={handleNext}
+          onReset={handleReset}
+        />
+      </div>
+    </div>
+  );
+}
