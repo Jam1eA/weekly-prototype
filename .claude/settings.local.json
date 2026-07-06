@@ -9,7 +9,15 @@
       "Bash(vercel whoami *)",
       "Bash(git init *)",
       "Bash(git add *)",
-      "Bash(git -c user.name=yujeongA commit -m '위클리 — 팀 회의 일정 조율 프로토타입 *)"
+      "Bash(git -c user.name=yujeongA commit -m '위클리 — 팀 회의 일정 조율 프로토타입 *)",
+      "Bash(gh repo *)",
+      "Bash(npx -y vite build --base=/weekly-prototype/)",
+      "Bash(npx -y gh-pages -d dist)",
+      "Bash(gh api *)",
+      "Bash(curl -s https://jam1ea.github.io/weekly-prototype/)",
+      "Bash(git rm *)",
+      "Bash(git -c user.name=yujeongA commit -q -m '배포 스크립트 추가 \\(GitHub Pages\\) *)",
+      "Bash(git push *)"
     ]
   }
 }
