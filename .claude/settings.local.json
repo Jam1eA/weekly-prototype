@@ -1,0 +1,15 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(npm --version)",
+      "Bash(npm install *)",
+      "Bash(npm run *)",
+      "Bash(python3 -)",
+      "Bash(gh auth *)",
+      "Bash(vercel whoami *)",
+      "Bash(git init *)",
+      "Bash(git add *)",
+      "Bash(git -c user.name=yujeongA commit -m '위클리 — 팀 회의 일정 조율 프로토타입 *)"
+    ]
+  }
+}
