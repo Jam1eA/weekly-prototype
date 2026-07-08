@@ -1,10 +1,18 @@
+import type { Attendee } from '../types';
+
 export default function Header({
   hasAlert,
   onAlertClick,
+  started,
+  attendees,
 }: {
   hasAlert: boolean;
   onAlertClick: () => void;
+  started: boolean;
+  attendees: Attendee[];
 }) {
+  // 이번 회의 참석자 아바타 — 회의를 만든 뒤에만 표시 (주최자 제외)
+  const others = attendees.filter((a) => !a.isOrganizer);
   return (
     <header className="flex h-14 shrink-0 items-center justify-between border-b border-slate-200 bg-white px-5">
       <div className="flex items-center gap-3">
@@ -47,16 +55,24 @@ export default function Header({
             <span className="absolute right-1 top-1 h-2 w-2 rounded-full bg-red-500 ring-2 ring-white" />
           )}
         </button>
-        <div className="flex -space-x-1.5">
-          {['김', '박', '이', '최', '정'].map((c, i) => (
-            <div
-              key={i}
-              className="flex h-7 w-7 items-center justify-center rounded-full border-2 border-white bg-slate-100 text-[11px] font-semibold text-slate-600"
-            >
-              {c}
-            </div>
-          ))}
-        </div>
+        {started && (
+          <div className="flex -space-x-1.5">
+            {others.slice(0, 5).map((a) => (
+              <div
+                key={a.id}
+                title={`${a.name} ${a.title}`}
+                className="flex h-7 w-7 items-center justify-center rounded-full border-2 border-white bg-slate-100 text-[11px] font-semibold text-slate-600"
+              >
+                {a.name[0]}
+              </div>
+            ))}
+            {others.length > 5 && (
+              <div className="flex h-7 w-7 items-center justify-center rounded-full border-2 border-white bg-slate-200 text-[10px] font-semibold text-slate-500">
+                +{others.length - 5}
+              </div>
+            )}
+          </div>
+        )}
         <div className="flex h-8 w-8 items-center justify-center rounded-full bg-blue-100 text-sm font-bold text-blue-700">
           유
         </div>

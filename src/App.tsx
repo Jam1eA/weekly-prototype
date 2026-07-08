@@ -78,7 +78,12 @@ export default function App() {
 
   return (
     <div className="flex h-full flex-col">
-      <Header hasAlert={hasAlert} onAlertClick={openAlert} />
+      <Header
+        hasAlert={hasAlert}
+        onAlertClick={openAlert}
+        started={started}
+        attendees={attendees}
+      />
       <div className="flex min-h-0 flex-1">
         <Sidebar attendees={attendees} started={started} />
         <CalendarGrid
