@@ -1,6 +1,12 @@
 import { useEffect, useState } from 'react';
 import type { Attendee, CandidateSlot, Role, Step } from '../types';
-import { jungResponse, meetingInfo, roleDescriptions } from '../data/mockData';
+import {
+  directoryExtras,
+  initialAttendees,
+  jungResponse,
+  meetingInfo,
+  roleDescriptions,
+} from '../data/mockData';
 import StatusBadge from './StatusBadge';
 import ConfidenceBadge from './ConfidenceBadge';
 import AttendeeCard from './AttendeeCard';
@@ -122,6 +128,7 @@ interface Props {
   selectedId: string;
   proposed: CandidateSlot;
   onChangeRole: (id: string, role: Role) => void;
+  onToggleAttendee: (id: string) => void;
   onSelectCandidate: (id: string) => void;
   onNext: (step: Step) => void;
   onReset: () => void;
@@ -139,10 +146,18 @@ export default function MeetingPanel({
   selectedId,
   proposed,
   onChangeRole,
+  onToggleAttendee,
   onSelectCandidate,
   onNext,
   onReset,
 }: Props) {
+  // Step 0(회의 만들기)의 입력 상태
+  const [durationOpt, setDurationOpt] = useState('1시간');
+  const [periodOpt, setPeriodOpt] = useState('다음 주');
+  const [query, setQuery] = useState('');
+  const fullDirectory = [...initialAttendees, ...directoryExtras].filter(
+    (a) => !a.isOrganizer,
+  );
   const requiredCount = attendees.filter((a) => a.role === 'required').length;
   const optionalCount = attendees.filter((a) => a.role === 'optional').length;
   const shareCount = attendees.filter((a) => a.role === 'share').length;
@@ -155,9 +170,15 @@ export default function MeetingPanel({
 
   // Step 5: 주최자를 제외한 5명 중 4명은 자동으로 응답이 도착하고,
   // 정하늘은 참여자 응답 화면에서 직접 응답해야 모인다.
-  const RESPONDERS = 5;
-  const AUTO_RESPONDERS = 4;
-  const REQUIRED_ORDER = [true, true, true, false]; // 김민준, 이지은, 박서준, 최유리
+  const hasJung = attendees.some((a) => a.id === 'jung');
+  const RESPONDERS = attendees.filter((a) => !a.isOrganizer).length;
+  const AUTO_RESPONDERS = RESPONDERS - (hasJung ? 1 : 0);
+  const requiredAuto = attendees.filter(
+    (a) => !a.isOrganizer && a.id !== 'jung' && a.role === 'required',
+  ).length;
+  const requiredTotal = attendees.filter(
+    (a) => !a.isOrganizer && a.role === 'required',
+  ).length;
   const [autoCount, setAutoCount] = useState(0);
   useEffect(() => {
     if (step !== 5) return;
@@ -169,8 +190,13 @@ export default function MeetingPanel({
   }, [step]);
   const respondedCount = Math.min(autoCount, AUTO_RESPONDERS) + (jungResponded ? 1 : 0);
   const allResponded = respondedCount >= RESPONDERS;
-  const waitingJung = autoCount >= AUTO_RESPONDERS && !jungResponded;
-  const requiredResponded = REQUIRED_ORDER.slice(0, autoCount).filter(Boolean).length;
+  const waitingJung = hasJung && autoCount >= AUTO_RESPONDERS && !jungResponded;
+  const requiredResponded = Math.min(autoCount, requiredAuto);
+
+  // 응답 목록은 실제 참석자 명단에서 생성 (회의 만들기에서 바뀐 명단이 그대로 반영)
+  const requiredAtt = attendees.filter((a) => a.role === 'required');
+  const optionalAtt = attendees.filter((a) => a.role === 'optional');
+  const shareAtt = attendees.filter((a) => a.role === 'share');
 
   // 확정 요약에서 정하늘의 상태를 실제 응답/전환 여부에 맞게 표현
   const jungSummaryLine =
@@ -189,6 +215,149 @@ export default function MeetingPanel({
   let backButton: React.ReactNode = null;
 
   switch (step) {
+    case 0: {
+      const results = fullDirectory.filter(
+        (p) =>
+          query.trim() === '' ||
+          p.name.includes(query.trim()) ||
+          p.title.includes(query.trim()) ||
+          p.description.includes(query.trim()),
+      );
+      const isSelected = (id: string) => attendees.some((a) => a.id === id);
+
+      body = (
+        <>
+          <PanelTitle>회의 만들기</PanelTitle>
+          <PanelDesc>회의 조건을 정하고, 함께할 사람을 선택하세요.</PanelDesc>
+
+          <div className="mt-4 space-y-3">
+            <Card>
+              <p className="mb-2 text-xs font-semibold text-slate-400">회의 정보</p>
+              <p className="text-sm font-semibold text-slate-900">{meetingInfo.title}</p>
+              <p className="mt-0.5 text-xs text-slate-500">{meetingInfo.purpose}</p>
+
+              <p className="mb-1.5 mt-3.5 text-xs font-semibold text-slate-400">회의 길이</p>
+              <div className="flex rounded-lg bg-slate-100 p-0.5">
+                {['30분', '1시간', '1시간 30분'].map((d) => (
+                  <button
+                    key={d}
+                    onClick={() => setDurationOpt(d)}
+                    className={`flex-1 rounded-md py-1.5 text-xs font-semibold transition-colors ${
+                      durationOpt === d
+                        ? 'bg-white text-blue-600 shadow-sm'
+                        : 'text-slate-400 hover:text-slate-600'
+                    }`}
+                  >
+                    {d}
+                  </button>
+                ))}
+              </div>
+
+              <p className="mb-1.5 mt-3.5 text-xs font-semibold text-slate-400">기간</p>
+              <div className="flex rounded-lg bg-slate-100 p-0.5">
+                {['이번 주', '다음 주', '직접 선택'].map((d) => (
+                  <button
+                    key={d}
+                    onClick={() => setPeriodOpt(d)}
+                    className={`flex-1 rounded-md py-1.5 text-xs font-semibold transition-colors ${
+                      periodOpt === d
+                        ? 'bg-white text-blue-600 shadow-sm'
+                        : 'text-slate-400 hover:text-slate-600'
+                    }`}
+                  >
+                    {d}
+                  </button>
+                ))}
+              </div>
+              {periodOpt === '다음 주' && (
+                <p className="mt-1.5 text-xs text-slate-400">7월 13일 – 7월 17일에서 시간을 찾아요.</p>
+              )}
+            </Card>
+
+            <Card>
+              <p className="mb-2 text-xs font-semibold text-slate-400">
+                참석자 · 나 포함 {attendees.length}명
+              </p>
+              <div className="flex flex-wrap gap-1.5">
+                {attendees.map((a) => (
+                  <span
+                    key={a.id}
+                    className={`inline-flex items-center gap-1 rounded-full py-1 pl-1 pr-2 text-xs font-medium ${
+                      a.isOrganizer
+                        ? 'bg-blue-50 text-blue-700'
+                        : 'bg-slate-100 text-slate-700'
+                    }`}
+                  >
+                    <span className="flex h-5 w-5 items-center justify-center rounded-full bg-white text-[10px] font-semibold text-slate-600">
+                      {a.name[0]}
+                    </span>
+                    {a.name}
+                    {a.isOrganizer ? (
+                      <span className="text-[10px] text-blue-400">나</span>
+                    ) : (
+                      <button
+                        onClick={() => onToggleAttendee(a.id)}
+                        className="ml-0.5 text-slate-400 hover:text-slate-600"
+                        aria-label={`${a.name} 제외`}
+                      >
+                        ×
+                      </button>
+                    )}
+                  </span>
+                ))}
+              </div>
+              <p className="mt-2 text-xs text-slate-400">
+                최근 '프로젝트' 회의를 함께한 사람을 불러왔어요.
+              </p>
+
+              <input
+                value={query}
+                onChange={(e) => setQuery(e.target.value)}
+                placeholder="이름, 직무, 팀으로 검색"
+                className="mt-3 w-full rounded-lg border border-slate-200 px-3 py-2 text-[13px] text-slate-800 placeholder:text-slate-300 focus:border-blue-400 focus:outline-none"
+              />
+              <div className="mt-2 max-h-56 divide-y divide-slate-50 overflow-y-auto">
+                {results.map((p) => (
+                  <div key={p.id} className="flex items-center gap-2.5 py-2">
+                    <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-slate-100 text-xs font-semibold text-slate-600">
+                      {p.name[0]}
+                    </div>
+                    <div className="min-w-0 flex-1">
+                      <p className="truncate text-[13px] font-medium text-slate-800">
+                        {p.name} <span className="font-normal text-slate-400">{p.title}</span>
+                      </p>
+                      <p className="truncate text-xs text-slate-400">{p.description}</p>
+                    </div>
+                    <button
+                      onClick={() => onToggleAttendee(p.id)}
+                      className={`shrink-0 rounded-md px-2 py-1 text-xs font-semibold transition-colors ${
+                        isSelected(p.id)
+                          ? 'text-slate-400 hover:text-slate-600'
+                          : 'bg-blue-50 text-blue-600 hover:bg-blue-100'
+                      }`}
+                    >
+                      {isSelected(p.id) ? '✓ 추가됨' : '+ 추가'}
+                    </button>
+                  </div>
+                ))}
+                {results.length === 0 && (
+                  <p className="py-3 text-center text-xs text-slate-400">
+                    검색 결과가 없어요.
+                  </p>
+                )}
+              </div>
+            </Card>
+          </div>
+        </>
+      );
+      cta = {
+        label: '회의 조건 확인하기',
+        onClick: () => onNext(1),
+        disabled: attendees.length < 2,
+      };
+      break;
+    }
+
     case 1:
       body = (
         <>
@@ -227,25 +396,39 @@ export default function MeetingPanel({
             이 회의가 성립하려면 반드시 참석해야 하는 사람을 먼저 정하세요.
           </PanelDesc>
 
-          <div className="mt-3 space-y-1 rounded-xl bg-slate-50 p-3">
-            <p className="text-xs text-slate-500">
-              <span className="font-semibold text-slate-700">필수</span> ·{' '}
-              {roleDescriptions.required}
-            </p>
-            <p className="text-xs text-slate-500">
-              <span className="font-semibold text-slate-700">선택</span> ·{' '}
-              {roleDescriptions.optional}
-            </p>
-            <p className="text-xs text-slate-500">
-              <span className="font-semibold text-slate-700">공유</span> ·{' '}
-              {roleDescriptions.share}
-            </p>
-          </div>
-
-          <div className="mt-3 space-y-2">
-            {attendees.map((a) => (
-              <AttendeeCard key={a.id} attendee={a} onChangeRole={onChangeRole} />
-            ))}
+          <div className="mt-4 space-y-4">
+            {(
+              [
+                { role: 'required', label: '필수' },
+                { role: 'optional', label: '선택' },
+                { role: 'share', label: '공유' },
+              ] as { role: Role; label: string }[]
+            ).map(({ role, label }) => {
+              const group = attendees.filter((a) => a.role === role);
+              return (
+                <div key={role}>
+                  <div className="mb-1.5 flex items-baseline gap-2 px-1">
+                    <p className="text-sm font-bold text-slate-800">
+                      {label} <span className="text-blue-600">{group.length}</span>
+                    </p>
+                    <p className="min-w-0 flex-1 truncate text-xs text-slate-400">
+                      {roleDescriptions[role]}
+                    </p>
+                  </div>
+                  {group.length > 0 ? (
+                    <div className="space-y-2">
+                      {group.map((a) => (
+                        <AttendeeCard key={a.id} attendee={a} onChangeRole={onChangeRole} />
+                      ))}
+                    </div>
+                  ) : (
+                    <p className="rounded-xl border border-dashed border-slate-200 px-3 py-3 text-center text-xs text-slate-300">
+                      역할을 바꾸면 카드가 이 칸으로 옮겨져요
+                    </p>
+                  )}
+                </div>
+              );
+            })}
           </div>
 
           <Card tone="blue">
@@ -392,7 +575,7 @@ export default function MeetingPanel({
                   ? '이제 회의 확정 여부를 확인할 수 있어요.'
                   : waitingJung
                     ? '정하늘님에게 응답 요청이 전달되어 있어요.'
-                    : `꼭 참석해야 할 사람 ${requiredResponded}/3 응답 완료`}
+                    : `꼭 참석해야 할 사람 ${requiredResponded}/${requiredTotal} 응답 완료`}
               </p>
             </Card>
 
@@ -436,20 +619,23 @@ export default function MeetingPanel({
           <div className="mt-4">
             <Card>
               <GroupLabel>필수 참석자</GroupLabel>
-              <ResponseRow name="유나영" title="기획자 · 주최자" status="참석" tone="ok" />
-              <ResponseRow name="김민준" title="팀장" status="가능" tone="ok" />
-              <ResponseRow name="박서준" title="개발 리드" status="가능" tone="ok" />
-              <ResponseRow name="이지은" title="PM" status="가능" tone="ok" />
+              {requiredAtt.map((a) => (
+                <ResponseRow
+                  key={a.id}
+                  name={a.name}
+                  title={a.isOrganizer ? `${a.title} · 주최자` : a.title}
+                  status={a.isOrganizer ? '참석' : '가능'}
+                  tone="ok"
+                />
+              ))}
 
-              <GroupLabel>선택 참석자</GroupLabel>
-              <ResponseRow name="최유리" title="디자이너" status="가능" tone="ok" />
-              {jungAnswer === 'ok' ? (
-                <ResponseRow name="정하늘" title="QA" status="가능" tone="ok" />
-              ) : (
-                !jungShared && (
+              {optionalAtt.length > 0 && <GroupLabel>선택 참석자</GroupLabel>}
+              {optionalAtt.map((a) =>
+                a.id === 'jung' && jungAnswer !== 'ok' ? (
                   <ResponseRow
-                    name="정하늘"
-                    title="QA"
+                    key={a.id}
+                    name={a.name}
+                    title={a.title}
                     status="불참"
                     tone="no"
                     note={
@@ -467,21 +653,26 @@ export default function MeetingPanel({
                       onClick: () => onChangeRole('jung', 'share'),
                     }}
                   />
-                )
+                ) : (
+                  <ResponseRow key={a.id} name={a.name} title={a.title} status="가능" tone="ok" />
+                ),
               )}
 
-              {jungShared && jungAnswer !== 'ok' && (
-                <>
-                  <GroupLabel>공유 대상</GroupLabel>
-                  <ResponseRow
-                    name="정하늘"
-                    title="QA"
-                    status="회의록 공유 예정"
-                    tone="neutral"
-                    note="공유 대상으로 바꿨어요. 회의는 그대로 진행돼요."
-                  />
-                </>
-              )}
+              {shareAtt.length > 0 && <GroupLabel>공유 대상</GroupLabel>}
+              {shareAtt.map((a) => (
+                <ResponseRow
+                  key={a.id}
+                  name={a.name}
+                  title={a.title}
+                  status="회의록 공유 예정"
+                  tone="neutral"
+                  note={
+                    a.id === 'jung'
+                      ? '공유 대상으로 바꿨어요. 회의는 그대로 진행돼요.'
+                      : undefined
+                  }
+                />
+              ))}
             </Card>
 
             <div className="mt-3">
@@ -620,37 +811,41 @@ export default function MeetingPanel({
           <div className="mt-4">
             <Card>
               <GroupLabel>필수 참석자</GroupLabel>
-              <ResponseRow name="유나영" title="기획자 · 주최자" status="참석" tone="ok" />
-              <ResponseRow name="김민준" title="팀장" status="가능" tone="ok" />
-              <ResponseRow name="박서준" title="개발 리드" status="가능" tone="ok" />
-              <ResponseRow name="이지은" title="PM" status="가능" tone="ok" />
+              {requiredAtt.map((a) => (
+                <ResponseRow
+                  key={a.id}
+                  name={a.name}
+                  title={a.isOrganizer ? `${a.title} · 주최자` : a.title}
+                  status={a.isOrganizer ? '참석' : '가능'}
+                  tone="ok"
+                />
+              ))}
 
-              <GroupLabel>선택 참석자</GroupLabel>
-              <ResponseRow name="최유리" title="디자이너" status="가능" tone="ok" />
-              {jungAnswer === 'ok' ? (
-                <ResponseRow name="정하늘" title="QA" status="가능" tone="ok" />
-              ) : (
-                !jungShared && (
+              {optionalAtt.length > 0 && <GroupLabel>선택 참석자</GroupLabel>}
+              {optionalAtt.map((a) =>
+                a.id === 'jung' && jungAnswer !== 'ok' ? (
                   <ResponseRow
-                    name="정하늘"
-                    title="QA"
+                    key={a.id}
+                    name={a.name}
+                    title={a.title}
                     status="회의록 공유로 대체"
                     tone="neutral"
                   />
-                )
+                ) : (
+                  <ResponseRow key={a.id} name={a.name} title={a.title} status="가능" tone="ok" />
+                ),
               )}
 
-              {jungShared && jungAnswer !== 'ok' && (
-                <>
-                  <GroupLabel>공유 대상</GroupLabel>
-                  <ResponseRow
-                    name="정하늘"
-                    title="QA"
-                    status="회의록 공유 예정"
-                    tone="neutral"
-                  />
-                </>
-              )}
+              {shareAtt.length > 0 && <GroupLabel>공유 대상</GroupLabel>}
+              {shareAtt.map((a) => (
+                <ResponseRow
+                  key={a.id}
+                  name={a.name}
+                  title={a.title}
+                  status="회의록 공유 예정"
+                  tone="neutral"
+                />
+              ))}
             </Card>
 
             <div className="mt-3 space-y-3">

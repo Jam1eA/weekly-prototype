@@ -1,4 +1,4 @@
-export type Step = 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 | 9 | 10 | 11;
+export type Step = 0 | 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 | 9 | 10 | 11;
 
 export type Role = 'required' | 'optional' | 'share';
 
@@ -44,4 +44,8 @@ export interface BusyBlock {
   kind: 'busy' | 'out' | 'leave' | 'tentative';
   // pre: 변경 발생(Step 8) 전까지만 표시, post: 변경 발생 이후에만 표시
   stage?: 'pre' | 'post';
+  // 주최자 본인의 일정 — 참석자를 선택하기 전(회의 만들기)에도 보인다
+  mine?: boolean;
+  // 같은 시간에 일정이 겹칠 때 좌/우 반폭으로 나란히 표시
+  col?: 0 | 1;
 }

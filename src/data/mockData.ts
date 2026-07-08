@@ -67,6 +67,39 @@ export const initialAttendees: Attendee[] = [
   },
 ];
 
+// 조직 디렉토리 — 회의 만들기에서 검색해 추가할 수 있는 사람들.
+// 기본 6명 외의 인물은 다른 팀 동료로, 검색 결과에만 나타난다.
+export const directoryExtras: Attendee[] = [
+  {
+    id: 'han',
+    name: '한도윤',
+    title: '마케터',
+    description: '그로스팀',
+    role: 'share',
+  },
+  {
+    id: 'seo',
+    name: '서지우',
+    title: '데이터 분석가',
+    description: '데이터팀',
+    role: 'optional',
+  },
+  {
+    id: 'lim',
+    name: '임소라',
+    title: '피플 매니저',
+    description: '피플팀',
+    role: 'optional',
+  },
+  {
+    id: 'kang',
+    name: '강현우',
+    title: '세일즈 매니저',
+    description: '세일즈팀',
+    role: 'optional',
+  },
+];
+
 // 정하늘이 참여자 응답 화면에서 보낸 조건.
 // 주최자 화면(응답 확인)의 제약 표시와 참여자 화면의 대안 선택지가 모두 이 객체를 참조한다.
 export const jungResponse: ParticipantResponse = {
@@ -121,16 +154,16 @@ export const candidates: CandidateSlot[] = [
     confidence: 'medium',
     facts: [
       { label: '필수 참석자', value: '4명 모두 비어 있어요', ok: true },
-      { label: '선택 참석자', value: '1명만 비어 있어요', ok: false },
+      { label: '선택 참석자', value: '최유리만 비어 있어요', ok: false },
       { label: '회의실', value: '회의실 B 사용 가능', ok: true },
-      { label: '숨은 제약', value: '점심 직후 비선호 1명', ok: false },
+      { label: '숨은 제약', value: '최유리 점심 직후 비선호', ok: false },
       { label: '다시 조율할 가능성', value: '보통', ok: false },
     ],
     reasons: [
       '꼭 참석해야 할 4명의 캘린더가 모두 비어 있어요.',
       '회의실 B를 사용할 수 있어요.',
-      '다만 점심 직후 회의를 선호하지 않는 참석자가 1명 있어요.',
-      '다만 선택 참석자 중 1명만 캘린더가 비어 있어요.',
+      '다만 최유리님이 점심 직후 회의를 선호하지 않아요.',
+      '다만 선택 참석자 중 최유리님만 캘린더가 비어 있어요.',
     ],
     comparison:
       '화요일 14:00과 비교하면 선택 참석자 참여가 적고, 점심 직후라 참석 경험이 떨어질 수 있어요.',
@@ -145,17 +178,17 @@ export const candidates: CandidateSlot[] = [
     shortLabel: '목 11:00',
     confidence: 'low',
     facts: [
-      { label: '필수 참석자', value: '3명만 비어 있어요', ok: false },
+      { label: '필수 참석자', value: '박서준 제외 3명만 가능', ok: false },
       { label: '선택 참석자', value: '2명 모두 비어 있어요', ok: true },
       { label: '회의실', value: '사용 가능', ok: true },
-      { label: '숨은 제약', value: '개발 리드 외근 가능성', ok: false },
+      { label: '숨은 제약', value: '박서준 외근 가능성', ok: false },
       { label: '다시 조율할 가능성', value: '높음', ok: false },
     ],
     reasons: [
       '선택 참석자의 캘린더는 모두 비어 있어요.',
       '회의실은 사용할 수 있어요.',
-      '다만 개발 리드가 목요일에 외근을 갈 가능성이 높아요. 아직 시간이 정해지지 않아 하루 전체가 유동적이에요.',
-      '꼭 참석해야 할 사람 중 1명이 참석하지 못할 수 있어요.',
+      '다만 박서준님이 목요일에 외근을 갈 가능성이 높아요. 아직 시간이 정해지지 않아 하루 전체가 유동적이에요.',
+      '꼭 참석해야 할 박서준님이 참석하지 못할 수 있어요.',
     ],
     comparison:
       '화요일 14:00, 수요일 13:00과 달리 필수 참석자가 빠질 수 있는 유일한 후보예요. 확정해도 다시 조율하게 될 가능성이 높아요.',
@@ -202,22 +235,29 @@ export const alternatives: CandidateSlot[] = [
 ];
 
 // 캘린더 배경에 깔리는 팀원들의 기존 일정 (읽기 전용 mock)
+// 다른 사람 일정은 제목을 볼 수 없어 '바쁨'으로만 표시된다.
+// 연차·외근·반차 같은 부재 상태는 캘린더에 공개되는 정보라 그대로 보여준다.
 export const busyBlocks: BusyBlock[] = [
-  { day: 0, startHour: 10, duration: 1, label: '팀 주간회의', kind: 'busy' },
-  { day: 0, startHour: 11, duration: 1, label: '박서준 · 코드 리뷰', kind: 'busy' },
-  { day: 0, startHour: 14, duration: 2, label: '김민준 · 임원 보고', kind: 'busy' },
-  { day: 0, startHour: 16, duration: 1, label: '이지은 · 리서치 콜', kind: 'busy' },
-  { day: 1, startHour: 9, duration: 1, label: '이지은 · 스프린트 점검', kind: 'busy' },
-  { day: 1, startHour: 16, duration: 1, label: '최유리 · 디자인 리뷰', kind: 'busy' },
-  { day: 2, startHour: 10, duration: 2, label: '박서준 · 기술 검토', kind: 'busy' },
-  { day: 2, startHour: 16, duration: 1, label: '김민준 · 팀장 미팅', kind: 'busy' },
+  // 주최자(유나영) 본인 일정 — 참석자 선택 전에도 보인다
+  { day: 0, startHour: 13, duration: 1, label: '기획 리뷰', kind: 'busy', mine: true },
+  { day: 1, startHour: 10, duration: 1, label: '팀장 1:1', kind: 'busy', mine: true },
+  { day: 0, startHour: 10, duration: 1, label: '팀 주간회의', kind: 'busy', mine: true },
+  // 팀원들의 일정 (제목 비공개)
+  { day: 0, startHour: 11, duration: 1, label: '박서준 · 바쁨', kind: 'busy' },
+  { day: 0, startHour: 14, duration: 2, label: '김민준 · 바쁨', kind: 'busy', col: 0 },
+  { day: 0, startHour: 14, duration: 1, label: '이지은 · 바쁨', kind: 'busy', col: 1 },
+  { day: 0, startHour: 16, duration: 1, label: '이지은 · 바쁨', kind: 'busy' },
+  { day: 1, startHour: 9, duration: 1, label: '이지은 · 바쁨', kind: 'busy' },
+  { day: 1, startHour: 16, duration: 1, label: '최유리 · 바쁨', kind: 'busy' },
+  { day: 2, startHour: 10, duration: 2, label: '박서준 · 바쁨', kind: 'busy' },
+  { day: 2, startHour: 16, duration: 1, label: '김민준 · 바쁨', kind: 'busy' },
   // 변경 발생 전: 목요일은 시간 미정의 외근 '가능성'만 있는 상태
   { day: 3, startHour: 9, duration: 9, label: '박서준 · 외근 가능성', kind: 'tentative', stage: 'pre' },
   // 변경 발생 후: 외근이 화요일 오후로 확정되면서 기존 회의와 충돌
   { day: 1, startHour: 13, duration: 4, label: '박서준 · 외근 확정', kind: 'out', stage: 'post' },
   { day: 4, startHour: 9, duration: 9, label: '정하늘 · 연차', kind: 'leave' },
-  { day: 4, startHour: 9, duration: 2, label: '박서준 · 정기 배포', kind: 'busy' },
-  { day: 4, startHour: 11, duration: 1, label: '김민준 · 채용 면접', kind: 'busy' },
+  { day: 4, startHour: 9, duration: 2, label: '박서준 · 바쁨', kind: 'busy' },
+  { day: 4, startHour: 11, duration: 1, label: '김민준 · 바쁨', kind: 'busy' },
   { day: 4, startHour: 13, duration: 5, label: '이지은 · 오후 반차', kind: 'busy' },
 ];
 

@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import type { Role, Step } from './types';
-import { alternatives, candidates, initialAttendees } from './data/mockData';
+import { alternatives, candidates, directoryExtras, initialAttendees } from './data/mockData';
 import Header from './components/Header';
 import Sidebar from './components/Sidebar';
 import CalendarGrid from './components/CalendarGrid';
@@ -8,7 +8,7 @@ import MeetingPanel from './components/MeetingPanel';
 import ParticipantView from './components/ParticipantView';
 
 export default function App() {
-  const [step, setStep] = useState<Step>(1);
+  const [step, setStep] = useState<Step>(0);
   const [attendees, setAttendees] = useState(initialAttendees);
   const [selectedId, setSelectedId] = useState('c1');
   // 제안 시점의 후보를 고정 (이후 단계에서 계속 참조)
@@ -34,13 +34,25 @@ export default function App() {
     setAttendees((prev) => prev.map((a) => (a.id === id ? { ...a, role } : a)));
   };
 
+  // 회의 만들기에서 참석자를 추가/제외 (주최자는 제외 불가)
+  const handleToggleAttendee = (id: string) => {
+    setAttendees((prev) => {
+      const existing = prev.find((a) => a.id === id);
+      if (existing) {
+        return existing.isOrganizer ? prev : prev.filter((a) => a.id !== id);
+      }
+      const person = [...initialAttendees, ...directoryExtras].find((a) => a.id === id);
+      return person ? [...prev, person] : prev;
+    });
+  };
+
   const handleNext = (next: Step) => {
     if (next === 5) setProposedId(selectedId);
     setStep(next);
   };
 
   const handleReset = () => {
-    setStep(1);
+    setStep(0);
     setAttendees(initialAttendees);
     setSelectedId('c1');
     setProposedId('c1');
@@ -53,7 +65,7 @@ export default function App() {
   if (participantOpen) {
     return (
       <ParticipantView
-        proposedLabel={proposed.label}
+        proposed={proposed}
         onComplete={setJungAnswer}
         onReturn={() => setParticipantOpen(false)}
       />
@@ -85,6 +97,7 @@ export default function App() {
           selectedId={selectedId}
           proposed={proposed}
           onChangeRole={handleChangeRole}
+          onToggleAttendee={handleToggleAttendee}
           onSelectCandidate={setSelectedId}
           onNext={handleNext}
           onReset={handleReset}

@@ -179,8 +179,14 @@ export default function CalendarGrid({
       {/* 캘린더 상단 바 */}
       <div className="flex shrink-0 items-center justify-between border-b border-slate-200 px-5 py-3">
         <div className="flex items-center gap-2">
-          <h2 className="text-sm font-bold text-slate-800">다음 주 팀 캘린더</h2>
-          <span className="text-xs text-slate-400">참석자 6명의 일정을 함께 보고 있어요</span>
+          <h2 className="text-sm font-bold text-slate-800">
+            {step === 0 ? '내 캘린더' : '다음 주 팀 캘린더'}
+          </h2>
+          <span className="text-xs text-slate-400">
+            {step === 0
+              ? '참석자를 선택하면 팀 일정을 함께 볼 수 있어요'
+              : '참석자 6명의 일정을 함께 보고 있어요 · 다른 사람 일정의 내용은 보이지 않아요'}
+          </span>
         </div>
         <div className="flex items-center gap-3 text-[11px] text-slate-500">
           <span className="flex items-center gap-1">
@@ -246,6 +252,8 @@ export default function CalendarGrid({
               {/* 기존 일정 */}
               {busyBlocks
                 .filter((b) => b.day === day)
+                // 회의 만들기(참석자 선택 전)에는 내 일정만 보인다
+                .filter((b) => step > 0 || b.mine)
                 .filter(
                   (b) =>
                     !b.stage ||
@@ -282,7 +290,7 @@ export default function CalendarGrid({
                   ) : (
                     <div
                       key={`b${i}`}
-                      className={`absolute inset-x-1 z-10 overflow-hidden rounded-md border-l-[3px] px-2 py-1 ${
+                      className={`absolute z-10 overflow-hidden rounded-md border-l-[3px] px-2 py-1 ${
                         b.kind === 'out'
                           ? 'border-amber-400 bg-amber-50'
                           : 'border-slate-300 bg-slate-100'
@@ -290,6 +298,8 @@ export default function CalendarGrid({
                       style={{
                         top: (b.startHour - START) * HOUR_PX + 2,
                         height: b.duration * HOUR_PX - 4,
+                        left: b.col === 1 ? 'calc(50% + 2px)' : 4,
+                        right: b.col === 0 ? 'calc(50% + 2px)' : 4,
                       }}
                     >
                       <p

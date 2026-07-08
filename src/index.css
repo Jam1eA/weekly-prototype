@@ -6,9 +6,19 @@
 }
 
 html,
-body,
+body {
+  height: 100%;
+}
+
+body {
+  overflow-y: hidden;
+  overflow-x: auto;
+}
+
+/* 데스크톱 전용 — 창이 좁아지면 레이아웃이 깨지는 대신 가로 스크롤이 생긴다 */
 #root {
   height: 100%;
+  min-width: 1200px;
   overflow: hidden;
 }
 

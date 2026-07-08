@@ -17,7 +17,8 @@
       "Bash(curl -s https://jam1ea.github.io/weekly-prototype/)",
       "Bash(git rm *)",
       "Bash(git -c user.name=yujeongA commit -q -m '배포 스크립트 추가 \\(GitHub Pages\\) *)",
-      "Bash(git push *)"
+      "Bash(git push *)",
+      "Bash(git -c user.name=yujeongA commit -q -m '멘토 피드백 반영: 회의 만들기 플로우·참여자 경험·캘린더 현실성 개선 *)"
     ]
   }
 }

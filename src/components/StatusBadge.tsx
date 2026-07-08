@@ -1,6 +1,7 @@
 import type { Step } from '../types';
 
 const stepStatus: Record<Step, { label: string; className: string; dot: string }> = {
+  0: { label: '회의 만들기', className: 'bg-slate-100 text-slate-600', dot: 'bg-slate-400' },
   1: { label: '조건 확인', className: 'bg-slate-100 text-slate-600', dot: 'bg-slate-400' },
   2: { label: '조건 확인', className: 'bg-slate-100 text-slate-600', dot: 'bg-slate-400' },
   3: { label: '시간 찾는 중', className: 'bg-blue-50 text-blue-600', dot: 'bg-blue-500' },
