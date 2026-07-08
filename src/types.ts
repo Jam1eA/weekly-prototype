@@ -30,6 +30,10 @@ export interface CandidateSlot {
   shortLabel: string; // 캘린더 블록용
   confidence: Confidence;
   recommended?: boolean;
+  // 캘린더 블록에 표시되는 짧은 가용 인원 요약 (예: 6명 모두 가능)
+  avail?: string;
+  // 후보 카드 헤더 아래 한 줄 요약 (예: 6명 중 5명 참석 가능 · 필수 1명 불가)
+  availabilityText?: string;
   facts: { label: string; value: string; ok: boolean }[];
   reasons: string[];
   comparison?: string;

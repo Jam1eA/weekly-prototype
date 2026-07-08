@@ -408,6 +408,12 @@ export default function ParticipantView({ proposed, onComplete, onReturn }: Prop
               >
                 주최자 화면으로 돌아가기
               </button>
+              <button
+                onClick={() => setPhase('respond')}
+                className="mt-2 w-full py-1.5 text-center text-xs font-medium text-slate-400 transition-colors hover:text-slate-600"
+              >
+                응답 수정하기
+              </button>
             </div>
           )}
         </div>

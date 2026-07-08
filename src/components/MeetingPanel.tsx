@@ -155,6 +155,8 @@ export default function MeetingPanel({
   const [durationOpt, setDurationOpt] = useState('1시간');
   const [periodOpt, setPeriodOpt] = useState('다음 주');
   const [query, setQuery] = useState('');
+  // Step 4: 제안을 보내기 전 확인 모달
+  const [confirmOpen, setConfirmOpen] = useState(false);
   const fullDirectory = [...initialAttendees, ...directoryExtras].filter(
     (a) => !a.isOrganizer,
   );
@@ -182,12 +184,17 @@ export default function MeetingPanel({
   const [autoCount, setAutoCount] = useState(0);
   useEffect(() => {
     if (step !== 5) return;
+    // 참여자 화면을 다녀온 뒤에는 이미 모인 응답을 그대로 보여준다
+    if (jungResponded) {
+      setAutoCount(AUTO_RESPONDERS);
+      return;
+    }
     setAutoCount(0);
     const iv = setInterval(() => {
       setAutoCount((c) => (c >= AUTO_RESPONDERS ? c : c + 1));
     }, 850);
     return () => clearInterval(iv);
-  }, [step]);
+  }, [step, AUTO_RESPONDERS, jungResponded]);
   const respondedCount = Math.min(autoCount, AUTO_RESPONDERS) + (jungResponded ? 1 : 0);
   const allResponded = respondedCount >= RESPONDERS;
   const waitingJung = hasJung && autoCount >= AUTO_RESPONDERS && !jungResponded;
@@ -275,39 +282,71 @@ export default function MeetingPanel({
             </Card>
 
             <Card>
-              <p className="mb-2 text-xs font-semibold text-slate-400">
-                참석자 · 나 포함 {attendees.length}명
-              </p>
-              <div className="flex flex-wrap gap-1.5">
+              <div className="mb-1 flex items-baseline justify-between">
+                <p className="text-xs font-semibold text-slate-400">
+                  참석자 · 나 포함 {attendees.length}명
+                </p>
+                <p className="text-xs text-slate-400">
+                  필수 {requiredCount} · 선택 {optionalCount}
+                  {shareCount > 0 ? ` · 공유 ${shareCount}` : ''}
+                </p>
+              </div>
+
+              <div className="divide-y divide-slate-50">
                 {attendees.map((a) => (
-                  <span
-                    key={a.id}
-                    className={`inline-flex items-center gap-1 rounded-full py-1 pl-1 pr-2 text-xs font-medium ${
-                      a.isOrganizer
-                        ? 'bg-blue-50 text-blue-700'
-                        : 'bg-slate-100 text-slate-700'
-                    }`}
-                  >
-                    <span className="flex h-5 w-5 items-center justify-center rounded-full bg-white text-[10px] font-semibold text-slate-600">
+                  <div key={a.id} className="flex items-center gap-2.5 py-2">
+                    <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-slate-100 text-xs font-semibold text-slate-600">
                       {a.name[0]}
-                    </span>
-                    {a.name}
+                    </div>
+                    <div className="min-w-0 flex-1">
+                      <p className="truncate text-[13px] font-medium text-slate-800">
+                        {a.name}{' '}
+                        <span className="font-normal text-slate-400">{a.title}</span>
+                      </p>
+                    </div>
                     {a.isOrganizer ? (
-                      <span className="text-[10px] text-blue-400">나</span>
+                      <span className="shrink-0 rounded-md bg-blue-600 px-2 py-1 text-xs font-semibold text-white">
+                        주최자 · 필수
+                      </span>
                     ) : (
-                      <button
-                        onClick={() => onToggleAttendee(a.id)}
-                        className="ml-0.5 text-slate-400 hover:text-slate-600"
-                        aria-label={`${a.name} 제외`}
-                      >
-                        ×
-                      </button>
+                      <>
+                        <button
+                          onClick={() =>
+                            onChangeRole(
+                              a.id,
+                              a.role === 'required'
+                                ? 'optional'
+                                : a.role === 'optional'
+                                  ? 'share'
+                                  : 'required',
+                            )
+                          }
+                          className={`shrink-0 rounded-md px-2 py-1 text-xs font-semibold transition-colors ${
+                            a.role === 'required'
+                              ? 'bg-blue-50 text-blue-600 hover:bg-blue-100'
+                              : a.role === 'optional'
+                                ? 'bg-slate-100 text-slate-500 hover:bg-slate-200'
+                                : 'bg-slate-100 text-slate-400 hover:bg-slate-200'
+                          }`}
+                        >
+                          {a.role === 'required' ? '필수' : a.role === 'optional' ? '선택' : '공유'}
+                        </button>
+                        <button
+                          onClick={() => onToggleAttendee(a.id)}
+                          className="shrink-0 px-1 text-slate-300 transition-colors hover:text-slate-500"
+                          aria-label={`${a.name} 제외`}
+                        >
+                          ×
+                        </button>
+                      </>
                     )}
-                  </span>
+                  </div>
                 ))}
               </div>
-              <p className="mt-2 text-xs text-slate-400">
-                최근 '프로젝트' 회의를 함께한 사람을 불러왔어요.
+
+              <p className="mt-2 rounded-lg bg-slate-50 px-3 py-2 text-xs leading-relaxed text-slate-500">
+                최근 '프로젝트' 회의의 구성을 역할과 함께 불러왔어요. 새로 추가한 사람은
+                필수로 들어오고, 역할 배지를 누르면 필수 → 선택 → 공유로 바뀌어요.
               </p>
 
               <input
@@ -385,15 +424,16 @@ export default function MeetingPanel({
           </div>
         </>
       );
-      cta = { label: '꼭 참석해야 할 사람 정하기', onClick: () => onNext(2) };
+      cta = { label: '참석 구성 확인하기', onClick: () => onNext(2) };
       break;
 
     case 2:
       body = (
         <>
-          <PanelTitle>꼭 참석해야 할 사람 정하기</PanelTitle>
+          <PanelTitle>참석 구성 확인</PanelTitle>
           <PanelDesc>
-            이 회의가 성립하려면 반드시 참석해야 하는 사람을 먼저 정하세요.
+            회의를 만들 때 정한 구성이에요. 꼭 참석해야 할 사람이 맞는지 확인하고,
+            필요하면 여기서 역할을 바꿀 수 있어요.
           </PanelDesc>
 
           <div className="mt-4 space-y-4">
@@ -532,7 +572,7 @@ export default function MeetingPanel({
           </div>
         </>
       );
-      cta = { label: '이 시간 제안하기', onClick: () => onNext(5) };
+      cta = { label: '이 시간 제안하기', onClick: () => setConfirmOpen(true) };
       break;
 
     case 5:
@@ -939,6 +979,47 @@ export default function MeetingPanel({
         {backButton}
         {body}
       </div>
+
+      {/* 제안 발송 확인 모달 */}
+      {step === 4 && confirmOpen && (
+        <div
+          className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/40"
+          onClick={() => setConfirmOpen(false)}
+        >
+          <div
+            className="w-[380px] rounded-2xl bg-white p-6 shadow-xl"
+            style={{ animation: 'slide-down 0.25s ease-out' }}
+            onClick={(e) => e.stopPropagation()}
+          >
+            <p className="text-base font-bold text-slate-900">
+              참석자 {attendees.length - 1}명에게 후보 시간을 보낼까요?
+            </p>
+            <p className="mt-1.5 text-[13px] text-slate-600">
+              {selected.label} · {meetingInfo.title}
+            </p>
+            <p className="mt-2.5 rounded-lg bg-slate-50 px-3 py-2 text-xs leading-relaxed text-slate-500">
+              아직 확정이 아니에요. 응답이 모이면 회의 확정 여부를 확인할 수 있어요.
+            </p>
+            <div className="mt-5 flex gap-2">
+              <button
+                onClick={() => setConfirmOpen(false)}
+                className="flex-1 rounded-xl border border-slate-200 py-2.5 text-sm font-semibold text-slate-600 transition-colors hover:bg-slate-50"
+              >
+                취소
+              </button>
+              <button
+                onClick={() => {
+                  setConfirmOpen(false);
+                  onNext(5);
+                }}
+                className="flex-1 rounded-xl bg-blue-600 py-2.5 text-sm font-bold text-white transition-colors hover:bg-blue-700"
+              >
+                보내기
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* CTA 푸터 */}
       {(cta || secondary) && (

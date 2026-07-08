@@ -35,6 +35,10 @@ export default function CandidateCard({
         <ConfidenceBadge confidence={candidate.confidence} />
       </div>
 
+      {candidate.availabilityText && (
+        <p className="-mt-1 mb-2.5 text-xs text-slate-500">{candidate.availabilityText}</p>
+      )}
+
       <ul className="space-y-1.5">
         {candidate.facts.map((f) => (
           <li key={f.label} className="flex items-start gap-1.5 text-xs">

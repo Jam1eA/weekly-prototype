@@ -18,7 +18,14 @@
       "Bash(git rm *)",
       "Bash(git -c user.name=yujeongA commit -q -m '배포 스크립트 추가 \\(GitHub Pages\\) *)",
       "Bash(git push *)",
-      "Bash(git -c user.name=yujeongA commit -q -m '멘토 피드백 반영: 회의 만들기 플로우·참여자 경험·캘린더 현실성 개선 *)"
+      "Bash(git -c user.name=yujeongA commit -q -m '멘토 피드백 반영: 회의 만들기 플로우·참여자 경험·캘린더 현실성 개선 *)",
+      "Bash(brew install *)",
+      "Read(//opt/homebrew/bin/**)",
+      "Bash(python3 -c \"import fitz\")",
+      "Bash(python3 -c \"import pdfminer\")",
+      "Bash(python3 -m pip install --user --quiet pymupdf)",
+      "Bash(python3 -c \"import fitz; print\\('fitz ok', fitz.__doc__\\)\")",
+      "Bash(git -c user.name=yujeongA commit -q -m '사용성 분석 기반 UX 개선: 역할 지정 비용 제거·가용 인원 표시·발송 확인 *)"
     ]
   }
 }

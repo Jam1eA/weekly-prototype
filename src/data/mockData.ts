@@ -126,6 +126,8 @@ export const candidates: CandidateSlot[] = [
     shortLabel: '화 14:00',
     confidence: 'high',
     recommended: true,
+    avail: '6명 모두 가능',
+    availabilityText: '나를 포함한 6명 모두 참석할 수 있어요.',
     facts: [
       { label: '필수 참석자', value: '4명 모두 비어 있어요', ok: true },
       { label: '선택 참석자', value: '2명 모두 비어 있어요', ok: true },
@@ -152,6 +154,8 @@ export const candidates: CandidateSlot[] = [
     label: '수요일 13:00 - 14:00',
     shortLabel: '수 13:00',
     confidence: 'medium',
+    avail: '5명 가능',
+    availabilityText: '6명 중 5명 참석 가능 · 선택 참석자 1명 불가',
     facts: [
       { label: '필수 참석자', value: '4명 모두 비어 있어요', ok: true },
       { label: '선택 참석자', value: '최유리만 비어 있어요', ok: false },
@@ -177,6 +181,8 @@ export const candidates: CandidateSlot[] = [
     label: '목요일 11:00 - 12:00',
     shortLabel: '목 11:00',
     confidence: 'low',
+    avail: '필수 1명 불가',
+    availabilityText: '6명 중 5명 참석 가능 · 필수 참석자 1명 불가',
     facts: [
       { label: '필수 참석자', value: '박서준 제외 3명만 가능', ok: false },
       { label: '선택 참석자', value: '2명 모두 비어 있어요', ok: true },

@@ -42,7 +42,8 @@ export default function App() {
         return existing.isOrganizer ? prev : prev.filter((a) => a.id !== id);
       }
       const person = [...initialAttendees, ...directoryExtras].find((a) => a.id === id);
-      return person ? [...prev, person] : prev;
+      // 새로 추가하는 사람은 기본 '필수'로 들어온다 (예외만 역할을 바꾸는 방식)
+      return person ? [...prev, { ...person, role: 'required' as Role }] : prev;
     });
   };
 

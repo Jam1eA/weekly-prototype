@@ -21,6 +21,7 @@ interface Overlay {
   startHour: number;
   label: string;
   time: string;
+  sub?: string; // 가용 인원 요약 (예: 6명 모두 가능)
   style: OverlayStyle;
   candidateId?: string;
 }
@@ -57,6 +58,7 @@ function buildOverlays(
       startHour: c.startHour,
       label: `후보 ${i + 1}`,
       time: time(c),
+      sub: c.avail,
       style: c.id === selectedId ? 'candidateSelected' : 'candidate',
       candidateId: c.id,
     }));
@@ -330,7 +332,7 @@ export default function CalendarGrid({
                   >
                     <p className="truncate text-xs font-bold leading-tight">{o.label}</p>
                     <p className="truncate text-[11px] leading-tight opacity-80">
-                      {o.time} · 1시간
+                      {o.sub ? `${o.time} · ${o.sub}` : `${o.time} · 1시간`}
                     </p>
                   </div>
                 ))}
