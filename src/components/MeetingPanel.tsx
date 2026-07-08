@@ -118,6 +118,8 @@ function GroupLabel({ children }: { children: React.ReactNode }) {
 
 interface Props {
   step: Step;
+  started: boolean;
+  onStart: () => void;
   hasAlert: boolean;
   onOpenAlert: () => void;
   jungAnswer: 'ok' | 'busy' | null;
@@ -136,6 +138,8 @@ interface Props {
 
 export default function MeetingPanel({
   step,
+  started,
+  onStart,
   hasAlert,
   onOpenAlert,
   jungAnswer,
@@ -200,6 +204,17 @@ export default function MeetingPanel({
   const waitingJung = hasJung && autoCount >= AUTO_RESPONDERS && !jungResponded;
   const requiredResponded = Math.min(autoCount, requiredAuto);
 
+  // Step 5 응답 현황: 주최자를 제외한 참석자별 응답 상태
+  const nonOrganizer = attendees.filter((a) => !a.isOrganizer);
+  const autoList = nonOrganizer.filter((a) => a.id !== 'jung');
+  const respStatusOf = (a: Attendee): '가능' | '불참' | '대기 중' => {
+    if (a.id === 'jung') {
+      if (!jungResponded) return '대기 중';
+      return jungAnswer === 'ok' ? '가능' : '불참';
+    }
+    return autoList.indexOf(a) < autoCount ? '가능' : '대기 중';
+  };
+
   // 응답 목록은 실제 참석자 명단에서 생성 (회의 만들기에서 바뀐 명단이 그대로 반영)
   const requiredAtt = attendees.filter((a) => a.role === 'required');
   const optionalAtt = attendees.filter((a) => a.role === 'optional');
@@ -212,6 +227,40 @@ export default function MeetingPanel({
       : jungShared
         ? '선택 참석자 1명 참석 · 1명 회의록 공유'
         : '선택 참석자 1명 참석 · 1명 불참 (회의 진행 가능)';
+
+  /* 회의를 만들기 전: 빈 상태 */
+  if (!started) {
+    return (
+      <aside className="flex w-[380px] shrink-0 flex-col border-l border-slate-200 bg-slate-50">
+        <div className="flex shrink-0 items-center justify-between border-b border-slate-200 bg-white px-5 py-3">
+          <p className="text-xs font-semibold tracking-wide text-slate-400">회의 조율</p>
+        </div>
+        <div className="flex flex-1 flex-col items-center justify-center px-8 pb-16 text-center">
+          <div className="flex h-14 w-14 items-center justify-center rounded-2xl bg-blue-50 text-blue-500">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+              <rect x="3" y="4" width="18" height="18" rx="2" />
+              <path d="M16 2v4M8 2v4M3 10h18" />
+              <path d="M12 14v4M10 16h4" />
+            </svg>
+          </div>
+          <p className="mt-4 text-[15px] font-bold text-slate-900">
+            아직 조율 중인 회의가 없어요
+          </p>
+          <p className="mt-1.5 text-[13px] leading-relaxed text-slate-500">
+            새 회의를 만들면 참석자의 일정과 조건을
+            <br />
+            함께 보며 시간을 찾을 수 있어요.
+          </p>
+          <button
+            onClick={onStart}
+            className="mt-5 rounded-xl bg-blue-600 px-5 py-3 text-sm font-bold text-white transition-colors hover:bg-blue-700"
+          >
+            + 새 회의 만들기
+          </button>
+        </div>
+      </aside>
+    );
+  }
 
   /* 단계별 본문 + CTA 정의 */
   let body: React.ReactNode = null;
@@ -244,21 +293,17 @@ export default function MeetingPanel({
               <p className="mt-0.5 text-xs text-slate-500">{meetingInfo.purpose}</p>
 
               <p className="mb-1.5 mt-3.5 text-xs font-semibold text-slate-400">회의 길이</p>
-              <div className="flex rounded-lg bg-slate-100 p-0.5">
-                {['30분', '1시간', '1시간 30분'].map((d) => (
-                  <button
-                    key={d}
-                    onClick={() => setDurationOpt(d)}
-                    className={`flex-1 rounded-md py-1.5 text-xs font-semibold transition-colors ${
-                      durationOpt === d
-                        ? 'bg-white text-blue-600 shadow-sm'
-                        : 'text-slate-400 hover:text-slate-600'
-                    }`}
-                  >
+              <select
+                value={durationOpt}
+                onChange={(e) => setDurationOpt(e.target.value)}
+                className="w-full rounded-lg border border-slate-200 bg-white px-3 py-2 text-[13px] font-medium text-slate-800 focus:border-blue-400 focus:outline-none"
+              >
+                {['30분', '1시간', '1시간 30분', '2시간', '2시간 30분', '3시간'].map((d) => (
+                  <option key={d} value={d}>
                     {d}
-                  </button>
+                  </option>
                 ))}
-              </div>
+              </select>
 
               <p className="mb-1.5 mt-3.5 text-xs font-semibold text-slate-400">기간</p>
               <div className="flex rounded-lg bg-slate-100 p-0.5">
@@ -541,6 +586,51 @@ export default function MeetingPanel({
             <ConfidenceBadge confidence={selected.confidence} />
           </div>
 
+          {/* 참석자별 가능 여부 — 누가 되고 안 되는지가 먼저 보이게 */}
+          <div className="mt-4 rounded-xl border border-slate-200 bg-white p-3.5">
+            <div className="flex items-start justify-between">
+              {attendees.map((a) => {
+                const st = selected.attendeeStatus?.[a.id];
+                return (
+                  <div key={a.id} className="flex w-12 flex-col items-center gap-1">
+                    <div
+                      className={`relative flex h-9 w-9 items-center justify-center rounded-full text-xs font-semibold ${
+                        st === 'no'
+                          ? 'bg-slate-50 text-slate-300'
+                          : 'bg-slate-100 text-slate-600'
+                      }`}
+                    >
+                      {a.name[0]}
+                      <span
+                        className={`absolute -bottom-0.5 -right-0.5 flex h-4 w-4 items-center justify-center rounded-full text-[9px] font-bold text-white ring-2 ring-white ${
+                          st === 'no'
+                            ? 'bg-red-500'
+                            : st === 'avoid'
+                              ? 'bg-amber-400'
+                              : 'bg-emerald-500'
+                        }`}
+                      >
+                        {st === 'no' ? '×' : st === 'avoid' ? '!' : '✓'}
+                      </span>
+                    </div>
+                    <p
+                      className={`max-w-full truncate text-[10px] ${
+                        st === 'no' ? 'text-slate-300 line-through' : 'text-slate-500'
+                      }`}
+                    >
+                      {a.name}
+                    </p>
+                  </div>
+                );
+              })}
+            </div>
+            {selected.availabilityText && (
+              <p className="mt-2.5 border-t border-slate-100 pt-2 text-xs text-slate-500">
+                {selected.availabilityText}
+              </p>
+            )}
+          </div>
+
           <p className="mb-2 mt-5 text-sm font-bold text-slate-800">추천 이유</p>
           <Card>
             <ul className="space-y-2">
@@ -617,27 +707,41 @@ export default function MeetingPanel({
                     ? '정하늘님에게 응답 요청이 전달되어 있어요.'
                     : `꼭 참석해야 할 사람 ${requiredResponded}/${requiredTotal} 응답 완료`}
               </p>
-            </Card>
 
-            {waitingJung && (
-              <Card>
-                <div className="flex items-center gap-2.5">
-                  <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-slate-100 text-sm font-semibold text-slate-600">
-                    정
-                  </div>
-                  <div className="min-w-0 flex-1">
-                    <p className="text-[13px] font-semibold text-slate-800">정하늘 QA</p>
-                    <p className="text-xs text-slate-400">아직 응답하지 않았어요</p>
-                  </div>
-                </div>
+              {/* 참석자별 응답 상태 */}
+              <div className="mt-3 border-t border-blue-100/70">
+                {nonOrganizer.map((a) => {
+                  const s = respStatusOf(a);
+                  return (
+                    <div key={a.id} className="flex items-center justify-between py-1.5">
+                      <p className="text-[13px] text-slate-700">
+                        {a.name} <span className="text-slate-400">{a.title}</span>
+                      </p>
+                      <span
+                        className={`rounded-md px-2 py-0.5 text-xs font-semibold ${
+                          s === '가능'
+                            ? 'bg-emerald-50 text-emerald-600'
+                            : s === '불참'
+                              ? 'bg-slate-100 text-slate-500'
+                              : 'border border-slate-200 bg-white text-slate-400'
+                        }`}
+                      >
+                        {s}
+                      </span>
+                    </div>
+                  );
+                })}
+              </div>
+
+              {waitingJung && (
                 <button
                   onClick={onEnterParticipant}
-                  className="mt-3 w-full rounded-lg border border-blue-200 bg-blue-50 py-2 text-xs font-semibold text-blue-600 transition-colors hover:bg-blue-100"
+                  className="mt-1.5 w-full rounded-lg border border-blue-200 bg-white py-2 text-xs font-semibold text-blue-600 transition-colors hover:bg-blue-50"
                 >
                   정하늘님 화면에서 응답하기
                 </button>
-              </Card>
-            )}
+              )}
+            </Card>
           </div>
         </>
       );
@@ -998,7 +1102,8 @@ export default function MeetingPanel({
               {selected.label} · {meetingInfo.title}
             </p>
             <p className="mt-2.5 rounded-lg bg-slate-50 px-3 py-2 text-xs leading-relaxed text-slate-500">
-              아직 확정이 아니에요. 응답이 모이면 회의 확정 여부를 확인할 수 있어요.
+              참석자에게 메일과 앱 알림으로 전달돼요. 아직 확정이 아니라, 응답이 모이면
+              회의 확정 여부를 확인할 수 있어요.
             </p>
             <div className="mt-5 flex gap-2">
               <button

@@ -34,6 +34,8 @@ export interface CandidateSlot {
   avail?: string;
   // 후보 카드 헤더 아래 한 줄 요약 (예: 6명 중 5명 참석 가능 · 필수 1명 불가)
   availabilityText?: string;
+  // 참석자별 상태 (없으면 참석 가능): no = 불가, avoid = 비선호
+  attendeeStatus?: Record<string, 'no' | 'avoid'>;
   facts: { label: string; value: string; ok: boolean }[];
   reasons: string[];
   comparison?: string;
@@ -50,6 +52,9 @@ export interface BusyBlock {
   stage?: 'pre' | 'post';
   // 주최자 본인의 일정 — 참석자를 선택하기 전(회의 만들기)에도 보인다
   mine?: boolean;
-  // 같은 시간에 일정이 겹칠 때 좌/우 반폭으로 나란히 표시
+  // 같은 시간에 일정이 겹칠 때 좌/우 반폭으로 나란히 표시 (2명까지)
   col?: 0 | 1;
+  // 3명 이상 겹치는 시간은 개별 블록 대신 인원 수로 집계해 표시
+  count?: number;
+  names?: string[];
 }

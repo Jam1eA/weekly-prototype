@@ -292,10 +292,13 @@ export default function CalendarGrid({
                   ) : (
                     <div
                       key={`b${i}`}
+                      title={b.names ? `일정 있음: ${b.names.join(', ')}` : undefined}
                       className={`absolute z-10 overflow-hidden rounded-md border-l-[3px] px-2 py-1 ${
                         b.kind === 'out'
                           ? 'border-amber-400 bg-amber-50'
-                          : 'border-slate-300 bg-slate-100'
+                          : b.count
+                            ? 'border-slate-400 bg-slate-200/80'
+                            : 'border-slate-300 bg-slate-100'
                       }`}
                       style={{
                         top: (b.startHour - START) * HOUR_PX + 2,
@@ -305,12 +308,21 @@ export default function CalendarGrid({
                       }}
                     >
                       <p
-                        className={`truncate text-[11px] font-medium ${
-                          b.kind === 'out' ? 'text-amber-700' : 'text-slate-500'
+                        className={`truncate text-[11px] ${
+                          b.kind === 'out'
+                            ? 'font-medium text-amber-700'
+                            : b.count
+                              ? 'font-semibold text-slate-600'
+                              : 'font-medium text-slate-500'
                         }`}
                       >
                         {b.label}
                       </p>
+                      {b.count && b.duration >= 1 && (
+                        <p className="truncate text-[10px] text-slate-400">
+                          자세한 내용은 비공개
+                        </p>
+                      )}
                     </div>
                   ),
                 )}

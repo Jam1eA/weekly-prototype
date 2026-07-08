@@ -12,7 +12,13 @@ const roleBadge: Record<string, string> = {
   share: 'bg-slate-100 text-slate-400',
 };
 
-export default function Sidebar({ attendees }: { attendees: Attendee[] }) {
+export default function Sidebar({
+  attendees,
+  started,
+}: {
+  attendees: Attendee[];
+  started: boolean;
+}) {
   return (
     <aside className="flex w-60 shrink-0 flex-col border-r border-slate-200 bg-white">
       <nav className="border-b border-slate-100 p-3">
@@ -39,10 +45,16 @@ export default function Sidebar({ attendees }: { attendees: Attendee[] }) {
       </nav>
 
       <div className="flex-1 overflow-y-auto p-4">
-        <p className="mb-2 text-xs font-semibold tracking-wide text-slate-400">
-          이번 회의 참석자
-        </p>
-        <ul className="space-y-1">
+        {!started ? (
+          <p className="rounded-lg bg-slate-50 px-3 py-2.5 text-xs leading-relaxed text-slate-400">
+            조율 중인 회의가 없어요. 새 회의를 만들면 참석자가 여기에 표시돼요.
+          </p>
+        ) : (
+          <>
+            <p className="mb-2 text-xs font-semibold tracking-wide text-slate-400">
+              이번 회의 참석자
+            </p>
+            <ul className="space-y-1">
           {attendees.map((a) => (
             <li key={a.id} className="flex items-center gap-2.5 rounded-lg px-2 py-1.5">
               <div className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-slate-100 text-[11px] font-semibold text-slate-600">
@@ -66,14 +78,18 @@ export default function Sidebar({ attendees }: { attendees: Attendee[] }) {
               )}
             </li>
           ))}
-        </ul>
+            </ul>
+          </>
+        )}
       </div>
 
-      <div className="border-t border-slate-100 p-4">
-        <p className="text-xs leading-relaxed text-slate-400">
-          필수 참석자가 모두 가능한 시간을 기준으로 회의를 조율하고 있어요.
-        </p>
-      </div>
+      {started && (
+        <div className="border-t border-slate-100 p-4">
+          <p className="text-xs leading-relaxed text-slate-400">
+            필수 참석자가 모두 가능한 시간을 기준으로 회의를 조율하고 있어요.
+          </p>
+        </div>
+      )}
     </aside>
   );
 }

@@ -107,7 +107,6 @@ export default function ParticipantView({ proposed, onComplete, onReturn }: Prop
   const altLabels = jungResponse.alternatives
     .filter((a) => selectedAlts.includes(a.id))
     .map((a) => a.label);
-  const proposedDayBusy = HOURS.some((h) => isBusy(proposed.day, h));
 
   const noStyle = {
     backgroundImage:
@@ -170,36 +169,6 @@ export default function ParticipantView({ proposed, onComplete, onReturn }: Prop
                   <p className="mt-0.5 text-lg font-bold text-slate-900">{proposed.label}</p>
                 </div>
 
-                {/* 제안된 날의 내 일정 타임라인 */}
-                <div className="mt-3 rounded-xl border border-slate-100 px-4 py-3">
-                  <div className="flex items-baseline justify-between">
-                    <p className="text-xs font-semibold text-slate-500">
-                      내 {DAY_NAMES[proposed.day]} 일정
-                    </p>
-                    <p className="text-[10px] text-slate-300">9시 – 18시</p>
-                  </div>
-                  <div className="mt-2 flex gap-0.5">
-                    {HOURS.map((h) => (
-                      <div
-                        key={h}
-                        className={`h-6 flex-1 rounded-sm ${
-                          h === proposed.startHour
-                            ? 'bg-blue-500'
-                            : isBusy(proposed.day, h)
-                              ? 'bg-slate-200'
-                              : 'border border-slate-100 bg-white'
-                        }`}
-                      />
-                    ))}
-                  </div>
-                  <p className="mt-2 text-xs leading-relaxed text-slate-400">
-                    파란 칸이 제안된 시간이에요.{' '}
-                    {proposedDayBusy
-                      ? '회색은 캘린더에 있는 내 일정이에요.'
-                      : '캘린더 기준으로 겹치는 일정은 없어요.'}
-                  </p>
-                </div>
-
                 <p className="mt-3 rounded-lg bg-slate-50 px-3 py-2 text-xs leading-relaxed text-slate-500">
                   캘린더 일정은 이미 반영되어 있어요. 캘린더에 없는 조건만 알려주세요.
                 </p>
@@ -215,8 +184,11 @@ export default function ParticipantView({ proposed, onComplete, onReturn }: Prop
                       : 'border-slate-200 bg-white text-slate-600 hover:border-slate-300'
                   }`}
                 >
-                  <span className="block text-xl">🙆</span>
-                  <span className="mt-1.5 block text-sm font-bold">참석할 수 있어요</span>
+                  <svg className="mx-auto" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                    <circle cx="12" cy="12" r="10" />
+                    <path d="m8.5 12.5 2.5 2.5 4.5-5" />
+                  </svg>
+                  <span className="mt-2 block text-sm font-bold">참석할 수 있어요</span>
                 </button>
                 <button
                   onClick={() => setAnswer('busy')}
@@ -226,8 +198,11 @@ export default function ParticipantView({ proposed, onComplete, onReturn }: Prop
                       : 'border-slate-200 bg-white text-slate-600 hover:border-slate-300'
                   }`}
                 >
-                  <span className="block text-xl">🙅</span>
-                  <span className="mt-1.5 block text-sm font-bold">이 시간은 어려워요</span>
+                  <svg className="mx-auto" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                    <circle cx="12" cy="12" r="10" />
+                    <path d="m9 9 6 6M15 9l-6 6" />
+                  </svg>
+                  <span className="mt-2 block text-sm font-bold">이 시간은 어려워요</span>
                 </button>
               </div>
 
@@ -242,7 +217,7 @@ export default function ParticipantView({ proposed, onComplete, onReturn }: Prop
                   </p>
                   <p className="mt-1 text-xs leading-relaxed text-slate-400">
                     누르거나 드래그해서 표시할 수 있어요. 요일 이름을 누르면 하루 전체가
-                    선택돼요.
+                    선택되고, 파란 테두리 칸이 제안된 시간이에요.
                   </p>
 
                   {/* 범례 */}
@@ -287,6 +262,8 @@ export default function ParticipantView({ proposed, onComplete, onReturn }: Prop
                         {weekDays.map((_, day) => {
                           const busy = isBusy(day, h);
                           const mark = marks[cellKey(day, h)];
+                          const isProposed =
+                            day === proposed.day && h === proposed.startHour;
                           return (
                             <button
                               key={day}
@@ -303,8 +280,10 @@ export default function ParticipantView({ proposed, onComplete, onReturn }: Prop
                                     ? 'border-slate-500 bg-slate-500'
                                     : mark === 'avoid'
                                       ? 'border-amber-300 bg-amber-200'
-                                      : 'border-slate-200 bg-white hover:bg-slate-50'
-                              }`}
+                                      : isProposed
+                                        ? 'border-blue-500 bg-blue-50/60 hover:bg-blue-50'
+                                        : 'border-slate-200 bg-white hover:bg-slate-50'
+                              } ${isProposed ? 'ring-1 ring-inset ring-blue-500' : ''}`}
                               style={mark === 'no' && !busy ? noStyle : undefined}
                             />
                           );

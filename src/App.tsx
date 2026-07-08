@@ -9,6 +9,8 @@ import ParticipantView from './components/ParticipantView';
 
 export default function App() {
   const [step, setStep] = useState<Step>(0);
+  // 새 회의 만들기를 누르기 전에는 빈 상태(내 캘린더)로 시작
+  const [started, setStarted] = useState(false);
   const [attendees, setAttendees] = useState(initialAttendees);
   const [selectedId, setSelectedId] = useState('c1');
   // 제안 시점의 후보를 고정 (이후 단계에서 계속 참조)
@@ -54,6 +56,7 @@ export default function App() {
 
   const handleReset = () => {
     setStep(0);
+    setStarted(false);
     setAttendees(initialAttendees);
     setSelectedId('c1');
     setProposedId('c1');
@@ -77,7 +80,7 @@ export default function App() {
     <div className="flex h-full flex-col">
       <Header hasAlert={hasAlert} onAlertClick={openAlert} />
       <div className="flex min-h-0 flex-1">
-        <Sidebar attendees={attendees} />
+        <Sidebar attendees={attendees} started={started} />
         <CalendarGrid
           step={step}
           candidates={candidates}
@@ -88,6 +91,8 @@ export default function App() {
         />
         <MeetingPanel
           step={step}
+          started={started}
+          onStart={() => setStarted(true)}
           hasAlert={hasAlert}
           onOpenAlert={openAlert}
           jungAnswer={jungAnswer}

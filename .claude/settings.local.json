@@ -25,7 +25,8 @@
       "Bash(python3 -c \"import pdfminer\")",
       "Bash(python3 -m pip install --user --quiet pymupdf)",
       "Bash(python3 -c \"import fitz; print\\('fitz ok', fitz.__doc__\\)\")",
-      "Bash(git -c user.name=yujeongA commit -q -m '사용성 분석 기반 UX 개선: 역할 지정 비용 제거·가용 인원 표시·발송 확인 *)"
+      "Bash(git -c user.name=yujeongA commit -q -m '사용성 분석 기반 UX 개선: 역할 지정 비용 제거·가용 인원 표시·발송 확인 *)",
+      "Bash(git -c user.name=yujeongA commit -q -m '멘토 2차 피드백 반영: 진입 플로우·겹침 집계·컨트롤 통일·응답 현황 *)"
     ]
   }
 }

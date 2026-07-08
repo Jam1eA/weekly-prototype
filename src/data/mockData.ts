@@ -128,6 +128,7 @@ export const candidates: CandidateSlot[] = [
     recommended: true,
     avail: '6명 모두 가능',
     availabilityText: '나를 포함한 6명 모두 참석할 수 있어요.',
+    attendeeStatus: {},
     facts: [
       { label: '필수 참석자', value: '4명 모두 비어 있어요', ok: true },
       { label: '선택 참석자', value: '2명 모두 비어 있어요', ok: true },
@@ -156,6 +157,7 @@ export const candidates: CandidateSlot[] = [
     confidence: 'medium',
     avail: '5명 가능',
     availabilityText: '6명 중 5명 참석 가능 · 선택 참석자 1명 불가',
+    attendeeStatus: { jung: 'no', choi: 'avoid' },
     facts: [
       { label: '필수 참석자', value: '4명 모두 비어 있어요', ok: true },
       { label: '선택 참석자', value: '최유리만 비어 있어요', ok: false },
@@ -183,6 +185,7 @@ export const candidates: CandidateSlot[] = [
     confidence: 'low',
     avail: '필수 1명 불가',
     availabilityText: '6명 중 5명 참석 가능 · 필수 참석자 1명 불가',
+    attendeeStatus: { park: 'no' },
     facts: [
       { label: '필수 참석자', value: '박서준 제외 3명만 가능', ok: false },
       { label: '선택 참석자', value: '2명 모두 비어 있어요', ok: true },
@@ -250,13 +253,24 @@ export const busyBlocks: BusyBlock[] = [
   { day: 0, startHour: 10, duration: 1, label: '팀 주간회의', kind: 'busy', mine: true },
   // 팀원들의 일정 (제목 비공개)
   { day: 0, startHour: 11, duration: 1, label: '박서준 · 바쁨', kind: 'busy' },
-  { day: 0, startHour: 14, duration: 2, label: '김민준 · 바쁨', kind: 'busy', col: 0 },
-  { day: 0, startHour: 14, duration: 1, label: '이지은 · 바쁨', kind: 'busy', col: 1 },
+  // 3명 이상 겹치는 시간은 인원 수로 집계해 표시
+  {
+    day: 0,
+    startHour: 14,
+    duration: 1,
+    label: '3명 일정 있음',
+    kind: 'busy',
+    count: 3,
+    names: ['김민준', '이지은', '최유리'],
+  },
+  { day: 0, startHour: 15, duration: 1, label: '김민준 · 바쁨', kind: 'busy' },
   { day: 0, startHour: 16, duration: 1, label: '이지은 · 바쁨', kind: 'busy' },
   { day: 1, startHour: 9, duration: 1, label: '이지은 · 바쁨', kind: 'busy' },
   { day: 1, startHour: 16, duration: 1, label: '최유리 · 바쁨', kind: 'busy' },
   { day: 2, startHour: 10, duration: 2, label: '박서준 · 바쁨', kind: 'busy' },
-  { day: 2, startHour: 16, duration: 1, label: '김민준 · 바쁨', kind: 'busy' },
+  // 2명이 겹치는 시간은 나란히 표시
+  { day: 2, startHour: 16, duration: 1, label: '김민준 · 바쁨', kind: 'busy', col: 0 },
+  { day: 2, startHour: 16, duration: 1, label: '최유리 · 바쁨', kind: 'busy', col: 1 },
   // 변경 발생 전: 목요일은 시간 미정의 외근 '가능성'만 있는 상태
   { day: 3, startHour: 9, duration: 9, label: '박서준 · 외근 가능성', kind: 'tentative', stage: 'pre' },
   // 변경 발생 후: 외근이 화요일 오후로 확정되면서 기존 회의와 충돌

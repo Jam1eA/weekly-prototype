@@ -1,10 +1,23 @@
 import type { Attendee, Role } from '../types';
 
-const roles: { value: Role; label: string }[] = [
-  { value: 'required', label: '필수' },
-  { value: 'optional', label: '선택' },
-  { value: 'share', label: '공유' },
-];
+// 역할 배지 원클릭 순환: 필수 → 선택 → 공유 (회의 만들기 화면과 동일한 컨트롤)
+const nextRole: Record<Role, Role> = {
+  required: 'optional',
+  optional: 'share',
+  share: 'required',
+};
+
+const roleLabel: Record<Role, string> = {
+  required: '필수',
+  optional: '선택',
+  share: '공유',
+};
+
+const roleBadge: Record<Role, string> = {
+  required: 'bg-blue-50 text-blue-600 hover:bg-blue-100',
+  optional: 'bg-slate-100 text-slate-500 hover:bg-slate-200',
+  share: 'bg-slate-100 text-slate-400 hover:bg-slate-200',
+};
 
 export default function AttendeeCard({
   attendee,
@@ -34,21 +47,12 @@ export default function AttendeeCard({
             주최자 · 필수
           </span>
         ) : (
-          <div className="flex shrink-0 rounded-lg bg-slate-100 p-0.5">
-            {roles.map((r) => (
-              <button
-                key={r.value}
-                onClick={() => onChangeRole(attendee.id, r.value)}
-                className={`rounded-md px-2.5 py-1 text-xs font-semibold transition-colors ${
-                  attendee.role === r.value
-                    ? 'bg-white text-blue-600 shadow-sm'
-                    : 'text-slate-400 hover:text-slate-600'
-                }`}
-              >
-                {r.label}
-              </button>
-            ))}
-          </div>
+          <button
+            onClick={() => onChangeRole(attendee.id, nextRole[attendee.role])}
+            className={`shrink-0 rounded-lg px-2.5 py-1.5 text-xs font-semibold transition-colors ${roleBadge[attendee.role]}`}
+          >
+            {roleLabel[attendee.role]}
+          </button>
         )}
       </div>
 
