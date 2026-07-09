@@ -14,27 +14,27 @@ export default function Header({
   // 이번 회의 참석자 아바타 — 회의를 만든 뒤에만 표시 (주최자 제외)
   const others = attendees.filter((a) => !a.isOrganizer);
   return (
-    <header className="flex h-14 shrink-0 items-center justify-between border-b border-slate-200 bg-white px-5">
+    <header className="flex h-14 shrink-0 items-center justify-between border-b border-zinc-200 bg-white px-5">
       <div className="flex items-center gap-3">
         <div className="flex items-center gap-2">
-          <div className="flex h-7 w-7 items-center justify-center rounded-lg bg-blue-600 text-sm font-bold text-white">
+          <div className="flex h-7 w-7 items-center justify-center rounded-lg bg-zinc-900 text-sm font-bold text-white">
             W
           </div>
-          <span className="text-[15px] font-bold text-slate-900">위클리</span>
+          <span className="text-[15px] font-bold text-zinc-900">위클리</span>
         </div>
-        <span className="h-4 w-px bg-slate-200" />
-        <span className="text-sm text-slate-500">팀 일정 조율</span>
+        <span className="h-4 w-px bg-zinc-200" />
+        <span className="text-sm text-zinc-500">팀 일정 조율</span>
       </div>
 
       <div className="flex items-center gap-2 text-sm">
-        <button className="rounded-md border border-slate-200 px-2 py-1 text-slate-400" disabled>
+        <button className="rounded-md border border-zinc-200 px-2 py-1 text-zinc-400" disabled>
           ‹
         </button>
-        <span className="font-semibold text-slate-800">2026년 7월 13일 – 17일</span>
-        <button className="rounded-md border border-slate-200 px-2 py-1 text-slate-400" disabled>
+        <span className="font-semibold text-zinc-800">2026년 7월 13일 – 17일</span>
+        <button className="rounded-md border border-zinc-200 px-2 py-1 text-zinc-400" disabled>
           ›
         </button>
-        <span className="ml-1 rounded-md bg-blue-50 px-2 py-1 text-xs font-semibold text-blue-600">
+        <span className="ml-1 rounded-md bg-zinc-100 px-2 py-1 text-xs font-semibold text-zinc-600">
           다음 주
         </span>
       </div>
@@ -43,7 +43,7 @@ export default function Header({
         <button
           onClick={hasAlert ? onAlertClick : undefined}
           className={`relative flex h-8 w-8 items-center justify-center rounded-full transition-colors ${
-            hasAlert ? 'bg-red-50 text-red-500 hover:bg-red-100' : 'text-slate-400 hover:bg-slate-100'
+            hasAlert ? 'bg-red-50 text-red-500 hover:bg-red-100' : 'text-zinc-400 hover:bg-zinc-100'
           }`}
           aria-label="알림"
         >
@@ -61,19 +61,19 @@ export default function Header({
               <div
                 key={a.id}
                 title={`${a.name} ${a.title}`}
-                className="flex h-7 w-7 items-center justify-center rounded-full border-2 border-white bg-slate-100 text-[11px] font-semibold text-slate-600"
+                className="flex h-7 w-7 items-center justify-center rounded-full border-2 border-white bg-zinc-100 text-[11px] font-semibold text-zinc-600"
               >
                 {a.name[0]}
               </div>
             ))}
             {others.length > 5 && (
-              <div className="flex h-7 w-7 items-center justify-center rounded-full border-2 border-white bg-slate-200 text-[10px] font-semibold text-slate-500">
+              <div className="flex h-7 w-7 items-center justify-center rounded-full border-2 border-white bg-zinc-200 text-[10px] font-semibold text-zinc-500">
                 +{others.length - 5}
               </div>
             )}
           </div>
         )}
-        <div className="flex h-8 w-8 items-center justify-center rounded-full bg-blue-100 text-sm font-bold text-blue-700">
+        <div className="flex h-8 w-8 items-center justify-center rounded-full bg-zinc-900 text-sm font-bold text-white">
           유
         </div>
       </div>

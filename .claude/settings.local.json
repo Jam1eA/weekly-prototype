@@ -28,7 +28,8 @@
       "Bash(git -c user.name=yujeongA commit -q -m '사용성 분석 기반 UX 개선: 역할 지정 비용 제거·가용 인원 표시·발송 확인 *)",
       "Bash(git -c user.name=yujeongA commit -q -m '멘토 2차 피드백 반영: 진입 플로우·겹침 집계·컨트롤 통일·응답 현황 *)",
       "Bash(git -c user.name=yujeongA commit -q -m '헤더 참석자 아바타: 회의 생성 후에만, 실제 명단 기반으로 표시 *)",
-      "Bash(git -c user.name=yujeongA commit -q -m '예방 구조 부각 + 회의 제목·목적 입력 *)"
+      "Bash(git -c user.name=yujeongA commit -q -m '예방 구조 부각 + 회의 제목·목적 입력 *)",
+      "Bash(git -c user.name=yujeongA commit -q -m '미니멀 모노크롬 디자인: 파랑을 제안 상태로 국한, 나머지 무채색화 *)"
     ]
   }
 }

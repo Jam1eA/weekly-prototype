@@ -15,11 +15,11 @@ import CandidateCard from './CandidateCard';
 /* ---------- 공용 소형 컴포넌트 ---------- */
 
 function PanelTitle({ children }: { children: React.ReactNode }) {
-  return <h2 className="text-lg font-bold leading-snug text-slate-900">{children}</h2>;
+  return <h2 className="text-lg font-bold leading-snug text-zinc-900">{children}</h2>;
 }
 
 function PanelDesc({ children }: { children: React.ReactNode }) {
-  return <p className="mt-1.5 text-[13px] leading-relaxed text-slate-500">{children}</p>;
+  return <p className="mt-1.5 text-[13px] leading-relaxed text-zinc-500">{children}</p>;
 }
 
 function Card({
@@ -30,8 +30,8 @@ function Card({
   children: React.ReactNode;
 }) {
   const tones = {
-    default: 'border-slate-200 bg-white',
-    blue: 'border-blue-100 bg-blue-50/60',
+    default: 'border-zinc-200 bg-white',
+    blue: 'border-zinc-200 bg-zinc-50',
     green: 'border-emerald-100 bg-emerald-50/60',
     red: 'border-red-100 bg-red-50/60',
     amber: 'border-amber-100 bg-amber-50/60',
@@ -42,15 +42,15 @@ function Card({
 function InfoRow({ label, value }: { label: string; value: string }) {
   return (
     <div className="flex items-start justify-between gap-3 py-1">
-      <span className="shrink-0 text-xs text-slate-400">{label}</span>
-      <span className="text-right text-xs font-medium text-slate-700">{value}</span>
+      <span className="shrink-0 text-xs text-zinc-400">{label}</span>
+      <span className="text-right text-xs font-medium text-zinc-700">{value}</span>
     </div>
   );
 }
 
 function CheckItem({ children, ok = true }: { children: React.ReactNode; ok?: boolean }) {
   return (
-    <li className="flex items-start gap-2 text-[13px] leading-relaxed text-slate-600">
+    <li className="flex items-start gap-2 text-[13px] leading-relaxed text-zinc-600">
       <span
         className={`mt-1 flex h-4 w-4 shrink-0 items-center justify-center rounded-full text-[10px] font-bold ${
           ok ? 'bg-emerald-100 text-emerald-600' : 'bg-amber-100 text-amber-600'
@@ -80,24 +80,24 @@ function ResponseRow({
 }) {
   const toneClass = {
     ok: 'bg-emerald-50 text-emerald-600',
-    no: 'bg-slate-100 text-slate-500',
-    neutral: 'bg-blue-50 text-blue-600',
+    no: 'bg-zinc-100 text-zinc-500',
+    neutral: 'bg-zinc-100 text-zinc-600',
   }[tone];
   return (
-    <div className="border-b border-slate-100 py-2 last:border-b-0">
+    <div className="border-b border-zinc-100 py-2 last:border-b-0">
       <div className="flex items-center justify-between gap-2">
-        <p className="text-[13px] font-medium text-slate-800">
-          {name} <span className="font-normal text-slate-400">{title}</span>
+        <p className="text-[13px] font-medium text-zinc-800">
+          {name} <span className="font-normal text-zinc-400">{title}</span>
         </p>
         <span className={`shrink-0 rounded-md px-2 py-0.5 text-xs font-semibold ${toneClass}`}>
           {status}
         </span>
       </div>
-      {note && <p className="mt-1 text-xs leading-relaxed text-slate-400">{note}</p>}
+      {note && <p className="mt-1 text-xs leading-relaxed text-zinc-400">{note}</p>}
       {action && (
         <button
           onClick={action.onClick}
-          className="mt-1.5 text-xs font-semibold text-blue-600 underline-offset-2 hover:underline"
+          className="mt-1.5 text-xs font-semibold text-zinc-900 underline-offset-2 hover:underline"
         >
           {action.label}
         </button>
@@ -108,7 +108,7 @@ function ResponseRow({
 
 function GroupLabel({ children }: { children: React.ReactNode }) {
   return (
-    <p className="mb-1 mt-4 text-xs font-semibold tracking-wide text-slate-400 first:mt-0">
+    <p className="mb-1 mt-4 text-xs font-semibold tracking-wide text-zinc-400 first:mt-0">
       {children}
     </p>
   );
@@ -240,29 +240,29 @@ export default function MeetingPanel({
   /* 회의를 만들기 전: 빈 상태 */
   if (!started) {
     return (
-      <aside className="flex w-[380px] shrink-0 flex-col border-l border-slate-200 bg-slate-50">
-        <div className="flex shrink-0 items-center justify-between border-b border-slate-200 bg-white px-5 py-3">
-          <p className="text-xs font-semibold tracking-wide text-slate-400">회의 조율</p>
+      <aside className="flex w-[380px] shrink-0 flex-col border-l border-zinc-200 bg-zinc-50">
+        <div className="flex shrink-0 items-center justify-between border-b border-zinc-200 bg-white px-5 py-3">
+          <p className="text-xs font-semibold tracking-wide text-zinc-400">회의 조율</p>
         </div>
         <div className="flex flex-1 flex-col items-center justify-center px-8 pb-16 text-center">
-          <div className="flex h-14 w-14 items-center justify-center rounded-2xl bg-blue-50 text-blue-500">
+          <div className="flex h-14 w-14 items-center justify-center rounded-2xl bg-zinc-100 text-zinc-500">
             <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
               <rect x="3" y="4" width="18" height="18" rx="2" />
               <path d="M16 2v4M8 2v4M3 10h18" />
               <path d="M12 14v4M10 16h4" />
             </svg>
           </div>
-          <p className="mt-4 text-[15px] font-bold text-slate-900">
+          <p className="mt-4 text-[15px] font-bold text-zinc-900">
             아직 조율 중인 회의가 없어요
           </p>
-          <p className="mt-1.5 text-[13px] leading-relaxed text-slate-500">
+          <p className="mt-1.5 text-[13px] leading-relaxed text-zinc-500">
             새 회의를 만들면 참석자의 일정과 조건을
             <br />
             함께 보며 시간을 찾을 수 있어요.
           </p>
           <button
             onClick={onStart}
-            className="mt-5 rounded-xl bg-blue-600 px-5 py-3 text-sm font-bold text-white transition-colors hover:bg-blue-700"
+            className="mt-5 rounded-xl bg-zinc-900 px-5 py-3 text-sm font-bold text-white transition-colors hover:bg-zinc-800"
           >
             + 새 회의 만들기
           </button>
@@ -297,15 +297,15 @@ export default function MeetingPanel({
 
           <div className="mt-4 space-y-3">
             <Card>
-              <p className="mb-1.5 text-xs font-semibold text-slate-400">회의명</p>
+              <p className="mb-1.5 text-xs font-semibold text-zinc-400">회의명</p>
               <input
                 value={meeting.title}
                 onChange={(e) => onChangeMeeting({ ...meeting, title: e.target.value })}
                 placeholder="예: 프로젝트 요구사항 정리 회의"
-                className="w-full rounded-lg border border-slate-200 bg-white px-3 py-2 text-[13px] font-medium text-slate-800 placeholder:text-slate-300 focus:border-blue-400 focus:outline-none"
+                className="w-full rounded-lg border border-zinc-200 bg-white px-3 py-2 text-[13px] font-medium text-zinc-800 placeholder:text-zinc-300 focus:border-zinc-800 focus:outline-none"
               />
 
-              <p className="mb-1.5 mt-3.5 text-xs font-semibold text-slate-400">
+              <p className="mb-1.5 mt-3.5 text-xs font-semibold text-zinc-400">
                 회의 목적 · 안내
               </p>
               <textarea
@@ -313,14 +313,14 @@ export default function MeetingPanel({
                 onChange={(e) => onChangeMeeting({ ...meeting, purpose: e.target.value })}
                 placeholder="참석자에게 함께 전달할 내용을 적어주세요"
                 rows={2}
-                className="w-full resize-none rounded-lg border border-slate-200 bg-white px-3 py-2 text-[13px] text-slate-800 placeholder:text-slate-300 focus:border-blue-400 focus:outline-none"
+                className="w-full resize-none rounded-lg border border-zinc-200 bg-white px-3 py-2 text-[13px] text-zinc-800 placeholder:text-zinc-300 focus:border-zinc-800 focus:outline-none"
               />
 
-              <p className="mb-1.5 mt-3.5 text-xs font-semibold text-slate-400">회의 길이</p>
+              <p className="mb-1.5 mt-3.5 text-xs font-semibold text-zinc-400">회의 길이</p>
               <select
                 value={durationOpt}
                 onChange={(e) => setDurationOpt(e.target.value)}
-                className="w-full rounded-lg border border-slate-200 bg-white px-3 py-2 text-[13px] font-medium text-slate-800 focus:border-blue-400 focus:outline-none"
+                className="w-full rounded-lg border border-zinc-200 bg-white px-3 py-2 text-[13px] font-medium text-zinc-800 focus:border-zinc-800 focus:outline-none"
               >
                 {['30분', '1시간', '1시간 30분', '2시간', '2시간 30분', '3시간'].map((d) => (
                   <option key={d} value={d}>
@@ -329,16 +329,16 @@ export default function MeetingPanel({
                 ))}
               </select>
 
-              <p className="mb-1.5 mt-3.5 text-xs font-semibold text-slate-400">기간</p>
-              <div className="flex rounded-lg bg-slate-100 p-0.5">
+              <p className="mb-1.5 mt-3.5 text-xs font-semibold text-zinc-400">기간</p>
+              <div className="flex rounded-lg bg-zinc-100 p-0.5">
                 {['이번 주', '다음 주', '직접 선택'].map((d) => (
                   <button
                     key={d}
                     onClick={() => setPeriodOpt(d)}
                     className={`flex-1 rounded-md py-1.5 text-xs font-semibold transition-colors ${
                       periodOpt === d
-                        ? 'bg-white text-blue-600 shadow-sm'
-                        : 'text-slate-400 hover:text-slate-600'
+                        ? 'bg-white text-zinc-900 shadow-sm'
+                        : 'text-zinc-400 hover:text-zinc-600'
                     }`}
                   >
                     {d}
@@ -346,35 +346,35 @@ export default function MeetingPanel({
                 ))}
               </div>
               {periodOpt === '다음 주' && (
-                <p className="mt-1.5 text-xs text-slate-400">7월 13일 – 7월 17일에서 시간을 찾아요.</p>
+                <p className="mt-1.5 text-xs text-zinc-400">7월 13일 – 7월 17일에서 시간을 찾아요.</p>
               )}
             </Card>
 
             <Card>
               <div className="mb-1 flex items-baseline justify-between">
-                <p className="text-xs font-semibold text-slate-400">
+                <p className="text-xs font-semibold text-zinc-400">
                   참석자 · 나 포함 {attendees.length}명
                 </p>
-                <p className="text-xs text-slate-400">
+                <p className="text-xs text-zinc-400">
                   필수 {requiredCount} · 선택 {optionalCount}
                   {shareCount > 0 ? ` · 공유 ${shareCount}` : ''}
                 </p>
               </div>
 
-              <div className="divide-y divide-slate-50">
+              <div className="divide-y divide-zinc-50">
                 {attendees.map((a) => (
                   <div key={a.id} className="flex items-center gap-2.5 py-2">
-                    <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-slate-100 text-xs font-semibold text-slate-600">
+                    <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-zinc-100 text-xs font-semibold text-zinc-600">
                       {a.name[0]}
                     </div>
                     <div className="min-w-0 flex-1">
-                      <p className="truncate text-[13px] font-medium text-slate-800">
+                      <p className="truncate text-[13px] font-medium text-zinc-800">
                         {a.name}{' '}
-                        <span className="font-normal text-slate-400">{a.title}</span>
+                        <span className="font-normal text-zinc-400">{a.title}</span>
                       </p>
                     </div>
                     {a.isOrganizer ? (
-                      <span className="shrink-0 rounded-md bg-blue-600 px-2 py-1 text-xs font-semibold text-white">
+                      <span className="shrink-0 rounded-md bg-zinc-900 px-2 py-1 text-xs font-semibold text-white">
                         주최자 · 필수
                       </span>
                     ) : (
@@ -392,17 +392,17 @@ export default function MeetingPanel({
                           }
                           className={`shrink-0 rounded-md px-2 py-1 text-xs font-semibold transition-colors ${
                             a.role === 'required'
-                              ? 'bg-blue-50 text-blue-600 hover:bg-blue-100'
+                              ? 'bg-zinc-900 text-white hover:bg-zinc-800'
                               : a.role === 'optional'
-                                ? 'bg-slate-100 text-slate-500 hover:bg-slate-200'
-                                : 'bg-slate-100 text-slate-400 hover:bg-slate-200'
+                                ? 'bg-zinc-100 text-zinc-500 hover:bg-zinc-200'
+                                : 'bg-zinc-100 text-zinc-400 hover:bg-zinc-200'
                           }`}
                         >
                           {a.role === 'required' ? '필수' : a.role === 'optional' ? '선택' : '공유'}
                         </button>
                         <button
                           onClick={() => onToggleAttendee(a.id)}
-                          className="shrink-0 px-1 text-slate-300 transition-colors hover:text-slate-500"
+                          className="shrink-0 px-1 text-zinc-300 transition-colors hover:text-zinc-500"
                           aria-label={`${a.name} 제외`}
                         >
                           ×
@@ -413,7 +413,7 @@ export default function MeetingPanel({
                 ))}
               </div>
 
-              <p className="mt-2 rounded-lg bg-slate-50 px-3 py-2 text-xs leading-relaxed text-slate-500">
+              <p className="mt-2 rounded-lg bg-zinc-50 px-3 py-2 text-xs leading-relaxed text-zinc-500">
                 최근 '프로젝트' 회의의 구성을 역할과 함께 불러왔어요. 새로 추가한 사람은
                 필수로 들어오고, 역할 배지를 누르면 필수 → 선택 → 공유로 바뀌어요.
               </p>
@@ -422,26 +422,26 @@ export default function MeetingPanel({
                 value={query}
                 onChange={(e) => setQuery(e.target.value)}
                 placeholder="이름, 직무, 팀으로 검색"
-                className="mt-3 w-full rounded-lg border border-slate-200 px-3 py-2 text-[13px] text-slate-800 placeholder:text-slate-300 focus:border-blue-400 focus:outline-none"
+                className="mt-3 w-full rounded-lg border border-zinc-200 px-3 py-2 text-[13px] text-zinc-800 placeholder:text-zinc-300 focus:border-zinc-800 focus:outline-none"
               />
-              <div className="mt-2 max-h-56 divide-y divide-slate-50 overflow-y-auto">
+              <div className="mt-2 max-h-56 divide-y divide-zinc-50 overflow-y-auto">
                 {results.map((p) => (
                   <div key={p.id} className="flex items-center gap-2.5 py-2">
-                    <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-slate-100 text-xs font-semibold text-slate-600">
+                    <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-zinc-100 text-xs font-semibold text-zinc-600">
                       {p.name[0]}
                     </div>
                     <div className="min-w-0 flex-1">
-                      <p className="truncate text-[13px] font-medium text-slate-800">
-                        {p.name} <span className="font-normal text-slate-400">{p.title}</span>
+                      <p className="truncate text-[13px] font-medium text-zinc-800">
+                        {p.name} <span className="font-normal text-zinc-400">{p.title}</span>
                       </p>
-                      <p className="truncate text-xs text-slate-400">{p.description}</p>
+                      <p className="truncate text-xs text-zinc-400">{p.description}</p>
                     </div>
                     <button
                       onClick={() => onToggleAttendee(p.id)}
                       className={`shrink-0 rounded-md px-2 py-1 text-xs font-semibold transition-colors ${
                         isSelected(p.id)
-                          ? 'text-slate-400 hover:text-slate-600'
-                          : 'bg-blue-50 text-blue-600 hover:bg-blue-100'
+                          ? 'text-zinc-400 hover:text-zinc-600'
+                          : 'bg-zinc-900 text-white hover:bg-zinc-800'
                       }`}
                     >
                       {isSelected(p.id) ? '✓ 추가됨' : '+ 추가'}
@@ -449,7 +449,7 @@ export default function MeetingPanel({
                   </div>
                 ))}
                 {results.length === 0 && (
-                  <p className="py-3 text-center text-xs text-slate-400">
+                  <p className="py-3 text-center text-xs text-zinc-400">
                     검색 결과가 없어요.
                   </p>
                 )}
@@ -474,7 +474,7 @@ export default function MeetingPanel({
 
           <div className="mt-4 space-y-3">
             <Card>
-              <p className="mb-2 text-xs font-semibold text-slate-400">회의 정보</p>
+              <p className="mb-2 text-xs font-semibold text-zinc-400">회의 정보</p>
               <InfoRow label="회의명" value={meeting.title} />
               <InfoRow label="회의 목적" value={meeting.purpose} />
               <InfoRow label="회의 길이" value={meetingInfo.duration} />
@@ -482,10 +482,10 @@ export default function MeetingPanel({
             </Card>
 
             <Card tone="blue">
-              <p className="text-[13px] font-semibold text-slate-800">
+              <p className="text-[13px] font-semibold text-zinc-800">
                 시간을 찾을 때 함께 볼 조건
               </p>
-              <p className="mt-1 text-xs leading-relaxed text-slate-500">
+              <p className="mt-1 text-xs leading-relaxed text-zinc-500">
                 꼭 참석해야 할 사람, 회의실, 숨은 일정 제약, 다시 조율할 가능성을 함께
                 확인해요.
               </p>
@@ -517,10 +517,10 @@ export default function MeetingPanel({
               return (
                 <div key={role}>
                   <div className="mb-1.5 flex items-baseline gap-2 px-1">
-                    <p className="text-sm font-bold text-slate-800">
-                      {label} <span className="text-blue-600">{group.length}</span>
+                    <p className="text-sm font-bold text-zinc-800">
+                      {label} <span className="text-zinc-900">{group.length}</span>
                     </p>
-                    <p className="min-w-0 flex-1 truncate text-xs text-slate-400">
+                    <p className="min-w-0 flex-1 truncate text-xs text-zinc-400">
                       {roleDescriptions[role]}
                     </p>
                   </div>
@@ -531,7 +531,7 @@ export default function MeetingPanel({
                       ))}
                     </div>
                   ) : (
-                    <p className="rounded-xl border border-dashed border-slate-200 px-3 py-3 text-center text-xs text-slate-300">
+                    <p className="rounded-xl border border-dashed border-zinc-200 px-3 py-3 text-center text-xs text-zinc-300">
                       역할을 바꾸면 카드가 이 칸으로 옮겨져요
                     </p>
                   )}
@@ -541,7 +541,7 @@ export default function MeetingPanel({
           </div>
 
           <Card tone="blue">
-            <p className="text-[13px] font-medium text-slate-700">
+            <p className="text-[13px] font-medium text-zinc-700">
               {[
                 `필수 ${requiredCount}명 (주최자 포함)`,
                 `선택 ${optionalCount}명`,
@@ -566,7 +566,7 @@ export default function MeetingPanel({
             비교해요.
           </PanelDesc>
 
-          <p className="mt-3 rounded-lg bg-slate-100 px-3 py-2 text-xs leading-relaxed text-slate-500">
+          <p className="mt-3 rounded-lg bg-zinc-100 px-3 py-2 text-xs leading-relaxed text-zinc-500">
             다음 주에서 회의를 잡을 수 있는 시간 중 조건이 잘 맞는 순서예요. 참석 가능
             여부는 아직 캘린더 기준이라, 제안을 보내면 각자의 응답으로 확정돼요.
           </p>
@@ -585,7 +585,7 @@ export default function MeetingPanel({
               />
             ))}
           </div>
-          <p className="mt-3 text-center text-xs text-slate-400">
+          <p className="mt-3 text-center text-xs text-zinc-400">
             후보를 누르면 캘린더에서 해당 시간이 강조돼요.
           </p>
         </>
@@ -596,7 +596,7 @@ export default function MeetingPanel({
       backButton = (
         <button
           onClick={() => onNext(3)}
-          className="mb-2 flex items-center gap-1 text-xs font-medium text-slate-400 transition-colors hover:text-slate-600"
+          className="mb-2 flex items-center gap-1 text-xs font-medium text-zinc-400 transition-colors hover:text-zinc-600"
         >
           ← 뒤로가기
         </button>
@@ -611,7 +611,7 @@ export default function MeetingPanel({
           </div>
 
           {/* 참석자별 가능 여부 — 누가 되고 안 되는지가 먼저 보이게 */}
-          <div className="mt-4 rounded-xl border border-slate-200 bg-white p-3.5">
+          <div className="mt-4 rounded-xl border border-zinc-200 bg-white p-3.5">
             <div className="flex items-start justify-between">
               {attendees.map((a) => {
                 const st = selected.attendeeStatus?.[a.id];
@@ -620,8 +620,8 @@ export default function MeetingPanel({
                     <div
                       className={`relative flex h-9 w-9 items-center justify-center rounded-full text-xs font-semibold ${
                         st === 'no'
-                          ? 'bg-slate-50 text-slate-300'
-                          : 'bg-slate-100 text-slate-600'
+                          ? 'bg-zinc-50 text-zinc-300'
+                          : 'bg-zinc-100 text-zinc-600'
                       }`}
                     >
                       {a.name[0]}
@@ -639,7 +639,7 @@ export default function MeetingPanel({
                     </div>
                     <p
                       className={`max-w-full truncate text-[10px] ${
-                        st === 'no' ? 'text-slate-300 line-through' : 'text-slate-500'
+                        st === 'no' ? 'text-zinc-300 line-through' : 'text-zinc-500'
                       }`}
                     >
                       {a.name}
@@ -649,13 +649,13 @@ export default function MeetingPanel({
               })}
             </div>
             {selected.availabilityText && (
-              <p className="mt-2.5 border-t border-slate-100 pt-2 text-xs text-slate-500">
+              <p className="mt-2.5 border-t border-zinc-100 pt-2 text-xs text-zinc-500">
                 {selected.availabilityText}
               </p>
             )}
           </div>
 
-          <p className="mb-2 mt-5 text-sm font-bold text-slate-800">추천 이유</p>
+          <p className="mb-2 mt-5 text-sm font-bold text-zinc-800">추천 이유</p>
           <Card>
             <ul className="space-y-2">
               {selected.reasons.map((r, i) => (
@@ -668,11 +668,11 @@ export default function MeetingPanel({
 
           {selected.comparison && (
             <>
-              <p className="mb-2 mt-5 text-sm font-bold text-slate-800">
+              <p className="mb-2 mt-5 text-sm font-bold text-zinc-800">
                 다른 후보와 비교하면
               </p>
               <Card>
-                <p className="text-[13px] leading-relaxed text-slate-600">
+                <p className="text-[13px] leading-relaxed text-zinc-600">
                   {selected.comparison}
                 </p>
               </Card>
@@ -681,7 +681,7 @@ export default function MeetingPanel({
 
           <div className="mt-3">
             <Card tone={selected.confidence === 'high' ? 'blue' : 'amber'}>
-              <p className="text-[13px] leading-relaxed text-slate-700">{selected.summary}</p>
+              <p className="text-[13px] leading-relaxed text-zinc-700">{selected.summary}</p>
             </Card>
           </div>
         </>
@@ -700,14 +700,14 @@ export default function MeetingPanel({
 
           <div className="mt-4 space-y-3">
             <Card>
-              <p className="mb-1 text-xs font-semibold text-slate-400">제안한 시간</p>
-              <p className="text-base font-bold text-slate-900">{proposed.label}</p>
-              <p className="mt-0.5 text-xs text-slate-500">{meeting.title}</p>
+              <p className="mb-1 text-xs font-semibold text-zinc-400">제안한 시간</p>
+              <p className="text-base font-bold text-zinc-900">{proposed.label}</p>
+              <p className="mt-0.5 text-xs text-zinc-500">{meeting.title}</p>
             </Card>
 
             <Card tone="blue">
               <div className="flex items-center justify-between">
-                <p className="text-[13px] font-semibold text-slate-700">
+                <p className="text-[13px] font-semibold text-zinc-700">
                   {allResponded
                     ? '모든 참석자가 응답했어요'
                     : waitingJung
@@ -724,7 +724,7 @@ export default function MeetingPanel({
                   style={{ width: `${(respondedCount / RESPONDERS) * 100}%` }}
                 />
               </div>
-              <p className="mt-2 text-xs leading-relaxed text-slate-500">
+              <p className="mt-2 text-xs leading-relaxed text-zinc-500">
                 {allResponded
                   ? '이제 회의 확정 여부를 확인할 수 있어요.'
                   : waitingJung
@@ -733,21 +733,21 @@ export default function MeetingPanel({
               </p>
 
               {/* 참석자별 응답 상태 */}
-              <div className="mt-3 border-t border-blue-100/70">
+              <div className="mt-3 border-t border-zinc-100">
                 {nonOrganizer.map((a) => {
                   const s = respStatusOf(a);
                   return (
                     <div key={a.id} className="flex items-center justify-between py-1.5">
-                      <p className="text-[13px] text-slate-700">
-                        {a.name} <span className="text-slate-400">{a.title}</span>
+                      <p className="text-[13px] text-zinc-700">
+                        {a.name} <span className="text-zinc-400">{a.title}</span>
                       </p>
                       <span
                         className={`rounded-md px-2 py-0.5 text-xs font-semibold ${
                           s === '가능'
                             ? 'bg-emerald-50 text-emerald-600'
                             : s === '불참'
-                              ? 'bg-slate-100 text-slate-500'
-                              : 'border border-slate-200 bg-white text-slate-400'
+                              ? 'bg-zinc-100 text-zinc-500'
+                              : 'border border-zinc-200 bg-white text-zinc-400'
                         }`}
                       >
                         {s}
@@ -760,7 +760,7 @@ export default function MeetingPanel({
               {waitingJung && (
                 <button
                   onClick={onEnterParticipant}
-                  className="mt-1.5 w-full rounded-lg border border-blue-200 bg-white py-2 text-xs font-semibold text-blue-600 transition-colors hover:bg-blue-50"
+                  className="mt-1.5 w-full rounded-lg border border-zinc-300 bg-white py-2 text-xs font-semibold text-zinc-700 transition-colors hover:bg-zinc-50"
                 >
                   정하늘님 화면에서 응답하기
                 </button>
@@ -808,7 +808,7 @@ export default function MeetingPanel({
                     tone="no"
                     note={
                       <>
-                        <span className="mr-1 rounded bg-slate-100 px-1 py-0.5 text-[10px] font-semibold text-slate-500">
+                        <span className="mr-1 rounded bg-zinc-100 px-1 py-0.5 text-[10px] font-semibold text-zinc-500">
                           본인 응답
                         </span>
                         {jungResponse.summary}
@@ -845,7 +845,7 @@ export default function MeetingPanel({
 
             <div className="mt-3">
               <Card tone="green">
-                <p className="text-[13px] font-medium leading-relaxed text-slate-700">
+                <p className="text-[13px] font-medium leading-relaxed text-zinc-700">
                   주최자를 포함해 꼭 참석해야 할 4명이 모두 가능하고, 회의실 A도 확보되어
                   있어요.
                 </p>
@@ -870,12 +870,12 @@ export default function MeetingPanel({
           <div className="mt-4 space-y-3">
             <Card tone="green">
               <p className="mb-1 text-xs font-semibold text-emerald-600">확정된 시간</p>
-              <p className="text-base font-bold text-slate-900">{proposed.label}</p>
-              <p className="mt-0.5 text-xs text-slate-500">{meeting.title} · 회의실 A</p>
+              <p className="text-base font-bold text-zinc-900">{proposed.label}</p>
+              <p className="mt-0.5 text-xs text-zinc-500">{meeting.title} · 회의실 A</p>
             </Card>
 
             <Card>
-              <p className="mb-2 text-xs font-semibold text-slate-400">
+              <p className="mb-2 text-xs font-semibold text-zinc-400">
                 확정 전에 확인한 것
               </p>
               <ul className="space-y-2">
@@ -884,13 +884,13 @@ export default function MeetingPanel({
                 <CheckItem>연차·외근 등 숨은 제약과 겹치지 않음</CheckItem>
                 <CheckItem>회의실 A 예약 완료</CheckItem>
               </ul>
-              <p className="mt-2.5 border-t border-slate-100 pt-2.5 text-xs leading-relaxed text-slate-500">
+              <p className="mt-2.5 border-t border-zinc-100 pt-2.5 text-xs leading-relaxed text-zinc-500">
                 이 항목들을 확정 전에 모두 확인해, 확정 후 다시 조율하게 만드는 원인을
                 미리 없앴어요.
               </p>
             </Card>
 
-            <p className="px-1 text-xs leading-relaxed text-slate-400">
+            <p className="px-1 text-xs leading-relaxed text-zinc-400">
               참석자 캘린더에 회의 일정이 등록되었어요. 그래도 일정 변경이 생기면 알림으로
               알려드릴게요.
             </p>
@@ -917,10 +917,10 @@ export default function MeetingPanel({
 
             <Card>
               <div className="flex items-start gap-2.5">
-                <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-slate-100 text-sm font-semibold text-slate-600">
+                <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-zinc-100 text-sm font-semibold text-zinc-600">
                   박
                 </div>
-                <p className="text-[13px] leading-relaxed text-slate-700">
+                <p className="text-[13px] leading-relaxed text-zinc-700">
                   박서준 개발 리드의 외근이 화요일 오후로 확정되면서{' '}
                   <span className="font-semibold">{proposedShort}</span> 회의에 참석할 수
                   없게 되었어요.
@@ -928,7 +928,7 @@ export default function MeetingPanel({
               </div>
             </Card>
 
-            <p className="px-1 text-xs leading-relaxed text-slate-400">
+            <p className="px-1 text-xs leading-relaxed text-zinc-400">
               이 변경은 후보 제안 중 거절이 아니라, 회의가 확정된 뒤 생긴 일정 변경이에요.
             </p>
           </div>
@@ -945,7 +945,7 @@ export default function MeetingPanel({
 
           <div className="mt-4 space-y-3">
             <Card>
-              <p className="mb-2 text-xs font-semibold text-slate-400">
+              <p className="mb-2 text-xs font-semibold text-zinc-400">
                 기존 시간 · {proposed.label}
               </p>
               <ul className="space-y-2">
@@ -956,7 +956,7 @@ export default function MeetingPanel({
             </Card>
 
             <Card tone="blue">
-              <p className="text-[13px] font-medium leading-relaxed text-slate-700">
+              <p className="text-[13px] font-medium leading-relaxed text-zinc-700">
                 기존 응답과 최신 캘린더 상태를 다시 확인해, 변경 제안할 수 있는 시간을
                 찾았어요.
               </p>
@@ -1027,12 +1027,12 @@ export default function MeetingPanel({
 
             <div className="mt-3 space-y-3">
               <Card tone="green">
-                <p className="text-[13px] font-medium leading-relaxed text-slate-700">
+                <p className="text-[13px] font-medium leading-relaxed text-zinc-700">
                   주최자를 포함해 꼭 참석해야 할 4명이 모두 가능하고, 회의실 B도 확보되어
                   있어요.
                 </p>
               </Card>
-              <p className="px-1 text-xs leading-relaxed text-slate-400">
+              <p className="px-1 text-xs leading-relaxed text-zinc-400">
                 새 시간으로 바뀌는 것이므로, 꼭 참석해야 할 사람의 응답을 다시 확인했어요.
               </p>
             </div>
@@ -1055,14 +1055,14 @@ export default function MeetingPanel({
               <p className="mb-1 text-xs font-semibold text-emerald-600">
                 변경된 회의 시간
               </p>
-              <p className="text-base font-bold text-slate-900">{nextSlot.label}</p>
-              <p className="mt-0.5 text-xs text-slate-500">
+              <p className="text-base font-bold text-zinc-900">{nextSlot.label}</p>
+              <p className="mt-0.5 text-xs text-zinc-500">
                 {meeting.title} · 회의실 B
               </p>
             </Card>
 
             <Card>
-              <p className="mb-2 text-xs font-semibold text-slate-400">확정 요약</p>
+              <p className="mb-2 text-xs font-semibold text-zinc-400">확정 요약</p>
               <ul className="space-y-2">
                 <CheckItem>꼭 참석해야 할 사람 4명 모두 참석 (주최자 포함)</CheckItem>
                 <CheckItem>{jungSummaryLine}</CheckItem>
@@ -1079,10 +1079,10 @@ export default function MeetingPanel({
   }
 
   return (
-    <aside className="flex w-[380px] shrink-0 flex-col border-l border-slate-200 bg-slate-50">
+    <aside className="flex w-[380px] shrink-0 flex-col border-l border-zinc-200 bg-zinc-50">
       {/* 패널 헤더 */}
-      <div className="flex shrink-0 items-center justify-between border-b border-slate-200 bg-white px-5 py-3">
-        <p className="text-xs font-semibold tracking-wide text-slate-400">회의 조율</p>
+      <div className="flex shrink-0 items-center justify-between border-b border-zinc-200 bg-white px-5 py-3">
+        <p className="text-xs font-semibold tracking-wide text-zinc-400">회의 조율</p>
         <StatusBadge step={step} />
       </div>
 
@@ -1120,7 +1120,7 @@ export default function MeetingPanel({
       {/* 제안 발송 확인 모달 */}
       {step === 4 && confirmOpen && (
         <div
-          className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/40"
+          className="fixed inset-0 z-50 flex items-center justify-center bg-zinc-900/40"
           onClick={() => setConfirmOpen(false)}
         >
           <div
@@ -1128,20 +1128,20 @@ export default function MeetingPanel({
             style={{ animation: 'slide-down 0.25s ease-out' }}
             onClick={(e) => e.stopPropagation()}
           >
-            <p className="text-base font-bold text-slate-900">
+            <p className="text-base font-bold text-zinc-900">
               참석자 {attendees.length - 1}명에게 후보 시간을 보낼까요?
             </p>
-            <p className="mt-1.5 text-[13px] text-slate-600">
+            <p className="mt-1.5 text-[13px] text-zinc-600">
               {selected.label} · {meeting.title}
             </p>
-            <p className="mt-2.5 rounded-lg bg-slate-50 px-3 py-2 text-xs leading-relaxed text-slate-500">
+            <p className="mt-2.5 rounded-lg bg-zinc-50 px-3 py-2 text-xs leading-relaxed text-zinc-500">
               참석자에게 메일과 앱 알림으로 전달돼요. 아직 확정이 아니라, 응답이 모이면
               회의 확정 여부를 확인할 수 있어요.
             </p>
             <div className="mt-5 flex gap-2">
               <button
                 onClick={() => setConfirmOpen(false)}
-                className="flex-1 rounded-xl border border-slate-200 py-2.5 text-sm font-semibold text-slate-600 transition-colors hover:bg-slate-50"
+                className="flex-1 rounded-xl border border-zinc-200 py-2.5 text-sm font-semibold text-zinc-600 transition-colors hover:bg-zinc-50"
               >
                 취소
               </button>
@@ -1150,7 +1150,7 @@ export default function MeetingPanel({
                   setConfirmOpen(false);
                   onNext(5);
                 }}
-                className="flex-1 rounded-xl bg-blue-600 py-2.5 text-sm font-bold text-white transition-colors hover:bg-blue-700"
+                className="flex-1 rounded-xl bg-zinc-900 py-2.5 text-sm font-bold text-white transition-colors hover:bg-zinc-800"
               >
                 보내기
               </button>
@@ -1161,17 +1161,17 @@ export default function MeetingPanel({
 
       {/* CTA 푸터 */}
       {(cta || secondary) && (
-        <div className="shrink-0 border-t border-slate-200 bg-white p-4">
+        <div className="shrink-0 border-t border-zinc-200 bg-white p-4">
           {cta && (
             <button
               onClick={cta.disabled ? undefined : cta.onClick}
               disabled={cta.disabled}
               className={`w-full rounded-xl py-3 text-sm font-bold transition-colors ${
                 cta.disabled
-                  ? 'cursor-default bg-slate-100 text-slate-400'
+                  ? 'cursor-default bg-zinc-100 text-zinc-400'
                   : cta.tone === 'green'
                     ? 'bg-emerald-600 text-white hover:bg-emerald-700'
-                    : 'bg-blue-600 text-white hover:bg-blue-700'
+                    : 'bg-zinc-900 text-white hover:bg-zinc-800'
               }`}
             >
               {cta.label}
@@ -1180,7 +1180,7 @@ export default function MeetingPanel({
           {secondary && (
             <button
               onClick={secondary.onClick}
-              className="mt-2 w-full py-1 text-center text-xs font-medium text-slate-400 transition-colors hover:text-slate-600"
+              className="mt-2 w-full py-1 text-center text-xs font-medium text-zinc-400 transition-colors hover:text-zinc-600"
             >
               {secondary.label}
             </button>

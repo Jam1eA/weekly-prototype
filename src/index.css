@@ -35,7 +35,14 @@ body {
 
 body {
   font-family: var(--font-sans);
-  background-color: #f8fafc;
-  color: #0f172a;
+  background-color: #fafafa;
+  color: #18181b;
   -webkit-font-smoothing: antialiased;
+  letter-spacing: -0.01em;
+}
+
+/* 라벨: 작고 담백하게, 자간을 살짝 넓혀 위계를 만든다 */
+.label-mono {
+  font-variant-numeric: tabular-nums;
+  letter-spacing: 0.02em;
 }

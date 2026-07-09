@@ -30,15 +30,13 @@ const overlayClass: Record<OverlayStyle, string> = {
   candidate:
     'border-2 border-dashed border-blue-400 bg-blue-50/70 text-blue-700 hover:bg-blue-100 cursor-pointer',
   candidateSelected:
-    'border-2 border-blue-600 bg-blue-600 text-white shadow-md shadow-blue-200 cursor-pointer',
-  proposed: 'border-2 border-blue-500 bg-blue-500 text-white shadow-md shadow-blue-200',
-  confirmed: 'border-2 border-emerald-500 bg-emerald-500 text-white shadow-md shadow-emerald-200',
-  conflict: 'border-2 border-red-400 bg-red-50 text-red-600',
-  conflictFaded: 'border-2 border-dashed border-red-300 bg-red-50/50 text-red-400',
-  alternative:
-    'border-2 border-dashed border-emerald-500 bg-emerald-50/80 text-emerald-700',
-  newConfirmed:
-    'border-2 border-emerald-500 bg-emerald-500 text-white shadow-md shadow-emerald-200',
+    'border border-blue-600 bg-blue-600 text-white shadow-sm cursor-pointer',
+  proposed: 'border border-blue-500 bg-blue-500 text-white shadow-sm',
+  confirmed: 'border border-emerald-500 bg-emerald-500 text-white shadow-sm',
+  conflict: 'border border-red-400 bg-red-50 text-red-600',
+  conflictFaded: 'border border-dashed border-red-300 bg-red-50/50 text-red-400',
+  alternative: 'border border-dashed border-emerald-500 bg-emerald-50/80 text-emerald-700',
+  newConfirmed: 'border border-emerald-500 bg-emerald-500 text-white shadow-sm',
 };
 
 function buildOverlays(
@@ -179,18 +177,18 @@ export default function CalendarGrid({
   return (
     <main className="flex min-w-0 flex-1 flex-col overflow-hidden bg-white">
       {/* 캘린더 상단 바 */}
-      <div className="flex shrink-0 items-center justify-between border-b border-slate-200 px-5 py-3">
+      <div className="flex shrink-0 items-center justify-between border-b border-zinc-200 px-5 py-3">
         <div className="flex items-center gap-2">
-          <h2 className="text-sm font-bold text-slate-800">
+          <h2 className="text-sm font-bold text-zinc-800">
             {step === 0 ? '내 캘린더' : '다음 주 팀 캘린더'}
           </h2>
-          <span className="text-xs text-slate-400">
+          <span className="text-xs text-zinc-400">
             {step === 0
               ? '참석자를 선택하면 팀 일정을 함께 볼 수 있어요'
               : '참석자 6명의 일정을 함께 보고 있어요 · 다른 사람 일정의 내용은 보이지 않아요'}
           </span>
         </div>
-        <div className="flex items-center gap-3 text-[11px] text-slate-500">
+        <div className="flex items-center gap-3 text-[11px] text-zinc-500">
           <span className="flex items-center gap-1">
             <span className="h-2.5 w-2.5 rounded-sm border border-dashed border-blue-400 bg-blue-50" />
             후보
@@ -211,12 +209,12 @@ export default function CalendarGrid({
       </div>
 
       {/* 요일 헤더 */}
-      <div className="grid shrink-0 grid-cols-[52px_repeat(5,1fr)] border-b border-slate-200">
+      <div className="grid shrink-0 grid-cols-[52px_repeat(5,1fr)] border-b border-zinc-200">
         <div />
         {weekDays.map((d, i) => (
-          <div key={i} className="border-l border-slate-100 px-2 py-2 text-center">
-            <span className="text-xs font-semibold text-slate-700">{d.label}</span>
-            <span className="ml-1 text-xs text-slate-400">{d.date}</span>
+          <div key={i} className="border-l border-zinc-100 px-2 py-2 text-center">
+            <span className="text-xs font-semibold text-zinc-700">{d.label}</span>
+            <span className="ml-1 text-xs text-zinc-400">{d.date}</span>
           </div>
         ))}
       </div>
@@ -232,7 +230,7 @@ export default function CalendarGrid({
             {hours.map((h) => (
               <div
                 key={h}
-                className="absolute right-2 -translate-y-1/2 text-[11px] text-slate-400"
+                className="absolute right-2 -translate-y-1/2 text-[11px] text-zinc-400"
                 style={{ top: (h - START) * HOUR_PX }}
               >
                 {h !== START ? `${h}:00` : ''}
@@ -242,11 +240,11 @@ export default function CalendarGrid({
 
           {/* 요일 컬럼 */}
           {[0, 1, 2, 3, 4].map((day) => (
-            <div key={day} className="relative border-l border-slate-100">
+            <div key={day} className="relative border-l border-zinc-100">
               {hours.map((h) => (
                 <div
                   key={h}
-                  className="absolute inset-x-0 border-t border-slate-100"
+                  className="absolute inset-x-0 border-t border-zinc-100"
                   style={{ top: (h - START) * HOUR_PX }}
                 />
               ))}
@@ -279,7 +277,7 @@ export default function CalendarGrid({
                   ) : b.kind === 'leave' ? (
                     <div
                       key={`b${i}`}
-                      className="absolute inset-x-1 z-0 rounded-md bg-slate-50 px-2 py-1.5"
+                      className="absolute inset-x-1 z-0 rounded-md bg-zinc-50 px-2 py-1.5"
                       style={{
                         top: (b.startHour - START) * HOUR_PX + 2,
                         height: b.duration * HOUR_PX - 4,
@@ -287,7 +285,7 @@ export default function CalendarGrid({
                           'repeating-linear-gradient(-45deg, transparent, transparent 6px, rgba(148,163,184,0.12) 6px, rgba(148,163,184,0.12) 12px)',
                       }}
                     >
-                      <p className="text-[11px] font-medium text-slate-400">{b.label}</p>
+                      <p className="text-[11px] font-medium text-zinc-400">{b.label}</p>
                     </div>
                   ) : (
                     <div
@@ -297,8 +295,8 @@ export default function CalendarGrid({
                         b.kind === 'out'
                           ? 'border-amber-400 bg-amber-50'
                           : b.count
-                            ? 'border-slate-400 bg-slate-200/80'
-                            : 'border-slate-300 bg-slate-100'
+                            ? 'border-zinc-400 bg-zinc-200/80'
+                            : 'border-zinc-300 bg-zinc-100'
                       }`}
                       style={{
                         top: (b.startHour - START) * HOUR_PX + 2,
@@ -312,14 +310,14 @@ export default function CalendarGrid({
                           b.kind === 'out'
                             ? 'font-medium text-amber-700'
                             : b.count
-                              ? 'font-semibold text-slate-600'
-                              : 'font-medium text-slate-500'
+                              ? 'font-semibold text-zinc-600'
+                              : 'font-medium text-zinc-500'
                         }`}
                       >
                         {b.label}
                       </p>
                       {b.count && b.duration >= 1 && (
-                        <p className="truncate text-[10px] text-slate-400">
+                        <p className="truncate text-[10px] text-zinc-400">
                           자세한 내용은 비공개
                         </p>
                       )}

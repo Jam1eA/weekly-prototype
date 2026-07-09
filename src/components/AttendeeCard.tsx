@@ -14,9 +14,9 @@ const roleLabel: Record<Role, string> = {
 };
 
 const roleBadge: Record<Role, string> = {
-  required: 'bg-blue-50 text-blue-600 hover:bg-blue-100',
-  optional: 'bg-slate-100 text-slate-500 hover:bg-slate-200',
-  share: 'bg-slate-100 text-slate-400 hover:bg-slate-200',
+  required: 'bg-zinc-900 text-white hover:bg-zinc-800',
+  optional: 'bg-zinc-100 text-zinc-500 hover:bg-zinc-200',
+  share: 'bg-zinc-100 text-zinc-400 hover:bg-zinc-200',
 };
 
 export default function AttendeeCard({
@@ -27,23 +27,23 @@ export default function AttendeeCard({
   onChangeRole: (id: string, role: Role) => void;
 }) {
   return (
-    <div className="rounded-xl border border-slate-200 bg-white p-3.5">
+    <div className="rounded-xl border border-zinc-200 bg-white p-3.5">
       <div className="flex items-start justify-between gap-3">
         <div className="flex items-center gap-2.5">
-          <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-slate-100 text-sm font-semibold text-slate-600">
+          <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-zinc-100 text-sm font-semibold text-zinc-600">
             {attendee.name[0]}
           </div>
           <div>
-            <p className="text-sm font-semibold text-slate-900">
+            <p className="text-sm font-semibold text-zinc-900">
               {attendee.name}{' '}
-              <span className="font-normal text-slate-500">{attendee.title}</span>
+              <span className="font-normal text-zinc-500">{attendee.title}</span>
             </p>
-            <p className="text-xs text-slate-500">{attendee.description}</p>
+            <p className="text-xs text-zinc-500">{attendee.description}</p>
           </div>
         </div>
 
         {attendee.isOrganizer ? (
-          <span className="shrink-0 rounded-lg bg-blue-600 px-2.5 py-1.5 text-xs font-semibold text-white">
+          <span className="shrink-0 rounded-lg bg-zinc-900 px-2.5 py-1.5 text-xs font-semibold text-white">
             주최자 · 필수
           </span>
         ) : (

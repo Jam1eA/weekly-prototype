@@ -120,24 +120,24 @@ export default function ParticipantView({
   };
 
   return (
-    <div className="flex h-full flex-col bg-slate-50">
+    <div className="flex h-full flex-col bg-zinc-50">
       {/* 참여자 화면 상단 바 */}
-      <header className="flex h-14 shrink-0 items-center justify-between border-b border-slate-200 bg-white px-5">
+      <header className="flex h-14 shrink-0 items-center justify-between border-b border-zinc-200 bg-white px-5">
         <div className="flex items-center gap-3">
           <div className="flex items-center gap-2">
-            <div className="flex h-7 w-7 items-center justify-center rounded-lg bg-blue-600 text-sm font-bold text-white">
+            <div className="flex h-7 w-7 items-center justify-center rounded-lg bg-zinc-900 text-sm font-bold text-white">
               W
             </div>
-            <span className="text-[15px] font-bold text-slate-900">위클리</span>
+            <span className="text-[15px] font-bold text-zinc-900">위클리</span>
           </div>
-          <span className="rounded-md bg-slate-100 px-2 py-1 text-xs font-semibold text-slate-500">
+          <span className="rounded-md bg-zinc-100 px-2 py-1 text-xs font-semibold text-zinc-500">
             참여자 화면
           </span>
         </div>
         <div className="flex items-center gap-3">
           <button
             onClick={onReturn}
-            className="text-xs font-medium text-slate-400 transition-colors hover:text-slate-600"
+            className="text-xs font-medium text-zinc-400 transition-colors hover:text-zinc-600"
           >
             주최자 화면으로 돌아가기
           </button>
@@ -145,7 +145,7 @@ export default function ParticipantView({
             <div className="flex h-8 w-8 items-center justify-center rounded-full bg-emerald-100 text-sm font-bold text-emerald-700">
               정
             </div>
-            <span className="text-sm font-medium text-slate-700">정하늘</span>
+            <span className="text-sm font-medium text-zinc-700">정하늘</span>
           </div>
         </div>
       </header>
@@ -156,26 +156,26 @@ export default function ParticipantView({
           {phase === 'respond' ? (
             <>
               {/* 제안 컨텍스트 */}
-              <div className="rounded-2xl border border-slate-200 bg-white p-5">
+              <div className="rounded-2xl border border-zinc-200 bg-white p-5">
                 <div className="flex items-start gap-3">
-                  <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-blue-100 text-sm font-bold text-blue-700">
+                  <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-zinc-900 text-sm font-bold text-white">
                     유
                   </div>
                   <div>
-                    <p className="text-[15px] font-bold leading-snug text-slate-900">
+                    <p className="text-[15px] font-bold leading-snug text-zinc-900">
                       유나영님이 '{meeting.title}' 시간을 제안했어요
                     </p>
-                    <p className="mt-0.5 text-xs text-slate-400">
+                    <p className="mt-0.5 text-xs text-zinc-400">
                       {meeting.purpose} · {meetingInfo.duration}
                     </p>
                   </div>
                 </div>
                 <div className="mt-4 rounded-xl bg-blue-50/60 px-4 py-3">
                   <p className="text-xs font-semibold text-blue-500">제안된 시간</p>
-                  <p className="mt-0.5 text-lg font-bold text-slate-900">{proposed.label}</p>
+                  <p className="mt-0.5 text-lg font-bold text-zinc-900">{proposed.label}</p>
                 </div>
 
-                <p className="mt-3 rounded-lg bg-slate-50 px-3 py-2 text-xs leading-relaxed text-slate-500">
+                <p className="mt-3 rounded-lg bg-zinc-50 px-3 py-2 text-xs leading-relaxed text-zinc-500">
                   캘린더 일정은 이미 반영되어 있어요. 캘린더에 없는 조건만 알려주세요.
                 </p>
               </div>
@@ -187,7 +187,7 @@ export default function ParticipantView({
                   className={`rounded-2xl border-2 px-4 py-5 text-center transition-all ${
                     answer === 'ok'
                       ? 'border-emerald-500 bg-emerald-50 text-emerald-700'
-                      : 'border-slate-200 bg-white text-slate-600 hover:border-slate-300'
+                      : 'border-zinc-200 bg-white text-zinc-600 hover:border-zinc-300'
                   }`}
                 >
                   <svg className="mx-auto" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
@@ -200,8 +200,8 @@ export default function ParticipantView({
                   onClick={() => setAnswer('busy')}
                   className={`rounded-2xl border-2 px-4 py-5 text-center transition-all ${
                     answer === 'busy'
-                      ? 'border-blue-500 bg-blue-50 text-blue-700'
-                      : 'border-slate-200 bg-white text-slate-600 hover:border-slate-300'
+                      ? 'border-zinc-900 bg-zinc-50 text-zinc-900'
+                      : 'border-zinc-200 bg-white text-zinc-600 hover:border-zinc-300'
                   }`}
                 >
                   <svg className="mx-auto" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
@@ -215,21 +215,21 @@ export default function ParticipantView({
               {/* 어려워요 → 조건 표시 그리드 */}
               {answer === 'busy' && (
                 <div
-                  className="mt-4 rounded-2xl border border-slate-200 bg-white p-5"
+                  className="mt-4 rounded-2xl border border-zinc-200 bg-white p-5"
                   style={{ animation: 'slide-down 0.3s ease-out' }}
                 >
-                  <p className="text-sm font-bold text-slate-800">
+                  <p className="text-sm font-bold text-zinc-800">
                     안 되는 시간과 피하고 싶은 시간을 알려주세요
                   </p>
-                  <p className="mt-1 text-xs leading-relaxed text-slate-400">
+                  <p className="mt-1 text-xs leading-relaxed text-zinc-400">
                     누르거나 드래그해서 표시할 수 있어요. 요일 이름을 누르면 하루 전체가
                     선택되고, 파란 테두리 칸이 제안된 시간이에요.
                   </p>
 
                   {/* 범례 */}
-                  <div className="mt-3 flex flex-wrap items-center gap-x-4 gap-y-1 text-xs text-slate-500">
+                  <div className="mt-3 flex flex-wrap items-center gap-x-4 gap-y-1 text-xs text-zinc-500">
                     <span className="flex items-center gap-1.5">
-                      <span className="h-3.5 w-3.5 rounded-sm bg-slate-500" style={noStyle} />
+                      <span className="h-3.5 w-3.5 rounded-sm bg-zinc-500" style={noStyle} />
                       안 돼요 (외근·연차 등)
                     </span>
                     <span className="flex items-center gap-1.5">
@@ -237,7 +237,7 @@ export default function ParticipantView({
                       피하고 싶어요 (점심 직후 등)
                     </span>
                     <span className="flex items-center gap-1.5">
-                      <span className="h-3.5 w-3.5 rounded-sm bg-slate-200" />
+                      <span className="h-3.5 w-3.5 rounded-sm bg-zinc-200" />
                       캘린더 일정
                     </span>
                   </div>
@@ -252,8 +252,8 @@ export default function ParticipantView({
                         disabled={DISABLED_DAYS.includes(day)}
                         className={`mb-1 rounded-md py-1 text-center text-xs font-semibold transition-colors ${
                           DISABLED_DAYS.includes(day)
-                            ? 'text-slate-300'
-                            : 'text-slate-600 hover:bg-slate-100'
+                            ? 'text-zinc-300'
+                            : 'text-zinc-600 hover:bg-zinc-100'
                         }`}
                       >
                         {d.label}
@@ -262,7 +262,7 @@ export default function ParticipantView({
 
                     {HOURS.map((h) => (
                       <div key={h} className="contents">
-                        <div className="pr-2 pt-0.5 text-right text-[10px] text-slate-400">
+                        <div className="pr-2 pt-0.5 text-right text-[10px] text-zinc-400">
                           {h}시
                         </div>
                         {weekDays.map((_, day) => {
@@ -281,14 +281,14 @@ export default function ParticipantView({
                               disabled={busy}
                               className={`mb-1 h-6 rounded-sm border transition-colors ${
                                 busy
-                                  ? 'border-slate-200 bg-slate-200'
+                                  ? 'border-zinc-200 bg-zinc-200'
                                   : mark === 'no'
-                                    ? 'border-slate-500 bg-slate-500'
+                                    ? 'border-zinc-500 bg-zinc-500'
                                     : mark === 'avoid'
                                       ? 'border-amber-300 bg-amber-200'
                                       : isProposed
                                         ? 'border-blue-500 bg-blue-50/60 hover:bg-blue-50'
-                                        : 'border-slate-200 bg-white hover:bg-slate-50'
+                                        : 'border-zinc-200 bg-white hover:bg-zinc-50'
                               } ${isProposed ? 'ring-1 ring-inset ring-blue-500' : ''}`}
                               style={mark === 'no' && !busy ? noStyle : undefined}
                             />
@@ -297,14 +297,14 @@ export default function ParticipantView({
                       </div>
                     ))}
                   </div>
-                  <p className="mt-1 text-right text-[11px] text-slate-400">
+                  <p className="mt-1 text-right text-[11px] text-zinc-400">
                     회색 칸은 캘린더에 이미 있는 일정이에요. 금요일은 연차예요.
                   </p>
 
                   {/* 시스템이 미리 계산한 대안 */}
-                  <div className="mt-4 border-t border-slate-100 pt-4">
-                    <p className="text-sm font-bold text-slate-800">대신 이 시간은 어때요?</p>
-                    <p className="mt-1 text-xs text-slate-400">
+                  <div className="mt-4 border-t border-zinc-100 pt-4">
+                    <p className="text-sm font-bold text-zinc-800">대신 이 시간은 어때요?</p>
+                    <p className="mt-1 text-xs text-zinc-400">
                       정하늘님의 캘린더를 기준으로 미리 찾아둔 시간이에요.
                     </p>
                     <div className="mt-2.5 flex flex-wrap gap-2">
@@ -314,8 +314,8 @@ export default function ParticipantView({
                           onClick={() => toggleAlt(a.id)}
                           className={`rounded-full border px-3.5 py-2 text-xs font-semibold transition-colors ${
                             selectedAlts.includes(a.id)
-                              ? 'border-blue-500 bg-blue-50 text-blue-600'
-                              : 'border-slate-200 bg-white text-slate-500 hover:border-slate-300'
+                              ? 'border-zinc-900 bg-zinc-100 text-zinc-900'
+                              : 'border-zinc-200 bg-white text-zinc-500 hover:border-zinc-300'
                           }`}
                         >
                           {selectedAlts.includes(a.id) ? '✓ ' : ''}
@@ -333,8 +333,8 @@ export default function ParticipantView({
                 disabled={!answer}
                 className={`mt-4 w-full rounded-xl py-3.5 text-sm font-bold transition-colors ${
                   answer
-                    ? 'bg-blue-600 text-white hover:bg-blue-700'
-                    : 'cursor-default bg-slate-100 text-slate-400'
+                    ? 'bg-zinc-900 text-white hover:bg-zinc-800'
+                    : 'cursor-default bg-zinc-100 text-zinc-400'
                 }`}
               >
                 응답 보내기
@@ -343,42 +343,42 @@ export default function ParticipantView({
           ) : (
             /* 화면 B: 응답 완료 */
             <div style={{ animation: 'slide-down 0.3s ease-out' }}>
-              <div className="rounded-2xl border border-slate-200 bg-white p-6 text-center">
+              <div className="rounded-2xl border border-zinc-200 bg-white p-6 text-center">
                 <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-full bg-emerald-100 text-xl text-emerald-600">
                   ✓
                 </div>
-                <p className="mt-3 text-lg font-bold text-slate-900">응답을 보냈어요</p>
-                <p className="mt-1 text-[13px] leading-relaxed text-slate-500">
+                <p className="mt-3 text-lg font-bold text-zinc-900">응답을 보냈어요</p>
+                <p className="mt-1 text-[13px] leading-relaxed text-zinc-500">
                   유나영님이 확인 후 회의가 확정되면 알려드릴게요.
                 </p>
               </div>
 
-              <div className="mt-3 rounded-2xl border border-slate-200 bg-white p-5">
-                <p className="mb-3 text-xs font-semibold text-slate-400">내가 보낸 응답</p>
+              <div className="mt-3 rounded-2xl border border-zinc-200 bg-white p-5">
+                <p className="mb-3 text-xs font-semibold text-zinc-400">내가 보낸 응답</p>
                 <div className="space-y-2.5 text-[13px]">
                   <div className="flex items-start justify-between gap-3">
-                    <span className="shrink-0 text-slate-400">제안된 시간</span>
-                    <span className="text-right font-medium text-slate-700">
+                    <span className="shrink-0 text-zinc-400">제안된 시간</span>
+                    <span className="text-right font-medium text-zinc-700">
                       {answer === 'ok' ? '참석할 수 있어요' : '이 시간은 어려워요'}
                     </span>
                   </div>
                   {answer === 'busy' && (
                     <>
                       <div className="flex items-start justify-between gap-3">
-                        <span className="shrink-0 text-slate-400">안 되는 시간</span>
-                        <span className="text-right font-medium text-slate-700">
+                        <span className="shrink-0 text-zinc-400">안 되는 시간</span>
+                        <span className="text-right font-medium text-zinc-700">
                           {noSummary.length > 0 ? noSummary.join(', ') : '없음'}
                         </span>
                       </div>
                       <div className="flex items-start justify-between gap-3">
-                        <span className="shrink-0 text-slate-400">피하고 싶은 시간</span>
-                        <span className="text-right font-medium text-slate-700">
+                        <span className="shrink-0 text-zinc-400">피하고 싶은 시간</span>
+                        <span className="text-right font-medium text-zinc-700">
                           {avoidSummary.length > 0 ? avoidSummary.join(', ') : '없음'}
                         </span>
                       </div>
                       <div className="flex items-start justify-between gap-3">
-                        <span className="shrink-0 text-slate-400">대신 가능한 시간</span>
-                        <span className="text-right font-medium text-slate-700">
+                        <span className="shrink-0 text-zinc-400">대신 가능한 시간</span>
+                        <span className="text-right font-medium text-zinc-700">
                           {altLabels.length > 0 ? altLabels.join(', ') : '선택 안 함'}
                         </span>
                       </div>
@@ -389,13 +389,13 @@ export default function ParticipantView({
 
               <button
                 onClick={onReturn}
-                className="mt-4 w-full rounded-xl bg-blue-600 py-3.5 text-sm font-bold text-white transition-colors hover:bg-blue-700"
+                className="mt-4 w-full rounded-xl bg-zinc-900 py-3.5 text-sm font-bold text-white transition-colors hover:bg-zinc-800"
               >
                 주최자 화면으로 돌아가기
               </button>
               <button
                 onClick={() => setPhase('respond')}
-                className="mt-2 w-full py-1.5 text-center text-xs font-medium text-slate-400 transition-colors hover:text-slate-600"
+                className="mt-2 w-full py-1.5 text-center text-xs font-medium text-zinc-400 transition-colors hover:text-zinc-600"
               >
                 응답 수정하기
               </button>
