@@ -1,6 +1,12 @@
 import { useEffect, useState } from 'react';
 import type { Role, Step } from './types';
-import { alternatives, candidates, directoryExtras, initialAttendees } from './data/mockData';
+import {
+  alternatives,
+  candidates,
+  directoryExtras,
+  initialAttendees,
+  meetingInfo as defaultMeeting,
+} from './data/mockData';
 import Header from './components/Header';
 import Sidebar from './components/Sidebar';
 import CalendarGrid from './components/CalendarGrid';
@@ -12,6 +18,11 @@ export default function App() {
   // 새 회의 만들기를 누르기 전에는 빈 상태(내 캘린더)로 시작
   const [started, setStarted] = useState(false);
   const [attendees, setAttendees] = useState(initialAttendees);
+  // 회의 만들기에서 입력하는 회의 제목·목적
+  const [meeting, setMeeting] = useState({
+    title: defaultMeeting.title,
+    purpose: defaultMeeting.purpose,
+  });
   const [selectedId, setSelectedId] = useState('c1');
   // 제안 시점의 후보를 고정 (이후 단계에서 계속 참조)
   const [proposedId, setProposedId] = useState('c1');
@@ -58,6 +69,7 @@ export default function App() {
     setStep(0);
     setStarted(false);
     setAttendees(initialAttendees);
+    setMeeting({ title: defaultMeeting.title, purpose: defaultMeeting.purpose });
     setSelectedId('c1');
     setProposedId('c1');
     setAlertReady(false);
@@ -70,6 +82,7 @@ export default function App() {
     return (
       <ParticipantView
         proposed={proposed}
+        meeting={meeting}
         onComplete={setJungAnswer}
         onReturn={() => setParticipantOpen(false)}
       />
@@ -98,6 +111,8 @@ export default function App() {
           step={step}
           started={started}
           onStart={() => setStarted(true)}
+          meeting={meeting}
+          onChangeMeeting={setMeeting}
           hasAlert={hasAlert}
           onOpenAlert={openAlert}
           jungAnswer={jungAnswer}

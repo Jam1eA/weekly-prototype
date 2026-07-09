@@ -15,11 +15,17 @@ type Mark = 'no' | 'avoid';
 
 interface Props {
   proposed: CandidateSlot;
+  meeting: { title: string; purpose: string };
   onComplete: (answer: 'ok' | 'busy') => void;
   onReturn: () => void;
 }
 
-export default function ParticipantView({ proposed, onComplete, onReturn }: Props) {
+export default function ParticipantView({
+  proposed,
+  meeting,
+  onComplete,
+  onReturn,
+}: Props) {
   const [phase, setPhase] = useState<'respond' | 'done'>('respond');
   const [answer, setAnswer] = useState<'ok' | 'busy' | null>(null);
   const [marks, setMarks] = useState<Record<string, Mark>>({});
@@ -157,10 +163,10 @@ export default function ParticipantView({ proposed, onComplete, onReturn }: Prop
                   </div>
                   <div>
                     <p className="text-[15px] font-bold leading-snug text-slate-900">
-                      유나영님이 '{meetingInfo.title}' 시간을 제안했어요
+                      유나영님이 '{meeting.title}' 시간을 제안했어요
                     </p>
                     <p className="mt-0.5 text-xs text-slate-400">
-                      {meetingInfo.purpose} · {meetingInfo.duration}
+                      {meeting.purpose} · {meetingInfo.duration}
                     </p>
                   </div>
                 </div>

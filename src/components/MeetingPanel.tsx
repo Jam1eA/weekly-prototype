@@ -116,10 +116,17 @@ function GroupLabel({ children }: { children: React.ReactNode }) {
 
 /* ---------- 메인 패널 ---------- */
 
+interface MeetingInput {
+  title: string;
+  purpose: string;
+}
+
 interface Props {
   step: Step;
   started: boolean;
   onStart: () => void;
+  meeting: MeetingInput;
+  onChangeMeeting: (m: MeetingInput) => void;
   hasAlert: boolean;
   onOpenAlert: () => void;
   jungAnswer: 'ok' | 'busy' | null;
@@ -140,6 +147,8 @@ export default function MeetingPanel({
   step,
   started,
   onStart,
+  meeting,
+  onChangeMeeting,
   hasAlert,
   onOpenAlert,
   jungAnswer,
@@ -288,9 +297,24 @@ export default function MeetingPanel({
 
           <div className="mt-4 space-y-3">
             <Card>
-              <p className="mb-2 text-xs font-semibold text-slate-400">회의 정보</p>
-              <p className="text-sm font-semibold text-slate-900">{meetingInfo.title}</p>
-              <p className="mt-0.5 text-xs text-slate-500">{meetingInfo.purpose}</p>
+              <p className="mb-1.5 text-xs font-semibold text-slate-400">회의명</p>
+              <input
+                value={meeting.title}
+                onChange={(e) => onChangeMeeting({ ...meeting, title: e.target.value })}
+                placeholder="예: 프로젝트 요구사항 정리 회의"
+                className="w-full rounded-lg border border-slate-200 bg-white px-3 py-2 text-[13px] font-medium text-slate-800 placeholder:text-slate-300 focus:border-blue-400 focus:outline-none"
+              />
+
+              <p className="mb-1.5 mt-3.5 text-xs font-semibold text-slate-400">
+                회의 목적 · 안내
+              </p>
+              <textarea
+                value={meeting.purpose}
+                onChange={(e) => onChangeMeeting({ ...meeting, purpose: e.target.value })}
+                placeholder="참석자에게 함께 전달할 내용을 적어주세요"
+                rows={2}
+                className="w-full resize-none rounded-lg border border-slate-200 bg-white px-3 py-2 text-[13px] text-slate-800 placeholder:text-slate-300 focus:border-blue-400 focus:outline-none"
+              />
 
               <p className="mb-1.5 mt-3.5 text-xs font-semibold text-slate-400">회의 길이</p>
               <select
@@ -437,7 +461,7 @@ export default function MeetingPanel({
       cta = {
         label: '회의 조건 확인하기',
         onClick: () => onNext(1),
-        disabled: attendees.length < 2,
+        disabled: attendees.length < 2 || meeting.title.trim() === '',
       };
       break;
     }
@@ -451,8 +475,8 @@ export default function MeetingPanel({
           <div className="mt-4 space-y-3">
             <Card>
               <p className="mb-2 text-xs font-semibold text-slate-400">회의 정보</p>
-              <InfoRow label="회의명" value={meetingInfo.title} />
-              <InfoRow label="회의 목적" value={meetingInfo.purpose} />
+              <InfoRow label="회의명" value={meeting.title} />
+              <InfoRow label="회의 목적" value={meeting.purpose} />
               <InfoRow label="회의 길이" value={meetingInfo.duration} />
               <InfoRow label="기간" value={meetingInfo.period} />
             </Card>
@@ -678,7 +702,7 @@ export default function MeetingPanel({
             <Card>
               <p className="mb-1 text-xs font-semibold text-slate-400">제안한 시간</p>
               <p className="text-base font-bold text-slate-900">{proposed.label}</p>
-              <p className="mt-0.5 text-xs text-slate-500">{meetingInfo.title}</p>
+              <p className="mt-0.5 text-xs text-slate-500">{meeting.title}</p>
             </Card>
 
             <Card tone="blue">
@@ -837,32 +861,37 @@ export default function MeetingPanel({
     case 7:
       body = (
         <>
-          <PanelTitle>회의가 확정되었어요.</PanelTitle>
+          <PanelTitle>다시 조율할 일 없이 확정했어요</PanelTitle>
           <PanelDesc>
-            이제부터 발생하는 변경은 확정된 회의의 변경 사항으로 관리돼요.
+            확정 전에 꼭 필요한 정보를 모두 확인했기 때문에, 이 회의는 다시 조율될
+            가능성이 낮아요.
           </PanelDesc>
 
           <div className="mt-4 space-y-3">
             <Card tone="green">
               <p className="mb-1 text-xs font-semibold text-emerald-600">확정된 시간</p>
               <p className="text-base font-bold text-slate-900">{proposed.label}</p>
-              <p className="mt-0.5 text-xs text-slate-500">
-                {meetingInfo.title} · 회의실 A
-              </p>
+              <p className="mt-0.5 text-xs text-slate-500">{meeting.title} · 회의실 A</p>
             </Card>
 
             <Card>
-              <p className="mb-2 text-xs font-semibold text-slate-400">확정 요약</p>
+              <p className="mb-2 text-xs font-semibold text-slate-400">
+                확정 전에 확인한 것
+              </p>
               <ul className="space-y-2">
-                <CheckItem>꼭 참석해야 할 사람 4명 모두 참석 (주최자 포함)</CheckItem>
+                <CheckItem>꼭 참석해야 할 사람 4명 모두 참석 응답 완료</CheckItem>
                 <CheckItem>{jungSummaryLine}</CheckItem>
+                <CheckItem>연차·외근 등 숨은 제약과 겹치지 않음</CheckItem>
                 <CheckItem>회의실 A 예약 완료</CheckItem>
-                <CheckItem>다시 조율할 가능성 낮음</CheckItem>
               </ul>
+              <p className="mt-2.5 border-t border-slate-100 pt-2.5 text-xs leading-relaxed text-slate-500">
+                이 항목들을 확정 전에 모두 확인해, 확정 후 다시 조율하게 만드는 원인을
+                미리 없앴어요.
+              </p>
             </Card>
 
             <p className="px-1 text-xs leading-relaxed text-slate-400">
-              참석자 캘린더에 회의 일정이 등록되었어요. 일정에 변경이 생기면 알림으로
+              참석자 캘린더에 회의 일정이 등록되었어요. 그래도 일정 변경이 생기면 알림으로
               알려드릴게요.
             </p>
           </div>
@@ -873,7 +902,11 @@ export default function MeetingPanel({
     case 8:
       body = (
         <>
-          <PanelTitle>필수 참석자 일정 변경</PanelTitle>
+          <PanelTitle>확정 후 변경이 생겼어요</PanelTitle>
+          <PanelDesc>
+            드물지만 확정 뒤에 일정이 바뀔 수 있어요. 이럴 때 처음부터 다시 조율하지
+            않도록 도와드릴게요.
+          </PanelDesc>
 
           <div className="mt-3 space-y-3">
             <Card tone="red">
@@ -1024,7 +1057,7 @@ export default function MeetingPanel({
               </p>
               <p className="text-base font-bold text-slate-900">{nextSlot.label}</p>
               <p className="mt-0.5 text-xs text-slate-500">
-                {meetingInfo.title} · 회의실 B
+                {meeting.title} · 회의실 B
               </p>
             </Card>
 
@@ -1099,7 +1132,7 @@ export default function MeetingPanel({
               참석자 {attendees.length - 1}명에게 후보 시간을 보낼까요?
             </p>
             <p className="mt-1.5 text-[13px] text-slate-600">
-              {selected.label} · {meetingInfo.title}
+              {selected.label} · {meeting.title}
             </p>
             <p className="mt-2.5 rounded-lg bg-slate-50 px-3 py-2 text-xs leading-relaxed text-slate-500">
               참석자에게 메일과 앱 알림으로 전달돼요. 아직 확정이 아니라, 응답이 모이면
