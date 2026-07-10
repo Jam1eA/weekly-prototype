@@ -1,12 +1,6 @@
 import type { CandidateSlot } from '../types';
 import ConfidenceBadge from './ConfidenceBadge';
 
-const reschedTone: Record<string, string> = {
-  낮음: 'bg-emerald-50 text-emerald-700 border-emerald-200',
-  보통: 'bg-amber-50 text-amber-700 border-amber-200',
-  높음: 'bg-red-50 text-red-600 border-red-200',
-};
-
 export default function CandidateCard({
   candidate,
   selected,
@@ -20,9 +14,9 @@ export default function CandidateCard({
   onDetail?: () => void;
   detailLabel?: string;
 }) {
-  // '다시 조율할 가능성'을 판단의 핵심 축으로 카드 상단에 끌어올린다
-  const resched = candidate.facts.find((f) => f.label === '다시 조율할 가능성');
-  const otherFacts = candidate.facts.filter((f) => f.label !== '다시 조율할 가능성');
+  // 직접 확인이 필요한 인원을 카드의 1급 정보로 끌어올린다
+  const direct = candidate.facts.find((f) => f.label === '직접 확인');
+  const otherFacts = candidate.facts.filter((f) => f.label !== '직접 확인');
 
   return (
     <div
@@ -34,29 +28,18 @@ export default function CandidateCard({
       }`}
     >
       <div className="mb-2.5 flex items-center justify-between gap-2">
-        <div className="flex items-center gap-2">
-          <p className="text-sm font-bold text-zinc-900">{candidate.label}</p>
-          {candidate.recommended && (
-            <span className="whitespace-nowrap rounded-md bg-zinc-900 px-1.5 py-0.5 text-[11px] font-semibold text-white">
-              기본 추천
-            </span>
-          )}
-        </div>
-        <ConfidenceBadge confidence={candidate.confidence} />
+        <p className="text-sm font-bold text-zinc-900">{candidate.label}</p>
+        <ConfidenceBadge recommend={candidate.recommend} />
       </div>
 
       {candidate.availabilityText && (
         <p className="-mt-1 mb-2.5 text-xs text-zinc-500">{candidate.availabilityText}</p>
       )}
 
-      {resched && (
-        <div
-          className={`mb-2.5 flex items-center justify-between rounded-lg border px-2.5 py-1.5 ${
-            reschedTone[resched.value] ?? 'border-zinc-200 bg-zinc-50 text-zinc-600'
-          }`}
-        >
-          <span className="text-xs font-medium">다시 조율할 가능성</span>
-          <span className="text-xs font-bold">{resched.value}</span>
+      {direct && (
+        <div className="mb-2.5 flex items-center justify-between rounded-lg border border-amber-200 bg-amber-50 px-2.5 py-1.5">
+          <span className="text-xs font-medium text-amber-700">직접 확인</span>
+          <span className="text-xs font-bold text-amber-700">{direct.value}</span>
         </div>
       )}
 

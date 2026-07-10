@@ -20,7 +20,8 @@ export interface ParticipantResponse {
   alternatives: { id: string; label: string }[]; // 참여자 캘린더 기준으로 미리 계산된 대안
 }
 
-export type Confidence = 'high' | 'medium' | 'low';
+// 응답 전 후보는 캘린더 기준 추정일 뿐이다
+export type Recommend = 'good' | 'check' | 'hard';
 
 export interface CandidateSlot {
   id: string;
@@ -28,8 +29,10 @@ export interface CandidateSlot {
   startHour: number;
   label: string; // 예: 화요일 14:00 - 15:00
   shortLabel: string; // 캘린더 블록용
-  confidence: Confidence;
+  recommend: Recommend;
   recommended?: boolean;
+  // 회의실 상세 — 판단에 필요한 최소 정보만 (설비·예약 현황은 범위 밖)
+  room?: { name: string; place: string; capacity: string } | null;
   // 캘린더 블록에 표시되는 짧은 가용 인원 요약 (예: 6명 모두 가능)
   avail?: string;
   // 후보 카드 헤더 아래 한 줄 요약 (예: 6명 중 5명 참석 가능 · 필수 1명 불가)
@@ -38,9 +41,9 @@ export interface CandidateSlot {
   // no = 절대 불가, avoid = 비선호, unsure = 불확실 (외근 가능성 등)
   attendeeStatus?: Record<string, 'no' | 'avoid' | 'unsure'>;
   facts: { label: string; value: string; ok: boolean }[];
-  reasons: string[];
-  comparison?: string;
-  summary: string;
+  // 대체 후보에서: 참석자별 기존 응답 유효 여부 (직접 입력한 경우에만 유효)
+  recheck?: { id: string; name: string; state: 'valid' | 'recheck'; note: string }[];
+  note?: string; // 상세 화면 보조 한 문장
 }
 
 export interface BusyBlock {

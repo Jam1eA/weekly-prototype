@@ -100,8 +100,7 @@ export const directoryExtras: Attendee[] = [
   },
 ];
 
-// 정하늘이 참여자 응답 화면에서 보낸 조건.
-// 주최자 화면(응답 확인)의 제약 표시와 참여자 화면의 대안 선택지가 모두 이 객체를 참조한다.
+// 정하늘(선택 참석자)의 자동 응답 — 데모에서 시스템이 수신하는 응답 mock.
 export const jungResponse: ParticipantResponse = {
   attendeeId: 'jung',
   summary: '화요일은 어렵고 수요일 오후만 가능해요',
@@ -112,9 +111,9 @@ export const jungResponse: ParticipantResponse = {
 };
 
 export const roleDescriptions: Record<string, string> = {
-  required: '이 사람이 불참하면 회의 시간을 다시 잡아야 해요.',
-  optional: '불참해도 회의는 진행할 수 있어요.',
-  share: '회의록을 공유할 대상으로 관리해요.',
+  required: '이 사람이 직접 확인해야 회의를 확정할 수 있어요.',
+  optional: '참석이 어려워도 회의를 진행할 수 있어요.',
+  share: '회의에 참석하지 않고 결과만 공유받아요.',
 };
 
 export const candidates: CandidateSlot[] = [
@@ -124,29 +123,19 @@ export const candidates: CandidateSlot[] = [
     startHour: 14,
     label: '화요일 14:00 - 15:00',
     shortLabel: '화 14:00',
-    confidence: 'high',
+    recommend: 'good',
     recommended: true,
-    avail: '6명 모두 가능',
-    availabilityText: '나를 포함한 6명 모두 참석할 수 있어요.',
+    room: { name: '회의실 A', place: '본관 7층', capacity: '8인실' },
+    avail: '충돌 없음',
+    availabilityText: '캘린더 기준으로 6명 모두 비어 있어요 · 직접 확인 전',
     attendeeStatus: {},
     facts: [
-      { label: '필수 참석자', value: '4명 모두 비어 있어요', ok: true },
-      { label: '선택 참석자', value: '2명 모두 비어 있어요', ok: true },
-      { label: '회의실', value: '회의실 A 사용 가능', ok: true },
-      { label: '숨은 제약', value: '연차/외근 충돌 없음', ok: true },
-      { label: '다시 조율할 가능성', value: '낮음', ok: true },
+      { label: '필수 참석자', value: '일정 충돌 없음', ok: true },
+      { label: '선택 참석자', value: '2명 가능 (캘린더 기준)', ok: true },
+      { label: '회의실', value: '회의실 A · 본관 7층 · 8인실', ok: true },
+      { label: '직접 확인', value: '필수 3명 필요', ok: false },
     ],
-    reasons: [
-      '꼭 참석해야 할 4명의 캘린더가 모두 비어 있어요.',
-      '회의실 A를 사용할 수 있어요.',
-      '연차나 외근 일정과 겹치지 않아요.',
-      '점심 직후나 퇴근 직전처럼 선호가 낮은 시간대가 아니에요.',
-      '선택 참석자의 캘린더도 모두 비어 있어요.',
-    ],
-    comparison:
-      '수요일 13:00은 점심 직후 시간대라 비선호가 있고, 목요일 11:00은 외근 가능성이 있어요. 세 후보 중 이 시간이 다시 조율할 가능성이 가장 낮아요.',
-    summary:
-      '이 시간은 꼭 참석해야 할 사람과 회의실 조건이 모두 맞아서 다시 조율할 가능성이 낮아요.',
+    note: '캘린더상 충돌은 없지만, 필수 참석자의 직접 확인이 필요해요.',
   },
   {
     id: 'c2',
@@ -154,27 +143,18 @@ export const candidates: CandidateSlot[] = [
     startHour: 13,
     label: '수요일 13:00 - 14:00',
     shortLabel: '수 13:00',
-    confidence: 'medium',
-    avail: '5명 가능',
-    availabilityText: '6명 중 5명 참석 가능 · 선택 참석자 1명 불가',
+    recommend: 'check',
+    room: { name: '회의실 B', place: '본관 3층', capacity: '6인실' },
+    avail: '비선호 1명',
+    availabilityText: '점심 직후 시간대 · 선택 참석자 1명 일정 있음',
     attendeeStatus: { jung: 'no', choi: 'avoid' },
     facts: [
-      { label: '필수 참석자', value: '4명 모두 비어 있어요', ok: true },
-      { label: '선택 참석자', value: '최유리만 비어 있어요', ok: false },
-      { label: '회의실', value: '회의실 B 사용 가능', ok: true },
-      { label: '숨은 제약', value: '최유리 점심 직후 비선호', ok: false },
-      { label: '다시 조율할 가능성', value: '보통', ok: false },
+      { label: '필수 참석자', value: '일정 충돌 없음', ok: true },
+      { label: '선택 참석자', value: '최유리 점심 직후 비선호', ok: false },
+      { label: '회의실', value: '회의실 B · 본관 3층 · 6인실', ok: true },
+      { label: '직접 확인', value: '필수 3명 필요', ok: false },
     ],
-    reasons: [
-      '꼭 참석해야 할 4명의 캘린더가 모두 비어 있어요.',
-      '회의실 B를 사용할 수 있어요.',
-      '다만 최유리님이 점심 직후 회의를 선호하지 않아요.',
-      '다만 선택 참석자 중 최유리님만 캘린더가 비어 있어요.',
-    ],
-    comparison:
-      '화요일 14:00과 비교하면 선택 참석자 참여가 적고, 점심 직후라 참석 경험이 떨어질 수 있어요.',
-    summary:
-      '회의는 성립하지만, 점심 직후 시간대라 참석 경험이 떨어질 수 있고 선택 참석자 참여가 줄어요.',
+    note: '점심 직후 제약이 있어, 확정 전에 직접 확인이 더 중요해요.',
   },
   {
     id: 'c3',
@@ -182,27 +162,18 @@ export const candidates: CandidateSlot[] = [
     startHour: 11,
     label: '목요일 11:00 - 12:00',
     shortLabel: '목 11:00',
-    confidence: 'low',
-    avail: '필수 1명 불확실',
-    availabilityText: '박서준님의 외근 가능성 때문에 참석 여부가 불확실해요.',
+    recommend: 'hard',
+    room: { name: '회의실 C', place: '별관 2층', capacity: '4인실' },
+    avail: '외근 가능성',
+    availabilityText: '박서준님의 외근 가능성으로 참석 여부가 불확실해요',
     attendeeStatus: { park: 'unsure' },
     facts: [
-      { label: '필수 참석자', value: '박서준 참석 불확실', ok: false },
-      { label: '선택 참석자', value: '2명 모두 비어 있어요', ok: true },
-      { label: '회의실', value: '사용 가능', ok: true },
-      { label: '숨은 제약', value: '박서준 외근 가능성 (미확정)', ok: false },
-      { label: '다시 조율할 가능성', value: '높음', ok: false },
+      { label: '필수 참석자', value: '박서준 외근 가능성', ok: false },
+      { label: '선택 참석자', value: '2명 가능 (캘린더 기준)', ok: true },
+      { label: '회의실', value: '회의실 C · 별관 2층 · 4인실', ok: true },
+      { label: '직접 확인', value: '필수 3명 필요', ok: false },
     ],
-    reasons: [
-      '선택 참석자의 캘린더는 모두 비어 있어요.',
-      '회의실은 사용할 수 있어요.',
-      '다만 박서준님이 목요일에 외근을 갈 가능성이 높아요. 아직 시간이 정해지지 않아 하루 전체가 유동적이에요.',
-      '꼭 참석해야 할 박서준님의 참석 여부를 지금은 확정할 수 없어요.',
-    ],
-    comparison:
-      '화요일 14:00, 수요일 13:00과 달리 필수 참석자의 참석 여부가 불확실한 유일한 후보예요. 지금 확정하면 나중에 다시 조율하게 될 가능성이 높아요.',
-    summary:
-      '꼭 참석해야 할 사람의 참석 여부가 불확실해서, 지금 확정하면 다시 조율하게 될 가능성이 높아요.',
+    note: '외근이 확정되지 않아, 이 시간은 직접 확인 없이는 추천하기 어려워요.',
   },
 ];
 
@@ -213,17 +184,23 @@ export const alternatives: CandidateSlot[] = [
     startHour: 15,
     label: '수요일 15:00 - 16:00',
     shortLabel: '수 15:00',
-    confidence: 'high',
+    recommend: 'good',
     recommended: true,
+    room: { name: '회의실 B', place: '본관 3층', capacity: '6인실' },
     facts: [
-      { label: '필수 참석자', value: '4명 모두 현재 가능', ok: true },
-      { label: '선택 참석자', value: '1명은 회의록 공유 가능', ok: true },
-      { label: '회의실', value: '회의실 B 사용 가능', ok: true },
+      { label: '기존 응답 유효', value: '3명', ok: true },
+      { label: '재확인 필요', value: '2명 (필수)', ok: false },
+      { label: '회의실', value: '회의실 B · 본관 3층 · 6인실', ok: true },
       { label: '최신 일정', value: '충돌 없음', ok: true },
-      { label: '다시 조율할 가능성', value: '낮음', ok: true },
     ],
-    reasons: [],
-    summary: '',
+    // 기존 응답은 그 시간을 직접 언급한 경우에만 유효. 캘린더만 비어 있으면 재확인.
+    recheck: [
+      { id: 'kim', name: '김민준', state: 'valid', note: '응답 때 "다음 주 오후 모두 가능"' },
+      { id: 'park', name: '박서준', state: 'recheck', note: '새 외근 일정과의 확인 필요' },
+      { id: 'lee', name: '이지은', state: 'recheck', note: '화요일 14:00만 직접 확인함' },
+      { id: 'choi', name: '최유리', state: 'valid', note: '응답 때 "오후 시간 모두 가능"' },
+      { id: 'jung', name: '정하늘', state: 'valid', note: '"수요일 오후 가능" 응답 · 회의록 공유' },
+    ],
   },
   {
     id: 'a2',
@@ -231,15 +208,13 @@ export const alternatives: CandidateSlot[] = [
     startHour: 10,
     label: '목요일 10:00 - 11:00',
     shortLabel: '목 10:00',
-    confidence: 'medium',
+    recommend: 'check',
+    room: null,
     facts: [
-      { label: '필수 참석자', value: '4명 모두 현재 가능', ok: true },
-      { label: '선택 참석자', value: '2명 모두 가능', ok: true },
-      { label: '회의실', value: '회의실 없음', ok: false },
-      { label: '다시 조율할 가능성', value: '보통', ok: false },
+      { label: '기존 응답 유효', value: '1명', ok: false },
+      { label: '재확인 필요', value: '4명', ok: false },
+      { label: '회의실', value: '사용 가능한 회의실 없음', ok: false },
     ],
-    reasons: [],
-    summary: '',
   },
 ];
 
@@ -285,12 +260,17 @@ export const busyBlocks: BusyBlock[] = [
 export const LUNCH_START = 12;
 export const LUNCH_END = 13;
 
-// 참여자(정하늘) 본인의 캘린더 일정. 본인 일정이라 제목이 보인다.
-export const jungBlocks: BusyBlock[] = [
-  { day: 0, startHour: 10, duration: 1, label: '스프린트 회고', kind: 'busy' },
-  { day: 2, startHour: 10, duration: 1, label: 'QA 싱크', kind: 'busy' },
-  { day: 3, startHour: 16, duration: 1, label: '테스트 케이스 리뷰', kind: 'busy' },
-  { day: 4, startHour: 9, duration: 9, label: '연차', kind: 'leave' },
+// 참여자 체험 인물: 이지은 PM (필수 참석자). 팀 캘린더의 '이지은 · 바쁨' 블록과 일치한다.
+export const leeBlocks: BusyBlock[] = [
+  { day: 0, startHour: 16, duration: 1, label: '리서치 콜', kind: 'busy' },
+  { day: 1, startHour: 9, duration: 1, label: '스프린트 점검', kind: 'busy' },
+  { day: 4, startHour: 13, duration: 5, label: '오후 반차', kind: 'leave' },
+];
+
+// 이지은 캘린더 기준으로 시스템이 미리 계산한 대안 시간
+export const leeAlternatives = [
+  { id: 'wed15', label: '수요일 15:00 가능해요' },
+  { id: 'wed16', label: '수요일 16:00 가능해요' },
 ];
 
 export const confidenceLabel: Record<string, string> = {

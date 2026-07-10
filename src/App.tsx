@@ -12,7 +12,7 @@ import Sidebar from './components/Sidebar';
 import CalendarGrid from './components/CalendarGrid';
 import MeetingPanel from './components/MeetingPanel';
 import ParticipantView from './components/ParticipantView';
-import type { JungDetail } from './components/ParticipantView';
+import type { ParticipantDetail } from './components/ParticipantView';
 
 export default function App() {
   const [step, setStep] = useState<Step>(0);
@@ -31,9 +31,9 @@ export default function App() {
   const [alertReady, setAlertReady] = useState(false);
   // 참여자(정하늘) 화면 전환과 응답 상태
   const [participantOpen, setParticipantOpen] = useState(false);
-  const [jungAnswer, setJungAnswer] = useState<'ok' | 'busy' | null>(null);
-  // 정하늘이 실제로 입력한 응답 내용 (주최자 화면 요약이 이 데이터에서만 파생된다)
-  const [jungDetail, setJungDetail] = useState<JungDetail | null>(null);
+  const [participantAnswer, setParticipantAnswer] = useState<'ok' | 'busy' | null>(null);
+  // 이지은이 실제로 입력한 응답 내용 (주최자 화면 요약이 이 데이터에서만 파생된다)
+  const [participantDetail, setParticipantDetail] = useState<ParticipantDetail | null>(null);
 
   const proposed = candidates.find((c) => c.id === proposedId) ?? candidates[0];
 
@@ -77,8 +77,8 @@ export default function App() {
     setProposedId('c1');
     setAlertReady(false);
     setParticipantOpen(false);
-    setJungAnswer(null);
-    setJungDetail(null);
+    setParticipantAnswer(null);
+    setParticipantDetail(null);
   };
 
   // 참여자 화면이 열려 있으면 앱 전체가 정하늘의 화면으로 전환된다
@@ -89,8 +89,8 @@ export default function App() {
         meeting={meeting}
         attendees={attendees}
         onComplete={(a, d) => {
-          setJungAnswer(a);
-          setJungDetail(d);
+          setParticipantAnswer(a);
+          setParticipantDetail(d);
         }}
         onReturn={() => setParticipantOpen(false)}
       />
@@ -127,8 +127,8 @@ export default function App() {
           onChangeMeeting={setMeeting}
           hasAlert={hasAlert}
           onOpenAlert={openAlert}
-          jungAnswer={jungAnswer}
-          jungDetail={jungDetail}
+          participantAnswer={participantAnswer}
+          participantDetail={participantDetail}
           onEnterParticipant={() => setParticipantOpen(true)}
           attendees={attendees}
           candidates={candidates}

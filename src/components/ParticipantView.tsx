@@ -1,12 +1,6 @@
 import { useEffect, useState } from 'react';
 import type { Attendee, CandidateSlot } from '../types';
-import {
-  LUNCH_END,
-  LUNCH_START,
-  jungBlocks,
-  jungResponse,
-  weekDays,
-} from '../data/mockData';
+import { LUNCH_END, LUNCH_START, leeAlternatives, leeBlocks, weekDays } from '../data/mockData';
 
 const START = 9;
 const END = 18;
@@ -15,25 +9,33 @@ const HOURS = Array.from({ length: END - START }, (_, i) => START + i);
 const DAY_NAMES = ['월요일', '화요일', '수요일', '목요일', '금요일'];
 
 type Mark = 'no' | 'avoid';
-type Phase = 'calendar' | 'modal' | 'editing' | 'done';
+// gap: 캘린더 누락 확인 → (editing: 조건 보완) → confirm: 제안 시간 직접 확인 → done
+type Phase = 'calendar' | 'gap' | 'editing' | 'confirm' | 'done';
 
-export interface JungDetail {
+export interface ParticipantDetail {
+  volatile: boolean;
   no: string[];
   avoid: string[];
   alts: string[];
+  confirmedAt: string;
 }
 
 interface Props {
   proposed: CandidateSlot;
   meeting: { title: string; purpose: string };
   attendees: Attendee[];
-  onComplete: (answer: 'ok' | 'busy', detail: JungDetail) => void;
+  onComplete: (answer: 'ok' | 'busy', detail: ParticipantDetail) => void;
   onReturn: () => void;
 }
 
 const noStyle = {
   backgroundImage:
     'repeating-linear-gradient(-45deg, rgba(255,255,255,0.35) 0 2px, transparent 2px 5px)',
+};
+
+const nowLabel = () => {
+  const d = new Date();
+  return `오늘 ${String(d.getHours()).padStart(2, '0')}:${String(d.getMinutes()).padStart(2, '0')}`;
 };
 
 export default function ParticipantView({
@@ -45,9 +47,11 @@ export default function ParticipantView({
 }: Props) {
   const [phase, setPhase] = useState<Phase>('calendar');
   const [answer, setAnswer] = useState<'ok' | 'busy' | null>(null);
+  const [volatile, setVolatile] = useState(false);
   const [marks, setMarks] = useState<Record<string, Mark>>({});
   const [selectedAlts, setSelectedAlts] = useState<string[]>([]);
   const [paint, setPaint] = useState<Mark | null | undefined>(undefined);
+  const [confirmedAt, setConfirmedAt] = useState('');
 
   useEffect(() => {
     const up = () => setPaint(undefined);
@@ -56,13 +60,10 @@ export default function ParticipantView({
   }, []);
 
   const cellKey = (day: number, hour: number) => `${day}-${hour}`;
-
-  // 내 캘린더에 이미 있는 일정은 다시 표시할 필요가 없다
-  const blockAt = (day: number, hour: number) =>
-    jungBlocks.find(
+  const isBusy = (day: number, hour: number) =>
+    leeBlocks.some(
       (b) => b.day === day && hour >= b.startHour && hour < b.startHour + b.duration,
     );
-  const isBusy = (day: number, hour: number) => !!blockAt(day, hour);
 
   const applyMark = (day: number, hour: number, val: Mark | null) => {
     if (isBusy(day, hour)) return;
@@ -120,24 +121,29 @@ export default function ParticipantView({
 
   const noSummary = summarizeDays('no');
   const avoidSummary = summarizeDays('avoid');
-  const altLabels = jungResponse.alternatives
+  const altLabels = leeAlternatives
     .filter((a) => selectedAlts.includes(a.id))
     .map((a) => a.label);
+  const hasMarks = noSummary.length > 0 || avoidSummary.length > 0;
 
-  // 주최자 화면에 표시될 요약은 참여자가 실제로 입력한 내용에서만 파생된다
-  const accept = () => {
-    setAnswer('ok');
-    onComplete('ok', { no: [], avoid: [], alts: [] });
+  const send = (a: 'ok' | 'busy') => {
+    const t = nowLabel();
+    setAnswer(a);
+    setConfirmedAt(t);
+    onComplete(a, {
+      volatile: a === 'ok' ? volatile : false,
+      no: noSummary,
+      avoid: avoidSummary,
+      alts: altLabels,
+      confirmedAt: t,
+    });
     setPhase('done');
   };
-  const sendBusy = () => {
-    setAnswer('busy');
-    onComplete('busy', { no: noSummary, avoid: avoidSummary, alts: altLabels });
-    setPhase('done');
-  };
 
-  const required = attendees.filter((a) => a.role === 'required');
-  const optional = attendees.filter((a) => a.role === 'optional');
+  const requiredNames = attendees
+    .filter((a) => a.role === 'required')
+    .map((a) => a.name)
+    .join(', ');
 
   return (
     <div className="flex h-full flex-col bg-white">
@@ -163,14 +169,14 @@ export default function ParticipantView({
           </button>
           <div className="flex items-center gap-2">
             <div className="flex h-8 w-8 items-center justify-center rounded-full bg-emerald-100 text-sm font-bold text-emerald-700">
-              정
+              이
             </div>
-            <span className="text-sm font-medium text-zinc-700">정하늘</span>
+            <span className="text-sm font-medium text-zinc-700">이지은</span>
           </div>
         </div>
       </header>
 
-      {/* 알림 배너 — 응답 필요 / 응답 완료 */}
+      {/* 알림 배너 */}
       {phase !== 'editing' && (
         <div
           className={`flex shrink-0 items-center gap-3 border-b px-5 py-3 ${
@@ -202,23 +208,23 @@ export default function ParticipantView({
               }`}
             >
               {phase === 'done'
-                ? '응답을 보냈어요'
-                : `유나영님이 '${meeting.title}' 시간을 제안했어요`}
+                ? `직접 확인을 마쳤어요 · ${confirmedAt}`
+                : `유나영님이 '${meeting.title}' 시간의 확인을 요청했어요`}
             </p>
             <p
               className={`text-xs ${phase === 'done' ? 'text-emerald-600/70' : 'text-blue-600/70'}`}
             >
               {phase === 'done'
                 ? '유나영님이 확인 후 회의가 확정되면 알려드릴게요.'
-                : '캘린더의 제안된 시간을 눌러 응답해주세요.'}
+                : '필수 참석자라 직접 확인이 필요해요. 캘린더의 파란 시간을 눌러주세요.'}
             </p>
           </div>
           {phase === 'calendar' && (
             <button
-              onClick={() => setPhase('modal')}
+              onClick={() => setPhase('gap')}
               className="shrink-0 rounded-lg bg-zinc-900 px-3 py-2 text-xs font-bold text-white transition-colors hover:bg-zinc-800"
             >
-              응답하기
+              확인하기
             </button>
           )}
           {phase === 'done' && (
@@ -237,11 +243,11 @@ export default function ParticipantView({
         <div className="flex shrink-0 items-center justify-between gap-4 border-b border-zinc-200 bg-zinc-50 px-5 py-3">
           <div className="min-w-0">
             <p className="text-[13px] font-semibold text-zinc-900">
-              안 되는 시간과 피하고 싶은 시간을 캘린더에 표시해주세요
+              추가로 어려운 시간만 표시해주세요
             </p>
             <p className="text-xs text-zinc-500">
-              누르거나 드래그하면 표시돼요. 요일 이름을 누르면 하루 전체가 선택돼요. 내
-              캘린더에 있는 일정은 이미 반영되어 있어요.
+              등록된 일정은 이미 반영했어요. 누르거나 드래그로 표시하고, 요일 이름을
+              누르면 하루 전체가 선택돼요.
             </p>
           </div>
           <div className="flex shrink-0 items-center gap-3 text-[11px] text-zinc-500">
@@ -332,7 +338,7 @@ export default function ParticipantView({
                   )}
                 </div>
 
-                {/* 표시 가능한 셀 (편집 모드) */}
+                {/* 표시 셀 (편집 모드) */}
                 {HOURS.map((h) => {
                   const busy = isBusy(day, h);
                   const mark = marks[cellKey(day, h)];
@@ -348,11 +354,7 @@ export default function ParticipantView({
                       className={`absolute inset-x-0 z-10 ${
                         phase === 'editing' ? 'cursor-pointer hover:bg-zinc-50' : ''
                       } ${
-                        mark === 'no'
-                          ? 'bg-zinc-500'
-                          : mark === 'avoid'
-                            ? 'bg-amber-300'
-                            : ''
+                        mark === 'no' ? 'bg-zinc-500' : mark === 'avoid' ? 'bg-amber-300' : ''
                       }`}
                       style={{
                         top: (h - START) * HOUR_PX + 1,
@@ -364,16 +366,12 @@ export default function ParticipantView({
                 })}
 
                 {/* 내 일정 */}
-                {jungBlocks
+                {leeBlocks
                   .filter((b) => b.day === day)
                   .map((b, i) => (
                     <div
                       key={`b${i}`}
-                      className={`absolute inset-x-1 z-20 overflow-hidden rounded-md border-l-[3px] px-2 py-1 ${
-                        b.kind === 'leave'
-                          ? 'border-zinc-300 bg-zinc-100'
-                          : 'border-zinc-400 bg-zinc-100'
-                      }`}
+                      className="absolute inset-x-1 z-20 overflow-hidden rounded-md border-l-[3px] border-zinc-400 bg-zinc-100 px-2 py-1"
                       style={{
                         top: (b.startHour - START) * HOUR_PX + 2,
                         height: b.duration * HOUR_PX - 4,
@@ -388,7 +386,7 @@ export default function ParticipantView({
                 {/* 제안된 시간 */}
                 {proposed.day === day && (
                   <button
-                    onClick={() => phase === 'calendar' && setPhase('modal')}
+                    onClick={() => phase === 'calendar' && setPhase('gap')}
                     className={`absolute inset-x-1 z-30 flex flex-col justify-center rounded-lg border px-2.5 text-left transition-all ${
                       phase === 'done' && answer === 'ok'
                         ? 'border-emerald-500 bg-emerald-500 text-white'
@@ -404,9 +402,11 @@ export default function ParticipantView({
                     <span className="truncate text-xs font-bold leading-tight">
                       {phase === 'done'
                         ? answer === 'ok'
-                          ? '참석 예정'
-                          : '응답함 · 불참'
-                        : '응답 필요'}
+                          ? volatile
+                            ? '참석 · 변동 가능'
+                            : '참석 확인함'
+                          : '어렵다고 응답함'
+                        : '확인 필요'}
                     </span>
                     <span className="truncate text-[11px] leading-tight opacity-80">
                       {meeting.title}
@@ -426,12 +426,10 @@ export default function ParticipantView({
             <div className="min-w-0 flex-1">
               <p className="mb-1.5 text-xs font-semibold text-zinc-500">
                 대신 이 시간은 어때요?{' '}
-                <span className="font-normal text-zinc-400">
-                  내 캘린더 기준으로 미리 찾아둔 시간이에요
-                </span>
+                <span className="font-normal text-zinc-400">내 캘린더 기준으로 미리 찾았어요</span>
               </p>
               <div className="flex flex-wrap gap-2">
-                {jungResponse.alternatives.map((a) => (
+                {leeAlternatives.map((a) => (
                   <button
                     key={a.id}
                     onClick={() => toggleAlt(a.id)}
@@ -449,24 +447,61 @@ export default function ParticipantView({
             </div>
             <div className="flex shrink-0 items-center gap-2">
               <button
-                onClick={() => setPhase('modal')}
+                onClick={() => setPhase('gap')}
                 className="rounded-xl border border-zinc-200 px-4 py-2.5 text-sm font-semibold text-zinc-600 transition-colors hover:bg-zinc-50"
               >
                 뒤로
               </button>
               <button
-                onClick={sendBusy}
+                onClick={() => setPhase('confirm')}
                 className="rounded-xl bg-zinc-900 px-5 py-2.5 text-sm font-bold text-white transition-colors hover:bg-zinc-800"
               >
-                응답 보내기
+                입력 완료
               </button>
             </div>
           </div>
         </div>
       )}
 
-      {/* 응답 모달 */}
-      {phase === 'modal' && (
+      {/* 1단계: 캘린더 누락 확인 */}
+      {phase === 'gap' && (
+        <div
+          className="fixed inset-0 z-50 flex items-center justify-center bg-zinc-900/40 px-4"
+          onClick={() => setPhase('calendar')}
+        >
+          <div
+            className="w-[420px] rounded-2xl bg-white p-6 shadow-xl"
+            style={{ animation: 'slide-down 0.25s ease-out' }}
+            onClick={(e) => e.stopPropagation()}
+          >
+            <p className="text-lg font-bold leading-snug text-zinc-900">
+              캘린더에 없는 일정이 있나요?
+            </p>
+            <p className="mt-2 text-[13px] leading-relaxed text-zinc-500">
+              캘린더에 등록된 일정은 반영했어요. 다음 주에 아직 등록하지 않은 외근,
+              이동, 연차나 개인 일정이 있나요?
+            </p>
+
+            <div className="mt-5 space-y-2">
+              <button
+                onClick={() => setPhase('confirm')}
+                className="w-full rounded-xl bg-zinc-900 py-3.5 text-sm font-bold text-white transition-colors hover:bg-zinc-800"
+              >
+                등록하지 않은 일정이 없어요
+              </button>
+              <button
+                onClick={() => setPhase('editing')}
+                className="w-full rounded-xl border border-zinc-200 py-3.5 text-sm font-bold text-zinc-600 transition-colors hover:border-zinc-300 hover:bg-zinc-50"
+              >
+                추가할 시간이 있어요
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* 2단계: 제안 시간 직접 확인 */}
+      {phase === 'confirm' && (
         <div
           className="fixed inset-0 z-50 flex items-center justify-center bg-zinc-900/40 px-4"
           onClick={() => setPhase('calendar')}
@@ -478,9 +513,7 @@ export default function ParticipantView({
           >
             <div className="flex items-start justify-between gap-3">
               <div>
-                <p className="text-lg font-bold leading-snug text-zinc-900">
-                  {meeting.title}
-                </p>
+                <p className="text-lg font-bold leading-snug text-zinc-900">{meeting.title}</p>
                 <p className="mt-0.5 text-xs text-zinc-400">{meeting.purpose}</p>
               </div>
               <button
@@ -496,61 +529,73 @@ export default function ParticipantView({
                 <span className="w-16 shrink-0 text-zinc-400">일시</span>
                 <span className="font-medium text-zinc-800">{proposed.label}</span>
               </div>
-              <div className="flex gap-3">
-                <span className="w-16 shrink-0 text-zinc-400">회의실</span>
-                <span className="font-medium text-zinc-800">회의실 A</span>
-              </div>
-              <div className="flex gap-3">
-                <span className="w-16 shrink-0 text-zinc-400">주최자</span>
-                <span className="font-medium text-zinc-800">유나영 기획자</span>
-              </div>
-              <div className="flex gap-3">
-                <span className="w-16 shrink-0 text-zinc-400">참석자</span>
-                <div className="min-w-0 flex-1">
-                  <p className="text-zinc-800">
-                    <span className="font-medium">필수 {required.length}명</span>
-                    <span className="text-zinc-400"> · {required.map((a) => a.name).join(', ')}</span>
-                  </p>
-                  <p className="mt-0.5 text-zinc-800">
-                    <span className="font-medium">선택 {optional.length}명</span>
-                    <span className="text-zinc-400"> · {optional.map((a) => a.name).join(', ')}</span>
-                  </p>
-                  <p className="mt-1 text-xs text-zinc-400">
-                    정하늘님은 선택 참석자예요. 불참해도 회의는 진행돼요.
-                  </p>
+              {proposed.room && (
+                <div className="flex gap-3">
+                  <span className="w-16 shrink-0 text-zinc-400">회의실</span>
+                  <span className="font-medium text-zinc-800">
+                    {proposed.room.name} · {proposed.room.place} · {proposed.room.capacity}
+                  </span>
                 </div>
+              )}
+              <div className="flex gap-3">
+                <span className="w-16 shrink-0 text-zinc-400">내 역할</span>
+                <span className="font-medium text-zinc-800">
+                  필수 참석자 <span className="font-normal text-zinc-400">· 직접 확인이 필요해요</span>
+                </span>
               </div>
+              <div className="flex gap-3">
+                <span className="w-16 shrink-0 text-zinc-400">필수</span>
+                <span className="text-zinc-600">{requiredNames}</span>
+              </div>
+              {hasMarks && (
+                <div className="flex gap-3">
+                  <span className="w-16 shrink-0 text-zinc-400">추가 조건</span>
+                  <span className="min-w-0 flex-1 text-zinc-600">
+                    {[
+                      noSummary.length ? `안 돼요: ${noSummary.join(', ')}` : null,
+                      avoidSummary.length ? `피하고 싶어요: ${avoidSummary.join(', ')}` : null,
+                      altLabels.length ? `대안: ${altLabels.join(', ')}` : null,
+                    ]
+                      .filter(Boolean)
+                      .join(' · ')}
+                  </span>
+                </div>
+              )}
             </div>
 
             <p className="mt-3.5 text-[13px] font-semibold text-zinc-800">
-              이 시간에 참석할 수 있나요?
+              캘린더에 없는 일정과 이동 시간까지 고려했을 때, 참석할 수 있나요?
             </p>
-            <p className="mt-1 text-xs leading-relaxed text-zinc-500">
-              캘린더 일정은 이미 반영되어 있어요. 캘린더에 없는 조건만 알려주세요.
-            </p>
+
+            <label className="mt-3 flex cursor-pointer items-center gap-2 rounded-lg bg-zinc-50 px-3 py-2.5">
+              <input
+                type="checkbox"
+                checked={volatile}
+                onChange={(e) => setVolatile(e.target.checked)}
+                className="h-4 w-4 accent-zinc-900"
+              />
+              <span className="text-xs text-zinc-600">일정이 변경될 가능성이 있어요</span>
+            </label>
 
             <div className="mt-3 grid grid-cols-2 gap-2.5">
               <button
-                onClick={accept}
+                onClick={() => send('ok')}
                 className="rounded-xl bg-zinc-900 py-3.5 text-sm font-bold text-white transition-colors hover:bg-zinc-800"
               >
-                참석할 수 있어요
+                이 시간에 참석할 수 있어요
               </button>
               <button
-                onClick={() => setPhase('editing')}
+                onClick={() => send('busy')}
                 className="rounded-xl border border-zinc-200 py-3.5 text-sm font-bold text-zinc-600 transition-colors hover:border-zinc-300 hover:bg-zinc-50"
               >
                 이 시간은 어려워요
               </button>
             </div>
-            <p className="mt-2 text-center text-[11px] text-zinc-400">
-              어렵다면 다음 화면에서 안 되는 시간을 표시할 수 있어요
-            </p>
           </div>
         </div>
       )}
 
-      {/* 응답 완료 요약 모달 */}
+      {/* 응답 완료 요약 */}
       {phase === 'done' && (
         <div className="pointer-events-none fixed inset-x-0 bottom-0 z-40 flex justify-center pb-6">
           <div
@@ -563,9 +608,14 @@ export default function ParticipantView({
                 <span className="text-zinc-400">제안된 시간</span>
                 <span className="font-medium text-zinc-800">
                   {answer === 'ok' ? '참석할 수 있어요' : '이 시간은 어려워요'}
+                  {answer === 'ok' && volatile ? ' · 변동 가능성 있음' : ''}
                 </span>
               </div>
-              {answer === 'busy' && (
+              <div className="flex justify-between gap-3">
+                <span className="text-zinc-400">직접 확인</span>
+                <span className="font-medium text-zinc-800">{confirmedAt}</span>
+              </div>
+              {hasMarks && (
                 <>
                   <div className="flex justify-between gap-3">
                     <span className="shrink-0 text-zinc-400">안 되는 시간</span>
@@ -579,17 +629,11 @@ export default function ParticipantView({
                       {avoidSummary.length ? avoidSummary.join(', ') : '없음'}
                     </span>
                   </div>
-                  <div className="flex justify-between gap-3">
-                    <span className="shrink-0 text-zinc-400">대신 가능한 시간</span>
-                    <span className="text-right font-medium text-zinc-800">
-                      {altLabels.length ? altLabels.join(', ') : '선택 안 함'}
-                    </span>
-                  </div>
                 </>
               )}
             </div>
             <button
-              onClick={() => setPhase(answer === 'busy' ? 'editing' : 'modal')}
+              onClick={() => setPhase('confirm')}
               className="mt-3 w-full py-1 text-center text-xs font-medium text-zinc-400 transition-colors hover:text-zinc-600"
             >
               응답 수정하기
