@@ -39,7 +39,7 @@ export default function App() {
 
   useEffect(() => {
     if (step !== 7) return;
-    const t = setTimeout(() => setAlertReady(true), 5000);
+    const t = setTimeout(() => setAlertReady(true), 3000);
     return () => clearTimeout(t);
   }, [step]);
 
