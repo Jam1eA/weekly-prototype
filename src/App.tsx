@@ -12,6 +12,7 @@ import Sidebar from './components/Sidebar';
 import CalendarGrid from './components/CalendarGrid';
 import MeetingPanel from './components/MeetingPanel';
 import ParticipantView from './components/ParticipantView';
+import type { JungDetail } from './components/ParticipantView';
 
 export default function App() {
   const [step, setStep] = useState<Step>(0);
@@ -31,12 +32,14 @@ export default function App() {
   // 참여자(정하늘) 화면 전환과 응답 상태
   const [participantOpen, setParticipantOpen] = useState(false);
   const [jungAnswer, setJungAnswer] = useState<'ok' | 'busy' | null>(null);
+  // 정하늘이 실제로 입력한 응답 내용 (주최자 화면 요약이 이 데이터에서만 파생된다)
+  const [jungDetail, setJungDetail] = useState<JungDetail | null>(null);
 
   const proposed = candidates.find((c) => c.id === proposedId) ?? candidates[0];
 
   useEffect(() => {
     if (step !== 7) return;
-    const t = setTimeout(() => setAlertReady(true), 3000);
+    const t = setTimeout(() => setAlertReady(true), 5000);
     return () => clearTimeout(t);
   }, [step]);
 
@@ -75,6 +78,7 @@ export default function App() {
     setAlertReady(false);
     setParticipantOpen(false);
     setJungAnswer(null);
+    setJungDetail(null);
   };
 
   // 참여자 화면이 열려 있으면 앱 전체가 정하늘의 화면으로 전환된다
@@ -84,7 +88,10 @@ export default function App() {
         proposed={proposed}
         meeting={meeting}
         attendees={attendees}
-        onComplete={setJungAnswer}
+        onComplete={(a, d) => {
+          setJungAnswer(a);
+          setJungDetail(d);
+        }}
         onReturn={() => setParticipantOpen(false)}
       />
     );
@@ -121,6 +128,7 @@ export default function App() {
           hasAlert={hasAlert}
           onOpenAlert={openAlert}
           jungAnswer={jungAnswer}
+          jungDetail={jungDetail}
           onEnterParticipant={() => setParticipantOpen(true)}
           attendees={attendees}
           candidates={candidates}

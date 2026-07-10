@@ -3,7 +3,6 @@ import type { Attendee, CandidateSlot, Role, Step } from '../types';
 import {
   directoryExtras,
   initialAttendees,
-  jungResponse,
   meetingInfo,
   roleDescriptions,
 } from '../data/mockData';
@@ -37,15 +36,6 @@ function Card({
     amber: 'border-amber-100 bg-amber-50/60',
   };
   return <div className={`rounded-xl border p-4 ${tones[tone]}`}>{children}</div>;
-}
-
-function InfoRow({ label, value }: { label: string; value: string }) {
-  return (
-    <div className="flex items-start justify-between gap-3 py-1">
-      <span className="shrink-0 text-xs text-zinc-400">{label}</span>
-      <span className="text-right text-xs font-medium text-zinc-700">{value}</span>
-    </div>
-  );
 }
 
 function CheckItem({ children, ok = true }: { children: React.ReactNode; ok?: boolean }) {
@@ -123,6 +113,7 @@ interface MeetingInput {
 
 interface Props {
   step: Step;
+  jungDetail: { no: string[]; avoid: string[]; alts: string[] } | null;
   meeting: MeetingInput;
   onChangeMeeting: (m: MeetingInput) => void;
   hasAlert: boolean;
@@ -143,6 +134,7 @@ interface Props {
 
 export default function MeetingPanel({
   step,
+  jungDetail,
   meeting,
   onChangeMeeting,
   hasAlert,
@@ -166,6 +158,8 @@ export default function MeetingPanel({
   const [query, setQuery] = useState('');
   // Step 4: 제안을 보내기 전 확인 모달
   const [confirmOpen, setConfirmOpen] = useState(false);
+  // Step 5: 미응답자에게 리마인드 발송 (리서치: 응답 지연 시 멘션·전화로 쫓아다님)
+  const [reminded, setReminded] = useState(false);
   const fullDirectory = [...initialAttendees, ...directoryExtras].filter(
     (a) => !a.isOrganizer,
   );
@@ -224,6 +218,17 @@ export default function MeetingPanel({
   const requiredAtt = attendees.filter((a) => a.role === 'required');
   const optionalAtt = attendees.filter((a) => a.role === 'optional');
   const shareAtt = attendees.filter((a) => a.role === 'share');
+
+  // 정하늘 응답 요약은 참여자가 실제로 표시한 내용에서만 만든다 (시스템이 지어내지 않는다)
+  const jungResponseSummary = (() => {
+    if (!jungDetail) return null;
+    const parts: string[] = [];
+    if (jungDetail.no.length) parts.push(`${jungDetail.no.join(', ')} 불가`);
+    if (jungDetail.avoid.length) parts.push(`${jungDetail.avoid.join(', ')} 피하고 싶음`);
+    if (parts.length === 0) parts.push('제안된 시간이 어렵다고 응답');
+    if (jungDetail.alts.length) parts.push(`대신 ${jungDetail.alts.join(', ')}`);
+    return parts.join(' · ');
+  })();
 
   // 확정 요약에서 정하늘의 상태를 실제 응답/전환 여부에 맞게 표현
   const jungSummaryLine =
@@ -421,51 +426,29 @@ export default function MeetingPanel({
         </>
       );
       cta = {
-        label: '회의 조건 확인하기',
-        onClick: () => onNext(1),
+        label: '참석 구성 확인하기',
+        onClick: () => onNext(2),
         disabled: attendees.length < 2 || meeting.title.trim() === '',
       };
       break;
     }
-
-    case 1:
-      body = (
-        <>
-          <PanelTitle>회의 조건 확인</PanelTitle>
-          <PanelDesc>다음 주 안에 1시간 회의를 잡기 위해 먼저 조건을 확인해요.</PanelDesc>
-
-          <div className="mt-4 space-y-3">
-            <Card>
-              <p className="mb-2 text-xs font-semibold text-zinc-400">회의 정보</p>
-              <InfoRow label="회의명" value={meeting.title} />
-              <InfoRow label="회의 목적" value={meeting.purpose} />
-              <InfoRow label="회의 길이" value={meetingInfo.duration} />
-              <InfoRow label="기간" value={meetingInfo.period} />
-            </Card>
-
-            <Card tone="blue">
-              <p className="text-[13px] font-semibold text-zinc-800">
-                시간을 찾을 때 함께 볼 조건
-              </p>
-              <p className="mt-1 text-xs leading-relaxed text-zinc-500">
-                꼭 참석해야 할 사람, 회의실, 숨은 일정 제약, 다시 조율할 가능성을 함께
-                확인해요.
-              </p>
-            </Card>
-          </div>
-        </>
-      );
-      cta = { label: '참석 구성 확인하기', onClick: () => onNext(2) };
-      break;
 
     case 2:
       body = (
         <>
           <PanelTitle>참석 구성 확인</PanelTitle>
           <PanelDesc>
-            회의를 만들 때 정한 구성이에요. 꼭 참석해야 할 사람이 맞는지 확인하고,
-            필요하면 여기서 역할을 바꿀 수 있어요.
+            꼭 참석해야 할 사람이 맞는지 확인하세요. 이 구성이 곧 회의 성립 조건이 돼요.
           </PanelDesc>
+
+          <div className="mt-3 rounded-xl bg-zinc-50 px-3.5 py-2.5">
+            <p className="truncate text-[13px] font-semibold text-zinc-800">
+              {meeting.title}
+            </p>
+            <p className="mt-0.5 text-xs text-zinc-500">
+              {meetingInfo.duration} · {meetingInfo.period}
+            </p>
+          </div>
 
           <div className="mt-4 space-y-4">
             {(
@@ -524,8 +507,7 @@ export default function MeetingPanel({
         <>
           <PanelTitle>후보 시간 비교</PanelTitle>
           <PanelDesc>
-            비어 있는 시간이 아니라, 이 시간으로 회의를 잡아도 괜찮은지를 기준으로
-            비교해요.
+            비어 있는 시간이 아니라, 확정 후 다시 조율하게 만들 원인이 없는 시간을 찾아요.
           </PanelDesc>
 
           <p className="mt-3 rounded-lg bg-zinc-100 px-3 py-2 text-xs leading-relaxed text-zinc-500">
@@ -588,15 +570,18 @@ export default function MeetingPanel({
                     >
                       {a.name[0]}
                       <span
+                        title={
+                          st === 'unsure' ? '참석 여부가 아직 확실하지 않아요' : undefined
+                        }
                         className={`absolute -bottom-0.5 -right-0.5 flex h-4 w-4 items-center justify-center rounded-full text-[9px] font-bold text-white ring-2 ring-white ${
                           st === 'no'
                             ? 'bg-red-500'
-                            : st === 'avoid'
+                            : st === 'unsure' || st === 'avoid'
                               ? 'bg-amber-400'
                               : 'bg-emerald-500'
                         }`}
                       >
-                        {st === 'no' ? '×' : st === 'avoid' ? '!' : '✓'}
+                        {st === 'no' ? '×' : st === 'unsure' ? '?' : st === 'avoid' ? '!' : '✓'}
                       </span>
                     </div>
                     <p
@@ -720,12 +705,25 @@ export default function MeetingPanel({
               </div>
 
               {waitingJung && (
-                <button
-                  onClick={onEnterParticipant}
-                  className="mt-1.5 w-full rounded-lg border border-zinc-300 bg-white py-2 text-xs font-semibold text-zinc-700 transition-colors hover:bg-zinc-50"
-                >
-                  정하늘님 화면에서 응답하기
-                </button>
+                <div className="mt-1.5 flex gap-1.5">
+                  <button
+                    onClick={() => setReminded(true)}
+                    disabled={reminded}
+                    className={`flex-1 rounded-lg border py-2 text-xs font-semibold transition-colors ${
+                      reminded
+                        ? 'cursor-default border-zinc-100 bg-zinc-50 text-zinc-400'
+                        : 'border-zinc-300 bg-white text-zinc-700 hover:bg-zinc-50'
+                    }`}
+                  >
+                    {reminded ? '리마인드를 보냈어요' : '리마인드 보내기'}
+                  </button>
+                  <button
+                    onClick={onEnterParticipant}
+                    className="flex-1 rounded-lg border border-zinc-300 bg-white py-2 text-xs font-semibold text-zinc-700 transition-colors hover:bg-zinc-50"
+                  >
+                    정하늘님 화면에서 응답하기
+                  </button>
+                </div>
               )}
             </Card>
           </div>
@@ -773,7 +771,7 @@ export default function MeetingPanel({
                         <span className="mr-1 rounded bg-zinc-100 px-1 py-0.5 text-[10px] font-semibold text-zinc-500">
                           본인 응답
                         </span>
-                        {jungResponse.summary}
+                        {jungResponseSummary ?? '제안된 시간이 어렵다고 응답'}
                         <br />
                         회의는 진행할 수 있어요. 회의록 공유 대상으로 바꿀 수 있어요.
                       </>
