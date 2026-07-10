@@ -123,8 +123,6 @@ interface MeetingInput {
 
 interface Props {
   step: Step;
-  started: boolean;
-  onStart: () => void;
   meeting: MeetingInput;
   onChangeMeeting: (m: MeetingInput) => void;
   hasAlert: boolean;
@@ -145,8 +143,6 @@ interface Props {
 
 export default function MeetingPanel({
   step,
-  started,
-  onStart,
   meeting,
   onChangeMeeting,
   hasAlert,
@@ -236,40 +232,6 @@ export default function MeetingPanel({
       : jungShared
         ? '선택 참석자 1명 참석 · 1명 회의록 공유'
         : '선택 참석자 1명 참석 · 1명 불참 (회의 진행 가능)';
-
-  /* 회의를 만들기 전: 빈 상태 */
-  if (!started) {
-    return (
-      <aside className="flex w-[380px] shrink-0 flex-col border-l border-zinc-200 bg-zinc-50">
-        <div className="flex shrink-0 items-center justify-between border-b border-zinc-200 bg-white px-5 py-3">
-          <p className="text-xs font-semibold tracking-wide text-zinc-400">회의 조율</p>
-        </div>
-        <div className="flex flex-1 flex-col items-center justify-center px-8 pb-16 text-center">
-          <div className="flex h-14 w-14 items-center justify-center rounded-2xl bg-zinc-100 text-zinc-500">
-            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-              <rect x="3" y="4" width="18" height="18" rx="2" />
-              <path d="M16 2v4M8 2v4M3 10h18" />
-              <path d="M12 14v4M10 16h4" />
-            </svg>
-          </div>
-          <p className="mt-4 text-[15px] font-bold text-zinc-900">
-            아직 조율 중인 회의가 없어요
-          </p>
-          <p className="mt-1.5 text-[13px] leading-relaxed text-zinc-500">
-            새 회의를 만들면 참석자의 일정과 조건을
-            <br />
-            함께 보며 시간을 찾을 수 있어요.
-          </p>
-          <button
-            onClick={onStart}
-            className="mt-5 rounded-xl bg-zinc-900 px-5 py-3 text-sm font-bold text-white transition-colors hover:bg-zinc-800"
-          >
-            + 새 회의 만들기
-          </button>
-        </div>
-      </aside>
-    );
-  }
 
   /* 단계별 본문 + CTA 정의 */
   let body: React.ReactNode = null;

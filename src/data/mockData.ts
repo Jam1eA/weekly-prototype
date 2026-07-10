@@ -281,6 +281,18 @@ export const busyBlocks: BusyBlock[] = [
   { day: 4, startHour: 13, duration: 5, label: '이지은 · 오후 반차', kind: 'busy' },
 ];
 
+// 점심시간 — 모든 캘린더에 옅은 앰버 밴드로 깔린다 (피하고 싶은 시간과 같은 색 언어)
+export const LUNCH_START = 12;
+export const LUNCH_END = 13;
+
+// 참여자(정하늘) 본인의 캘린더 일정. 본인 일정이라 제목이 보인다.
+export const jungBlocks: BusyBlock[] = [
+  { day: 0, startHour: 10, duration: 1, label: '스프린트 회고', kind: 'busy' },
+  { day: 2, startHour: 10, duration: 1, label: 'QA 싱크', kind: 'busy' },
+  { day: 3, startHour: 16, duration: 1, label: '테스트 케이스 리뷰', kind: 'busy' },
+  { day: 4, startHour: 9, duration: 9, label: '연차', kind: 'leave' },
+];
+
 export const confidenceLabel: Record<string, string> = {
   high: '높음',
   medium: '보통',

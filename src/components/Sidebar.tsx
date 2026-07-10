@@ -21,25 +21,29 @@ export default function Sidebar({
 }) {
   return (
     <aside className="flex w-60 shrink-0 flex-col border-r border-zinc-200 bg-white">
+      {/* 캘린더가 기본 화면이고, 조율은 회의를 만들면 생기는 상태다 */}
       <nav className="border-b border-zinc-100 p-3">
         {[
-          { label: '내 캘린더', active: false },
-          { label: '회의 조율', active: true },
+          { label: '내 캘린더', active: !started },
+          { label: '조율 중인 회의', active: started, badge: started ? 1 : 0 },
           { label: '회의실 예약', active: false },
           { label: '팀 멤버', active: false },
         ].map((item) => (
           <div
             key={item.label}
             className={`mb-0.5 flex items-center gap-2 rounded-lg px-3 py-2 text-sm ${
-              item.active
-                ? 'bg-zinc-100 font-semibold text-zinc-900'
-                : 'text-zinc-500'
+              item.active ? 'bg-zinc-100 font-semibold text-zinc-900' : 'text-zinc-500'
             }`}
           >
             <span
               className={`h-1.5 w-1.5 rounded-full ${item.active ? 'bg-zinc-900' : 'bg-zinc-300'}`}
             />
-            {item.label}
+            <span className="flex-1">{item.label}</span>
+            {item.badge ? (
+              <span className="rounded bg-zinc-900 px-1.5 text-[10px] font-semibold text-white">
+                {item.badge}
+              </span>
+            ) : null}
           </div>
         ))}
       </nav>

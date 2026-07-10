@@ -1,5 +1,5 @@
 import type { CandidateSlot, Step } from '../types';
-import { busyBlocks, weekDays } from '../data/mockData';
+import { LUNCH_END, LUNCH_START, busyBlocks, weekDays } from '../data/mockData';
 
 const START = 9;
 const END = 18;
@@ -156,6 +156,8 @@ function buildOverlays(
 
 interface Props {
   step: Step;
+  started: boolean;
+  onStart: () => void;
   candidates: CandidateSlot[];
   selectedId: string;
   proposed: CandidateSlot;
@@ -165,6 +167,8 @@ interface Props {
 
 export default function CalendarGrid({
   step,
+  started,
+  onStart,
   candidates,
   selectedId,
   proposed,
@@ -177,35 +181,54 @@ export default function CalendarGrid({
   return (
     <main className="flex min-w-0 flex-1 flex-col overflow-hidden bg-white">
       {/* 캘린더 상단 바 */}
-      <div className="flex shrink-0 items-center justify-between border-b border-zinc-200 px-5 py-3">
-        <div className="flex items-center gap-2">
-          <h2 className="text-sm font-bold text-zinc-800">
-            {step === 0 ? '내 캘린더' : '다음 주 팀 캘린더'}
-          </h2>
-          <span className="text-xs text-zinc-400">
-            {step === 0
-              ? '참석자를 선택하면 팀 일정을 함께 볼 수 있어요'
-              : '참석자 6명의 일정을 함께 보고 있어요 · 다른 사람 일정의 내용은 보이지 않아요'}
-          </span>
+      <div className="flex shrink-0 items-center justify-between border-b border-zinc-200 px-5 py-2.5">
+        <div className="flex items-center gap-3">
+          {!started && (
+            <button
+              onClick={onStart}
+              className="rounded-lg bg-zinc-900 px-3 py-2 text-xs font-bold text-white transition-colors hover:bg-zinc-800"
+            >
+              + 회의 만들기
+            </button>
+          )}
+          <div className="flex items-center gap-2">
+            <h2 className="text-sm font-bold text-zinc-800">
+              {started && step > 0 ? '다음 주 팀 캘린더' : '내 캘린더'}
+            </h2>
+            <span className="text-xs text-zinc-400">
+              {!started
+                ? '회의를 만들면 참석자의 일정을 함께 볼 수 있어요'
+                : step === 0
+                  ? '참석자를 선택하면 팀 일정을 함께 볼 수 있어요'
+                  : '참석자 6명의 일정을 함께 보고 있어요 · 다른 사람 일정의 내용은 보이지 않아요'}
+            </span>
+          </div>
         </div>
-        <div className="flex items-center gap-3 text-[11px] text-zinc-500">
-          <span className="flex items-center gap-1">
-            <span className="h-2.5 w-2.5 rounded-sm border border-dashed border-blue-400 bg-blue-50" />
-            후보
+        {started ? (
+          <div className="flex items-center gap-3 text-[11px] text-zinc-500">
+            <span className="flex items-center gap-1">
+              <span className="h-2.5 w-2.5 rounded-sm border border-dashed border-blue-400 bg-blue-50" />
+              후보
+            </span>
+            <span className="flex items-center gap-1">
+              <span className="h-2.5 w-2.5 rounded-sm bg-blue-500" />
+              제안 중
+            </span>
+            <span className="flex items-center gap-1">
+              <span className="h-2.5 w-2.5 rounded-sm bg-emerald-500" />
+              확정
+            </span>
+            <span className="flex items-center gap-1">
+              <span className="h-2.5 w-2.5 rounded-sm border border-red-400 bg-red-50" />
+              변경 필요
+            </span>
+          </div>
+        ) : (
+          <span className="flex items-center gap-1 text-[11px] text-zinc-400">
+            <span className="h-2.5 w-2.5 rounded-sm bg-amber-100" />
+            점심시간
           </span>
-          <span className="flex items-center gap-1">
-            <span className="h-2.5 w-2.5 rounded-sm bg-blue-500" />
-            제안 중
-          </span>
-          <span className="flex items-center gap-1">
-            <span className="h-2.5 w-2.5 rounded-sm bg-emerald-500" />
-            확정
-          </span>
-          <span className="flex items-center gap-1">
-            <span className="h-2.5 w-2.5 rounded-sm border border-red-400 bg-red-50" />
-            변경 필요
-          </span>
-        </div>
+        )}
       </div>
 
       {/* 요일 헤더 */}
@@ -248,6 +271,21 @@ export default function CalendarGrid({
                   style={{ top: (h - START) * HOUR_PX }}
                 />
               ))}
+
+              {/* 점심시간 — 피하고 싶은 시간과 같은 앰버 색 언어 */}
+              <div
+                className="pointer-events-none absolute inset-x-0 bg-amber-50/70"
+                style={{
+                  top: (LUNCH_START - START) * HOUR_PX,
+                  height: (LUNCH_END - LUNCH_START) * HOUR_PX,
+                }}
+              >
+                {day === 0 && (
+                  <span className="ml-2 text-[10px] font-medium text-amber-600/80">
+                    점심시간
+                  </span>
+                )}
+              </div>
 
               {/* 기존 일정 */}
               {busyBlocks

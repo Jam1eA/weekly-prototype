@@ -83,6 +83,7 @@ export default function App() {
       <ParticipantView
         proposed={proposed}
         meeting={meeting}
+        attendees={attendees}
         onComplete={setJungAnswer}
         onReturn={() => setParticipantOpen(false)}
       />
@@ -101,16 +102,17 @@ export default function App() {
         <Sidebar attendees={attendees} started={started} />
         <CalendarGrid
           step={step}
+          started={started}
+          onStart={() => setStarted(true)}
           candidates={candidates}
           selectedId={selectedId}
           proposed={proposed}
           alternatives={alternatives}
           onSelectCandidate={setSelectedId}
         />
+        {started && (
         <MeetingPanel
           step={step}
-          started={started}
-          onStart={() => setStarted(true)}
           meeting={meeting}
           onChangeMeeting={setMeeting}
           hasAlert={hasAlert}
@@ -128,6 +130,7 @@ export default function App() {
           onNext={handleNext}
           onReset={handleReset}
         />
+        )}
       </div>
     </div>
   );
