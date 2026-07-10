@@ -15,15 +15,11 @@ export default function Header({
   const others = attendees.filter((a) => !a.isOrganizer);
   return (
     <header className="flex h-14 shrink-0 items-center justify-between border-b border-zinc-200 bg-white px-5">
-      <div className="flex items-center gap-3">
-        <div className="flex items-center gap-2">
-          <div className="flex h-7 w-7 items-center justify-center rounded-lg bg-zinc-900 text-sm font-bold text-white">
-            W
-          </div>
-          <span className="text-[15px] font-bold text-zinc-900">위클리</span>
+      <div className="flex items-center gap-2">
+        <div className="flex h-7 w-7 items-center justify-center rounded-lg bg-zinc-900 text-sm font-bold text-white">
+          W
         </div>
-        <span className="h-4 w-px bg-zinc-200" />
-        <span className="text-sm text-zinc-500">팀 일정 조율</span>
+        <span className="text-[15px] font-bold text-zinc-900">위클리</span>
       </div>
 
       <div className="flex items-center gap-2 text-sm">

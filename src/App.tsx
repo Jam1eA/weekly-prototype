@@ -99,11 +99,14 @@ export default function App() {
         attendees={attendees}
       />
       <div className="flex min-h-0 flex-1">
-        <Sidebar attendees={attendees} started={started} />
+        <Sidebar
+          attendees={attendees}
+          started={started}
+          onStart={() => setStarted(true)}
+        />
         <CalendarGrid
           step={step}
           started={started}
-          onStart={() => setStarted(true)}
           candidates={candidates}
           selectedId={selectedId}
           proposed={proposed}

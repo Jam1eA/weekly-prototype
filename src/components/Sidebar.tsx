@@ -15,12 +15,29 @@ const roleBadge: Record<string, string> = {
 export default function Sidebar({
   attendees,
   started,
+  onStart,
 }: {
   attendees: Attendee[];
   started: boolean;
+  onStart: () => void;
 }) {
   return (
     <aside className="flex w-60 shrink-0 flex-col border-r border-zinc-200 bg-white">
+      {/* 만들기 버튼은 캘린더 앱의 관례대로 사이드바 최상단에 둔다 */}
+      <div className="p-3 pb-0">
+        <button
+          onClick={onStart}
+          disabled={started}
+          className={`flex w-full items-center justify-center gap-1.5 rounded-xl py-3 text-sm font-bold transition-colors ${
+            started
+              ? 'cursor-default bg-zinc-100 text-zinc-300'
+              : 'bg-zinc-900 text-white hover:bg-zinc-800'
+          }`}
+        >
+          <span className="text-base leading-none">+</span> 회의 만들기
+        </button>
+      </div>
+
       {/* 캘린더가 기본 화면이고, 조율은 회의를 만들면 생기는 상태다 */}
       <nav className="border-b border-zinc-100 p-3">
         {[

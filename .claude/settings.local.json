@@ -30,7 +30,8 @@
       "Bash(git -c user.name=yujeongA commit -q -m '헤더 참석자 아바타: 회의 생성 후에만, 실제 명단 기반으로 표시 *)",
       "Bash(git -c user.name=yujeongA commit -q -m '예방 구조 부각 + 회의 제목·목적 입력 *)",
       "Bash(git -c user.name=yujeongA commit -q -m '미니멀 모노크롬 디자인: 파랑을 제안 상태로 국한, 나머지 무채색화 *)",
-      "Bash(git -c user.name=yujeongA commit -q -m '참여자 응답을 캘린더 기반으로 재구성 + 캘린더에서 회의 만들기 + 점심 밴드 *)"
+      "Bash(git -c user.name=yujeongA commit -q -m '참여자 응답을 캘린더 기반으로 재구성 + 캘린더에서 회의 만들기 + 점심 밴드 *)",
+      "Bash(git -c user.name=yujeongA commit -q -m '만들기 버튼을 사이드바로, 헤더 정리, 캘린더 색 언어 범례화 *)"
     ]
   }
 }
