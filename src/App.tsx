@@ -31,6 +31,8 @@ export default function App() {
   const [proposedId, setProposedId] = useState('c1');
   // 회의 확정 후 도착하는 변경 알림
   const [alertReady, setAlertReady] = useState(false);
+  // 낙관적 확정: 리스크 없는 후보를 확인 없이 바로 잡았는지 구분
+  const [bookedDirectly, setBookedDirectly] = useState(false);
   // 참여자(정하늘) 화면 전환과 응답 상태
   const [participantOpen, setParticipantOpen] = useState(false);
   const [participantAnswer, setParticipantAnswer] = useState<'ok' | 'busy' | null>(null);
@@ -81,6 +83,13 @@ export default function App() {
     setStep(next);
   };
 
+  // 리스크 없는 후보를 확인 절차 없이 바로 확정 (낙관적 확정)
+  const handleBookDirectly = () => {
+    setProposedId(selectedId);
+    setBookedDirectly(true);
+    setStep(7);
+  };
+
   const handleReset = () => {
     setStep(0);
     setStarted(false);
@@ -88,6 +97,7 @@ export default function App() {
     setMeeting({ title: defaultMeeting.title, purpose: defaultMeeting.purpose });
     setSelectedId('c1');
     setProposedId('c1');
+    setBookedDirectly(false);
     setAlertReady(false);
     setParticipantOpen(false);
     setParticipantAnswer(null);
@@ -142,6 +152,8 @@ export default function App() {
           onOpenAlert={openAlert}
           participantAnswer={participantAnswer}
           participantDetail={participantDetail}
+          bookedDirectly={bookedDirectly}
+          onBookDirectly={handleBookDirectly}
           onEnterParticipant={() => setParticipantOpen(true)}
           attendees={attendees}
           candidates={visibleCandidates}

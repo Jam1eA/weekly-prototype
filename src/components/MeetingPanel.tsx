@@ -128,6 +128,8 @@ interface Props {
   hasAlert: boolean;
   onOpenAlert: () => void;
   participantAnswer: 'ok' | 'busy' | null;
+  bookedDirectly: boolean;
+  onBookDirectly: () => void;
   onEnterParticipant: () => void;
   attendees: Attendee[];
   candidates: CandidateSlot[];
@@ -149,6 +151,8 @@ export default function MeetingPanel({
   hasAlert,
   onOpenAlert,
   participantAnswer,
+  bookedDirectly,
+  onBookDirectly,
   onEnterParticipant,
   attendees,
   candidates,
@@ -192,6 +196,15 @@ export default function MeetingPanel({
   const proposedShort = proposed.label.replace(/ - .*$/, ''); // 예: 화요일 14:00
   const nextSlot = alternatives[0];
   const jungShared = attendees.find((a) => a.id === 'jung')?.role === 'share';
+
+  // 낙관적 확정: 캘린더에 신호(외근·비선호·불확실)가 있는 사람만 확인이 필요하다.
+  // 신호가 없으면 바로 잡고, 신호가 있는 사람에게만 선택적으로 물어본다.
+  // 확정을 가로막는 리스크는 '필수 참석자'의 캘린더 신호만 — 선택 참석자 비선호는 참고용
+  const riskyAtt = attendees.filter(
+    (a) => a.role === 'required' && !a.isOrganizer && selected.attendeeStatus?.[a.id],
+  );
+  const hasRisk = riskyAtt.length > 0;
+  const riskyNames = riskyAtt.map((a) => a.name).join(', ');
 
   // Step 5: 확인 요청 후 자동 응답 스크립트.
   // tick1 김민준 직접 확인 → tick2 박서준 직접 확인 → tick3 정하늘 불가 응답.
@@ -588,7 +601,7 @@ export default function MeetingPanel({
           <PanelDesc>
             {participantAnswer === 'busy'
               ? '이지은님 응답을 반영해 다시 정리했어요. 이지은님이 제안한 시간부터 보여드려요.'
-              : '캘린더로 후보를 좁혔어요. 확정은 필수 참석자가 확인한 뒤에 할 수 있어요.'}
+              : '캘린더로 후보를 좁혔어요. 걸리는 사람이 없으면 바로 잡고, 확인이 필요한 사람만 물어봐요.'}
           </PanelDesc>
 
           <div className="mt-4 space-y-3">
@@ -674,7 +687,9 @@ export default function MeetingPanel({
             </div>
             <p className="mt-3 border-t border-zinc-100 pt-2 text-[11px] leading-relaxed text-zinc-400">
               {selected.summary ??
-                `${attendees.filter((a) => !selected.attendeeStatus?.[a.id]).length}명 캘린더상 가능 · 아직 본인 응답 전이에요`}
+                (hasRisk
+                  ? `${riskyNames}님만 캘린더에 신호가 있어 확인이 필요해 보여요`
+                  : '필수 참석자 모두 캘린더가 비어 있어요 · 확인 없이 바로 잡아도 괜찮아요')}
             </p>
           </div>
 
@@ -695,7 +710,11 @@ export default function MeetingPanel({
                             : 'text-amber-700'
                       }`}
                     >
-                      {f.label === '필수 참석자 응답' && !selected.suggestedBy ? '0/3 · 아직 확인 전' : f.value}
+                      {f.label === '필수 참석자 응답' && !selected.suggestedBy
+                        ? hasRisk
+                          ? `${riskyNames}님 확인 권장`
+                          : '확인 안 해도 돼요'
+                        : f.value}
                     </span>
                   </li>
                 ))}
@@ -724,7 +743,15 @@ export default function MeetingPanel({
           )}
         </>
       );
-      cta = { label: '이 시간, 다들 되는지 물어보기', onClick: () => setConfirmOpen(true) };
+      // 낙관적 확정이 기본. 신호가 없으면 바로 잡고, 확인은 보조 선택지.
+      // 신호가 있으면 그 사람에게만 확인하는 걸 앞세우되, 바로 잡기도 열어둔다.
+      if (hasRisk) {
+        cta = { label: `${riskyNames}님에게 확인하고 잡기`, onClick: () => setConfirmOpen(true) };
+        secondary = { label: '확인 없이 바로 잡기', onClick: onBookDirectly };
+      } else {
+        cta = { label: '이 시간으로 회의 잡기', onClick: onBookDirectly, tone: 'green' };
+        secondary = { label: '그래도 필수 참석자에게 먼저 확인받기', onClick: () => setConfirmOpen(true) };
+      }
       break;
 
     case 5:
@@ -948,7 +975,9 @@ export default function MeetingPanel({
     case 7:
       body = (
         <>
-          <PanelTitle>모두 확인했어요. 이제 다시 조율하지 않아도 돼요</PanelTitle>
+          <PanelTitle>
+            {bookedDirectly ? '회의를 잡았어요' : '모두 확인했어요. 이제 다시 조율하지 않아도 돼요'}
+          </PanelTitle>
           <PanelDesc>참석자 캘린더에 일정을 등록했어요.</PanelDesc>
 
           <div className="mt-4 space-y-3">
@@ -965,19 +994,29 @@ export default function MeetingPanel({
 
             <Card>
               <ul className="space-y-2">
-                <CheckItem>필수 참석자 모두 확인했어요</CheckItem>
+                {bookedDirectly ? (
+                  <>
+                    <CheckItem>필수 참석자 모두 캘린더가 비어 바로 잡았어요</CheckItem>
+                    <CheckItem>확인이 필요한 사람이 없었어요</CheckItem>
+                  </>
+                ) : (
+                  <CheckItem>필수 참석자 모두 확인했어요</CheckItem>
+                )}
                 <CheckItem>회의실 잡았어요</CheckItem>
                 <CheckItem>캘린더에 등록했어요</CheckItem>
               </ul>
             </Card>
 
             <p className="px-1 text-xs leading-relaxed text-zinc-400">
-              일정이 바뀌면 알려드릴게요.
+              {bookedDirectly
+                ? '혹시 겹치는 일정이 생기면, 영향받는 사람에게만 다시 확인할게요.'
+                : '일정이 바뀌면 알려드릴게요.'}
             </p>
           </div>
         </>
       );
-      if (proposedIsLeeAlt) cta = { label: '완료', onClick: onReset, tone: 'green' };
+      // 확정은 종착점 — 완료로 끝낼 수 있다. 변경 스토리는 상단 알림 배너로 진입한다.
+      cta = { label: '완료', onClick: onReset, tone: 'green' };
       break;
 
     case 8:
