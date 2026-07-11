@@ -111,9 +111,9 @@ export const jungResponse: ParticipantResponse = {
 };
 
 export const roleDescriptions: Record<string, string> = {
-  required: '이 사람이 직접 확인해야 회의를 확정할 수 있어요.',
-  optional: '참석이 어려워도 회의를 진행할 수 있어요.',
-  share: '회의에 참석하지 않고 결과만 공유받아요.',
+  required: '이 사람이 확인해야 회의를 확정할 수 있어요',
+  optional: '참석이 어려워도 회의를 진행할 수 있어요',
+  share: '회의에 참석하지 않고 결과만 공유받아요',
 };
 
 export const candidates: CandidateSlot[] = [
@@ -127,15 +127,15 @@ export const candidates: CandidateSlot[] = [
     recommended: true,
     room: { name: '회의실 A', place: '본관 7층', capacity: '8인실' },
     avail: '충돌 없음',
-    availabilityText: '캘린더 기준으로 6명 모두 비어 있어요 · 직접 확인 전',
+    availabilityText: '캘린더상 6명 모두 비어 있어요 · 아직 확인 전',
     attendeeStatus: {},
     facts: [
-      { label: '필수 참석자', value: '일정 충돌 없음', ok: true },
+      { label: '필수 참석자', value: '겹치는 일정 없어요', ok: true },
       { label: '선택 참석자', value: '2명 캘린더상 가능', ok: true },
       { label: '회의실', value: '회의실 A · 본관 7층 · 8인실', ok: true },
-      { label: '필수 참석자 응답', value: '요청 전 · 3명 필요', ok: false },
+      { label: '필수 참석자 응답', value: '3명 아직 확인 전', ok: false },
     ],
-    note: '캘린더상 충돌은 없지만, 필수 참석자의 직접 확인이 필요해요.',
+    note: '캘린더상 겹치는 일정은 없지만, 필수 참석자 확인이 필요해요',
   },
   {
     id: 'c2',
@@ -146,15 +146,15 @@ export const candidates: CandidateSlot[] = [
     recommend: 'check',
     room: { name: '회의실 B', place: '본관 3층', capacity: '6인실' },
     avail: '비선호 1명',
-    availabilityText: '점심 직후 시간대 · 선택 참석자 1명 일정 있음',
+    availabilityText: '점심 직후라 최유리님이 선호하지 않아요',
     attendeeStatus: { jung: 'no', choi: 'avoid' },
     facts: [
-      { label: '필수 참석자', value: '일정 충돌 없음', ok: true },
-      { label: '선택 참석자', value: '최유리 점심 직후 비선호', ok: false },
+      { label: '필수 참석자', value: '겹치는 일정 없어요', ok: true },
+      { label: '선택 참석자', value: '최유리님 점심 직후 선호 낮음', ok: false },
       { label: '회의실', value: '회의실 B · 본관 3층 · 6인실', ok: true },
-      { label: '필수 참석자 응답', value: '요청 전 · 3명 필요', ok: false },
+      { label: '필수 참석자 응답', value: '3명 아직 확인 전', ok: false },
     ],
-    note: '점심 직후 제약이 있어, 확정 전에 직접 확인이 더 중요해요.',
+    note: '점심 직후라, 확정 전에 한 번 더 확인하는 게 좋아요',
   },
   {
     id: 'c3',
@@ -165,15 +165,15 @@ export const candidates: CandidateSlot[] = [
     recommend: 'hard',
     room: { name: '회의실 C', place: '별관 2층', capacity: '4인실' },
     avail: '외근 가능성',
-    availabilityText: '박서준님의 외근 가능성으로 참석 여부가 불확실해요',
+    availabilityText: '박서준님 외근 가능성이 있어 아직 확실하지 않아요',
     attendeeStatus: { park: 'unsure' },
     facts: [
-      { label: '필수 참석자', value: '박서준 외근 가능성', ok: false },
+      { label: '필수 참석자', value: '박서준님 외근 가능성', ok: false },
       { label: '선택 참석자', value: '2명 캘린더상 가능', ok: true },
       { label: '회의실', value: '회의실 C · 별관 2층 · 4인실', ok: true },
-      { label: '필수 참석자 응답', value: '요청 전 · 3명 필요', ok: false },
+      { label: '필수 참석자 응답', value: '3명 아직 확인 전', ok: false },
     ],
-    note: '외근이 확정되지 않아, 이 시간은 직접 확인 없이는 추천하기 어려워요.',
+    note: '박서준님 외근이 아직 정해지지 않아 추천하기 어려워요',
   },
 ];
 
@@ -293,7 +293,7 @@ export const leeAltCandidates: Record<string, CandidateSlot> = {
       { label: '이지은 PM', value: '본인이 직접 제안', ok: true },
       { label: '다른 필수 참석자', value: '일정 충돌 없음', ok: true },
       { label: '회의실', value: '회의실 B · 본관 3층 · 6인실', ok: true },
-      { label: '필수 참석자 응답', value: '나머지 2명 필요', ok: false },
+      { label: '필수 참석자 응답', value: '2명만 확인하면 돼요', ok: false },
     ],
     note: '이지은님이 직접 언급한 시간이라, 나머지 필수 2명만 확인하면 확정할 수 있어요.',
   },
@@ -330,5 +330,5 @@ export const rejectedC1: CandidateSlot = {
     { label: '선택 참석자', value: '2명 캘린더상 가능', ok: true },
     { label: '회의실', value: '회의실 A · 본관 7층 · 8인실', ok: true },
   ],
-  note: '필수 참석자가 직접 어렵다고 응답한 시간이라 이 시간으로는 확정할 수 없어요.',
+  note: '이지은님이 어렵다고 응답해서, 이 시간은 확정하기 어려워요',
 };

@@ -68,7 +68,7 @@ export default function Sidebar({
       <div className="flex-1 overflow-y-auto p-4">
         {!started ? (
           <p className="rounded-lg bg-zinc-50 px-3 py-2.5 text-xs leading-relaxed text-zinc-400">
-            조율 중인 회의가 없어요. 새 회의를 만들면 참석자가 여기에 표시돼요.
+            아직 조율 중인 회의가 없어요. 회의를 만들면 여기에 참석자가 보여요.
           </p>
         ) : (
           <>
@@ -104,13 +104,6 @@ export default function Sidebar({
         )}
       </div>
 
-      {started && (
-        <div className="border-t border-zinc-100 p-4">
-          <p className="text-xs leading-relaxed text-zinc-400">
-            필수 참석자가 모두 가능한 시간을 기준으로 회의를 조율하고 있어요.
-          </p>
-        </div>
-      )}
     </aside>
   );
 }

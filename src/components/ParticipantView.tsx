@@ -208,15 +208,15 @@ export default function ParticipantView({
               }`}
             >
               {phase === 'done'
-                ? '본인 확인을 마쳤어요'
-                : `유나영님이 '${meeting.title}' 시간의 확인을 요청했어요`}
+                ? '응답을 보냈어요'
+                : `유나영님이 '${meeting.title}' 시간이 괜찮은지 물어봤어요`}
             </p>
             <p
               className={`text-xs ${phase === 'done' ? 'text-emerald-600/70' : 'text-blue-600/70'}`}
             >
               {phase === 'done'
-                ? '유나영님이 확인 후 회의가 확정되면 알려드릴게요.'
-                : '필수 참석자라 직접 확인이 필요해요. 캘린더의 파란 시간을 눌러주세요.'}
+                ? '회의가 확정되면 알려드릴게요.'
+                : '필수 참석자라 직접 확인이 필요해요. 파란 시간을 눌러주세요.'}
             </p>
           </div>
           {phase === 'calendar' && (
@@ -246,8 +246,7 @@ export default function ParticipantView({
               추가로 어려운 시간만 표시해주세요
             </p>
             <p className="text-xs text-zinc-500">
-              등록된 일정은 이미 반영했어요. 누르거나 드래그로 표시하고, 요일 이름을
-              누르면 하루 전체가 선택돼요.
+              누르거나 드래그로 표시해요. 요일 이름을 누르면 하루 전체가 선택돼요.
             </p>
           </div>
           <div className="flex shrink-0 items-center gap-3 text-[11px] text-zinc-500">
@@ -403,10 +402,10 @@ export default function ParticipantView({
                       {phase === 'done'
                         ? answer === 'ok'
                           ? volatile
-                            ? '참석 · 변동 가능'
-                            : '참석 확인함'
-                          : '어렵다고 응답함'
-                        : '확인 필요'}
+                            ? '가능 · 변동 있음'
+                            : '참석함'
+                          : '어렵다고 함'
+                        : '눌러서 확인'}
                     </span>
                     <span className="truncate text-[11px] leading-tight opacity-80">
                       {meeting.title}
@@ -459,8 +458,7 @@ export default function ParticipantView({
               캘린더에 없는 일정이 있나요?
             </p>
             <p className="mt-2 text-[13px] leading-relaxed text-zinc-500">
-              캘린더에 등록된 일정은 반영했어요. 다음 주에 아직 등록하지 않은 외근,
-              이동, 연차나 개인 일정이 있나요?
+              캘린더에 등록한 일정은 반영했어요. 아직 등록 안 한 외근, 이동, 연차가 있나요?
             </p>
 
             <div className="mt-5 space-y-2">
@@ -468,13 +466,13 @@ export default function ParticipantView({
                 onClick={() => setPhase('confirm')}
                 className="w-full rounded-xl bg-zinc-900 py-3.5 text-sm font-bold text-white transition-colors hover:bg-zinc-800"
               >
-                등록하지 않은 일정이 없어요
+                다 등록했어요
               </button>
               <button
                 onClick={() => setPhase('editing')}
                 className="w-full rounded-xl border border-zinc-200 py-3.5 text-sm font-bold text-zinc-600 transition-colors hover:border-zinc-300 hover:bg-zinc-50"
               >
-                추가할 시간이 있어요
+                더 추가할 게 있어요
               </button>
             </div>
           </div>
@@ -544,7 +542,7 @@ export default function ParticipantView({
             </div>
 
             <p className="mt-3.5 text-[13px] font-semibold text-zinc-800">
-              캘린더에 없는 일정과 이동 시간까지 고려했을 때, 참석할 수 있나요?
+              이동 시간까지 생각했을 때, 이 시간에 올 수 있나요?
             </p>
 
             <label className="mt-3 flex cursor-pointer items-center gap-2 rounded-lg bg-zinc-50 px-3 py-2.5">
@@ -562,7 +560,7 @@ export default function ParticipantView({
                 onClick={() => send('ok')}
                 className="rounded-xl bg-zinc-900 py-3.5 text-sm font-bold text-white transition-colors hover:bg-zinc-800"
               >
-                이 시간에 참석할 수 있어요
+                이 시간 괜찮아요
               </button>
               <button
                 onClick={() => setPhase('alt')}
@@ -623,8 +621,8 @@ export default function ParticipantView({
                 className="flex-1 rounded-xl bg-zinc-900 py-2.5 text-sm font-bold text-white transition-colors hover:bg-zinc-800"
               >
                 {selectedAlts.length > 0
-                  ? `대안 ${selectedAlts.length}개와 함께 보내기`
-                  : '대안 없이 보내기'}
+                  ? `고른 시간과 함께 보내기`
+                  : '시간 없이 보내기'}
               </button>
             </div>
           </div>
@@ -641,9 +639,9 @@ export default function ParticipantView({
             <p className="mb-3 text-xs font-semibold text-zinc-400">내가 보낸 응답</p>
             <div className="space-y-2 text-[13px]">
               <div className="flex justify-between gap-3">
-                <span className="text-zinc-400">제안된 시간</span>
+                <span className="text-zinc-400">이 시간</span>
                 <span className="font-medium text-zinc-800">
-                  {answer === 'ok' ? '참석할 수 있어요' : '이 시간은 어려워요'}
+                  {answer === 'ok' ? '참석할 수 있어요' : '어려워요'}
                   {answer === 'ok' && volatile ? ' · 변동 가능성 있음' : ''}
                 </span>
               </div>

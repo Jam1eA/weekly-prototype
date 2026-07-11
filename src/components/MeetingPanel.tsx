@@ -174,7 +174,7 @@ export default function MeetingPanel({
     const t = setTimeout(() => {
       setFinding(false);
       onNext(3);
-    }, 1400);
+    }, 3000);
     return () => clearTimeout(t);
   }, [finding]);
   // Step 4: 제안을 보내기 전 확인 모달
@@ -323,7 +323,7 @@ export default function MeetingPanel({
       body = (
         <>
           <PanelTitle>회의 만들기</PanelTitle>
-          <PanelDesc>회의 조건을 정하고, 함께할 사람을 선택하세요.</PanelDesc>
+          <PanelDesc>어떤 회의인지 정하고, 함께할 사람을 골라주세요.</PanelDesc>
 
           <div className="mt-4 space-y-3">
             <Card>
@@ -460,7 +460,7 @@ export default function MeetingPanel({
               </div>
 
               <p className="mt-2 px-1 text-xs text-zinc-400">
-                새로 추가한 사람은 필수로 들어와요. 배지를 누르면 역할이 바뀌어요.
+                배지를 누르면 필수·선택을 바꿀 수 있어요.
               </p>
 
               <input
@@ -504,7 +504,7 @@ export default function MeetingPanel({
         </>
       );
       cta = {
-        label: '참석 구성 확인하기',
+        label: '참석자 확인하기',
         onClick: () => onNext(2),
         disabled: attendees.length < 2 || meeting.title.trim() === '',
       };
@@ -514,10 +514,8 @@ export default function MeetingPanel({
     case 2:
       body = (
         <>
-          <PanelTitle>참석 구성 확인</PanelTitle>
-          <PanelDesc>
-            꼭 참석해야 할 사람이 맞는지 확인하세요. 이 구성이 곧 회의 성립 조건이 돼요.
-          </PanelDesc>
+          <PanelTitle>참석자 확인</PanelTitle>
+          <PanelDesc>꼭 와야 하는 사람이 맞는지 확인해주세요.</PanelDesc>
 
           <div className="mt-3 rounded-xl border border-zinc-200 bg-white p-4">
             <p className="text-[15px] font-bold leading-snug text-zinc-900">{meeting.title}</p>
@@ -568,7 +566,7 @@ export default function MeetingPanel({
                     </div>
                   ) : (
                     <p className="rounded-xl border border-dashed border-zinc-200 px-3 py-3 text-center text-xs text-zinc-300">
-                      역할을 바꾸면 카드가 이 칸으로 옮겨져요
+                      역할을 바꾸면 여기로 옮겨져요
                     </p>
                   )}
                 </div>
@@ -579,18 +577,18 @@ export default function MeetingPanel({
         </>
       );
       cta = finding
-        ? { label: '겹치는 시간을 찾는 중이에요', onClick: () => {}, disabled: true }
-        : { label: '후보 시간 비교하기', onClick: () => setFinding(true) };
+        ? { label: '가능한 시간을 찾는 중이에요', onClick: () => {}, disabled: true }
+        : { label: '가능한 시간 찾기', onClick: () => setFinding(true) };
       break;
 
     case 3:
       body = (
         <>
-          <PanelTitle>후보 시간 비교</PanelTitle>
+          <PanelTitle>가능한 시간</PanelTitle>
           <PanelDesc>
             {participantAnswer === 'busy'
-              ? '이지은님의 응답을 반영해 후보를 다시 정리했어요. 본인이 제안한 시간부터 보여드려요.'
-              : '캘린더로 후보를 좁혔어요. 확정은 필수 참석자의 직접 확인 뒤에 할 수 있어요.'}
+              ? '이지은님 응답을 반영해 다시 정리했어요. 이지은님이 제안한 시간부터 보여드려요.'
+              : '캘린더로 후보를 좁혔어요. 확정은 필수 참석자가 확인한 뒤에 할 수 있어요.'}
           </PanelDesc>
 
           <div className="mt-4 space-y-3">
@@ -608,7 +606,7 @@ export default function MeetingPanel({
             ))}
           </div>
           <p className="mt-3 text-center text-xs text-zinc-400">
-            후보를 누르면 캘린더에서 해당 시간이 강조돼요.
+            누르면 캘린더에서 그 시간이 강조돼요.
           </p>
         </>
       );
@@ -680,7 +678,7 @@ export default function MeetingPanel({
             </p>
           </div>
 
-          <p className="mb-2 mt-5 text-sm font-bold text-zinc-800">캘린더 기준</p>
+          <p className="mb-2 mt-5 text-sm font-bold text-zinc-800">캘린더로 본 상태</p>
           <Card>
             <ul className="space-y-2.5 text-[13px]">
               {selected.facts
@@ -697,7 +695,7 @@ export default function MeetingPanel({
                             : 'text-amber-700'
                       }`}
                     >
-                      {f.label === '필수 참석자 응답' && !selected.suggestedBy ? '0/3 · 요청 전' : f.value}
+                      {f.label === '필수 참석자 응답' && !selected.suggestedBy ? '0/3 · 아직 확인 전' : f.value}
                     </span>
                   </li>
                 ))}
@@ -726,22 +724,22 @@ export default function MeetingPanel({
           )}
         </>
       );
-      cta = { label: '이 시간 확인 요청하기', onClick: () => setConfirmOpen(true) };
+      cta = { label: '이 시간, 다들 되는지 물어보기', onClick: () => setConfirmOpen(true) };
       break;
 
     case 5:
       body = (
         <>
-          <PanelTitle>확인 요청을 보냈어요</PanelTitle>
+          <PanelTitle>물어봤어요</PanelTitle>
           <PanelDesc>
             {proposedIsLeeAlt
-              ? '이지은님이 직접 제안한 시간이라 다시 묻지 않아요. 나머지 필수 2명의 확인만 기다리면 돼요.'
-              : '필수 참석자 3명이 직접 확인해야 회의를 확정할 수 있어요.'}
+              ? '이지은님이 제안한 시간이라 다시 묻지 않아요. 나머지 2명 답변만 오면 돼요.'
+              : '필수 참석자 3명이 답하면 회의를 확정할 수 있어요.'}
           </PanelDesc>
 
           <div className="mt-4 space-y-3">
             <Card>
-              <p className="mb-1 text-xs font-semibold text-zinc-400">확인 요청한 시간</p>
+              <p className="mb-1 text-xs font-semibold text-zinc-400">물어본 시간</p>
               <p className="text-base font-bold text-zinc-900">{proposed.label}</p>
               <p className="mt-0.5 text-xs text-zinc-500">
                 {meeting.title}
@@ -808,7 +806,7 @@ export default function MeetingPanel({
                         : 'border-zinc-300 bg-white text-zinc-700 hover:bg-zinc-50'
                     }`}
                   >
-                    {reminded ? '리마인드를 보냈어요' : '리마인드 보내기'}
+                    {reminded ? '다시 알림을 보냈어요' : '다시 알림 보내기'}
                   </button>
                   <button
                     onClick={onEnterParticipant}
@@ -823,7 +821,7 @@ export default function MeetingPanel({
         </>
       );
       cta = {
-        label: leeResponded && autoDone ? '확인 현황 보기' : '확인을 기다리는 중이에요',
+        label: leeResponded && autoDone ? '응답 현황 보기' : '답변을 기다리는 중이에요',
         onClick: () => onNext(6),
         disabled: !(leeResponded && autoDone),
       };
@@ -852,14 +850,14 @@ export default function MeetingPanel({
                   <span className="mr-1 rounded bg-zinc-100 px-1 py-0.5 text-[10px] font-semibold text-zinc-500">
                     본인 응답
                   </span>
-                  {jungResponse.summary} · 회의는 진행할 수 있어요.
+                  {jungResponse.summary} · 회의는 진행할 수 있어요
                 </>
               ) : undefined
             }
             action={
               a.id === 'jung' && autoDone && !jungShared && !proposedIsLeeAlt
                 ? {
-                    label: '회의록 공유 대상으로 바꾸기',
+                    label: '회의록만 공유받게 하기',
                     onClick: () => onChangeRole('jung', 'share'),
                   }
                 : undefined
@@ -871,12 +869,12 @@ export default function MeetingPanel({
       body = (
         <>
           <PanelTitle>
-            {readyToConfirm ? '확정 준비가 끝났어요' : '확인 현황'}
+            {readyToConfirm ? '이제 확정할 수 있어요' : '응답 현황'}
           </PanelTitle>
           <PanelDesc>
             {readyToConfirm
-              ? '회의 성립에 필요한 조건이 모두 확인됐어요.'
-              : '필수 참석자의 응답 상태를 확인해요.'}
+              ? '회의에 필요한 조건을 모두 확인했어요.'
+              : '누가 답했고 누가 아직인지 볼 수 있어요.'}
           </PanelDesc>
 
           {readyToConfirm && (
@@ -884,25 +882,25 @@ export default function MeetingPanel({
               <Card tone="green">
                 <p className="mb-2 text-xs font-semibold text-emerald-600">확정 준비 완료</p>
                 <ul className="space-y-2">
-                  <CheckItem>필수 참석자 응답 3/3 완료</CheckItem>
-                  <CheckItem>주최자 포함 필수 참석자 4명 모두 가능</CheckItem>
-                  <CheckItem>선택 참석자 1명 캘린더상 가능 (확정 조건 아님)</CheckItem>
+                  <CheckItem>필수 참석자 3명 모두 확인했어요</CheckItem>
+                  <CheckItem>주최자 포함 필수 4명 모두 가능해요</CheckItem>
+                  <CheckItem>선택 참석자 1명도 캘린더상 가능해요</CheckItem>
                   <CheckItem ok={proposedIsLeeAlt || jungShared}>
                     {proposedIsLeeAlt
-                      ? '정하늘 QA 가능 (본인 응답)'
+                      ? '정하늘님도 가능하다고 답했어요'
                       : jungShared
-                        ? '정하늘 QA 불참 → 회의록 공유 대상으로 전환'
-                        : '정하늘 QA 불참 (회의 진행 가능)'}
+                        ? '정하늘님은 회의록만 공유받기로 했어요'
+                        : '정하늘님은 못 오지만 회의는 진행할 수 있어요'}
                   </CheckItem>
                   {proposed.room && (
                     <CheckItem>
-                      {proposed.room.name} · {proposed.room.place} · {proposed.room.capacity} 사용 가능
+                      {proposed.room.name} · {proposed.room.place} · {proposed.room.capacity} 잡았어요
                     </CheckItem>
                   )}
-                  <CheckItem>확인 이후 일정 변경 없음</CheckItem>
+                  <CheckItem>확인한 뒤로 바뀐 일정 없어요</CheckItem>
                   {participantDetail?.volatile && (
                     <CheckItem ok={false}>
-                      이지은님 일정 변동 가능성 있음 · 변경되면 알림으로 알려드릴게요
+                      이지은님 일정이 바뀔 수 있어요 · 바뀌면 알려드릴게요
                     </CheckItem>
                   )}
                 </ul>
@@ -926,8 +924,8 @@ export default function MeetingPanel({
               <Card tone="amber">
                 <p className="text-[13px] font-medium leading-relaxed text-zinc-700">
                   {participantAnswer === 'busy' && !proposedIsLeeAlt
-                    ? '필수 참석자 이지은님이 이 시간에 참석할 수 없어요. 이 시간으로는 확정할 수 없어요.'
-                    : `필수 참석자 ${3 - directConfirmed}명의 확인을 기다리고 있어요.`}
+                    ? '이지은님이 이 시간은 어렵다고 했어요. 아래에서 다른 시간을 찾아볼 수 있어요.'
+                    : `${3 - directConfirmed}명이 답하면 확정할 수 있어요.`}
                 </p>
               </Card>
             </div>
@@ -935,14 +933,14 @@ export default function MeetingPanel({
         </>
       );
       cta = {
-        label: readyToConfirm ? '회의 확정하기' : '필수 참석자 확인 후 확정할 수 있어요',
+        label: readyToConfirm ? '회의 확정하기' : '모두 확인하면 확정할 수 있어요',
         onClick: () => onNext(7),
         tone: 'green',
         disabled: !readyToConfirm,
       };
       secondary =
         participantAnswer === 'busy' && !proposedIsLeeAlt
-          ? { label: '다른 시간 다시 비교하기', onClick: () => onNext(3) }
+          ? { label: '다른 시간 보기', onClick: () => onNext(3) }
           : null;
       break;
     }
@@ -950,8 +948,8 @@ export default function MeetingPanel({
     case 7:
       body = (
         <>
-          <PanelTitle>필요한 조건을 모두 확인하고 회의를 확정했어요</PanelTitle>
-          <PanelDesc>참석자 캘린더에 회의 일정이 등록되었어요.</PanelDesc>
+          <PanelTitle>모두 확인했어요. 이제 다시 조율하지 않아도 돼요</PanelTitle>
+          <PanelDesc>참석자 캘린더에 일정을 등록했어요.</PanelDesc>
 
           <div className="mt-4 space-y-3">
             <Card tone="green">
@@ -967,14 +965,14 @@ export default function MeetingPanel({
 
             <Card>
               <ul className="space-y-2">
-                <CheckItem>필수 참석자 전원 본인 확인 완료</CheckItem>
-                <CheckItem>회의실 확보</CheckItem>
-                <CheckItem>캘린더 등록 완료</CheckItem>
+                <CheckItem>필수 참석자 모두 확인했어요</CheckItem>
+                <CheckItem>회의실 잡았어요</CheckItem>
+                <CheckItem>캘린더에 등록했어요</CheckItem>
               </ul>
             </Card>
 
             <p className="px-1 text-xs leading-relaxed text-zinc-400">
-              일정에 변경이 생기면 알림으로 알려드릴게요.
+              일정이 바뀌면 알려드릴게요.
             </p>
           </div>
         </>
@@ -985,15 +983,13 @@ export default function MeetingPanel({
     case 8:
       body = (
         <>
-          <PanelTitle>확정 후 변경이 생겼어요</PanelTitle>
-          <PanelDesc>
-            처음부터 다시 조율하지 않도록, 영향을 받는 부분만 확인할게요.
-          </PanelDesc>
+          <PanelTitle>확정 후에 일정이 바뀌었어요</PanelTitle>
+          <PanelDesc>처음부터 다시 잡지 않도록, 영향받는 부분만 확인할게요.</PanelDesc>
 
           <div className="mt-3 space-y-3">
             <Card tone="red">
               <p className="text-[13px] font-semibold leading-relaxed text-red-600">
-                박서준님의 외근 일정이 새로 확정됐어요.
+                박서준님 외근 일정이 새로 잡혔어요.
               </p>
             </Card>
 
@@ -1003,26 +999,24 @@ export default function MeetingPanel({
                   박
                 </div>
                 <p className="text-[13px] leading-relaxed text-zinc-700">
-                  회의 확정 이후 추가된 일정이라{' '}
-                  <span className="font-semibold">{proposedShort}</span> 회의에 참석하기
-                  어려워요. 박서준님은 필수 참석자라 기존 회의에 영향이 있어요.
+                  확정한 뒤에 생긴 일정이라{' '}
+                  <span className="font-semibold">{proposedShort}</span> 회의에 오기
+                  어려워요. 박서준님은 필수 참석자라 회의에 영향이 있어요.
                 </p>
               </div>
             </Card>
           </div>
         </>
       );
-      cta = { label: '변경 영향 확인하기', onClick: () => onNext(9) };
+      cta = { label: '무엇이 바뀌는지 보기', onClick: () => onNext(9) };
       break;
 
     case 9: {
       const a1 = alternatives[0];
       body = (
         <>
-          <PanelTitle>대체 시간을 찾았어요</PanelTitle>
-          <PanelDesc>
-            기존 응답과 최신 일정을 기준으로 대체 가능한 시간이에요.
-          </PanelDesc>
+          <PanelTitle>대신할 시간을 찾았어요</PanelTitle>
+          <PanelDesc>기존 응답과 최신 일정을 반영한 시간이에요.</PanelDesc>
 
           <div className="mt-4 space-y-3">
             <Card>
@@ -1030,8 +1024,8 @@ export default function MeetingPanel({
                 기존 시간 · {proposed.label}
               </p>
               <ul className="space-y-2">
-                <CheckItem ok={false}>필수 참석자 1명이 참석할 수 없어요</CheckItem>
-                <CheckItem ok={false}>이 시간은 유지하기 어려워요</CheckItem>
+                <CheckItem ok={false}>필수 참석자 1명이 못 오게 됐어요</CheckItem>
+                <CheckItem ok={false}>이 시간은 그대로 두기 어려워요</CheckItem>
               </ul>
             </Card>
 
@@ -1045,7 +1039,7 @@ export default function MeetingPanel({
             {a1.recheck && (
               <Card>
                 <p className="mb-1 text-xs font-semibold text-zinc-400">
-                  수요일 15:00 기준 참석자 상태
+                  수요일 15:00, 참석자 상태
                 </p>
                 {a1.recheck.map((r) => (
                   <div key={r.id} className="border-b border-zinc-100 py-2 last:border-b-0">
@@ -1058,7 +1052,7 @@ export default function MeetingPanel({
                             : 'bg-amber-50 text-amber-700'
                         }`}
                       >
-                        {r.state === 'valid' ? '기존 응답 유효' : '재확인 필요'}
+                        {r.state === 'valid' ? '이미 답했어요' : '다시 확인'}
                       </span>
                     </div>
                     <p className="mt-0.5 text-xs text-zinc-400">{r.note}</p>
@@ -1069,7 +1063,7 @@ export default function MeetingPanel({
 
             <Card tone="blue">
               <p className="text-[13px] font-medium leading-relaxed text-zinc-700">
-                새 시간에 영향을 받는 참석자 2명(박서준·이지은)에게만 다시 확인할게요.
+                바뀐 시간에 영향받는 2명(박서준·이지은)에게만 다시 물어볼게요.
               </p>
             </Card>
 
@@ -1077,7 +1071,7 @@ export default function MeetingPanel({
           </div>
         </>
       );
-      cta = { label: '2명에게 재확인 요청하기', onClick: () => onNext(10) };
+      cta = { label: '2명에게 다시 물어보기', onClick: () => onNext(10) };
       break;
     }
 
@@ -1086,16 +1080,16 @@ export default function MeetingPanel({
       const recheckDone = recheckCount >= 2;
       body = (
         <>
-          <PanelTitle>영향받는 2명에게 재확인 중이에요</PanelTitle>
+          <PanelTitle>2명에게 다시 확인하고 있어요</PanelTitle>
           <PanelDesc>
             {nextSlot.label.replace(/ - .*$/, '')} 기준으로 박서준님과 이지은님만 다시
-            확인해요. 나머지는 기존 응답이 유효해요.
+            물어봐요. 나머지는 다시 안 물어도 돼요.
           </PanelDesc>
 
           <div className="mt-4 space-y-3">
             <Card tone="blue">
               <div className="flex items-center justify-between">
-                <p className="text-[13px] font-semibold text-zinc-700">재확인 진행</p>
+                <p className="text-[13px] font-semibold text-zinc-700">다시 확인 중</p>
                 <span className="text-xs font-bold text-blue-600">{recheckCount}/2</span>
               </div>
               <div className="mt-2 h-1.5 overflow-hidden rounded-full bg-blue-100">
@@ -1107,23 +1101,23 @@ export default function MeetingPanel({
             </Card>
 
             <Card>
-              <GroupLabel>재확인 대상 (필수)</GroupLabel>
+              <GroupLabel>다시 확인하는 사람</GroupLabel>
               <ResponseRow
                 name="박서준"
                 title="개발 리드"
-                status={recheckCount >= 1 ? '본인 확인 완료' : '재확인 요청 중'}
+                status={recheckCount >= 1 ? '확인했어요' : '확인 중'}
                 tone={recheckCount >= 1 ? 'ok' : 'wait'}
                 note="새 외근 일정과 겹치지 않는지 확인"
               />
               <ResponseRow
                 name="이지은"
                 title="PM"
-                status={recheckCount >= 2 ? '본인 확인 완료' : '재확인 요청 중'}
+                status={recheckCount >= 2 ? '확인했어요' : '확인 중'}
                 tone={recheckCount >= 2 ? 'ok' : 'wait'}
                 note="화요일 14:00만 직접 확인했었어요"
               />
 
-              <GroupLabel>기존 응답 유효</GroupLabel>
+              <GroupLabel>이미 답한 사람</GroupLabel>
               {a1.recheck
                 ?.filter((r) => r.state === 'valid')
                 .map((r) => (
@@ -1131,7 +1125,7 @@ export default function MeetingPanel({
                     key={r.id}
                     name={r.name}
                     title=""
-                    status="기존 응답 유효"
+                    status="이미 답했어요"
                     tone="neutral"
                     note={r.note}
                   />
@@ -1141,7 +1135,7 @@ export default function MeetingPanel({
             {recheckDone && (
               <Card tone="green">
                 <p className="text-[13px] font-medium leading-relaxed text-zinc-700">
-                  재확인 2명 완료 · 필수 참석자 기준이 다시 충족됐어요.
+                  2명 다시 확인 완료 · 필수 참석자 조건을 다시 채웠어요.
                 </p>
               </Card>
             )}
@@ -1149,7 +1143,7 @@ export default function MeetingPanel({
         </>
       );
       cta = {
-        label: recheckDone ? '변경 확정하기' : '재확인을 기다리는 중이에요',
+        label: recheckDone ? '변경 확정하기' : '답변을 기다리는 중이에요',
         onClick: () => onNext(11),
         tone: 'green',
         disabled: !recheckDone,
@@ -1160,10 +1154,8 @@ export default function MeetingPanel({
     case 11:
       body = (
         <>
-          <PanelTitle>회의 시간이 다시 확정되었어요</PanelTitle>
-          <PanelDesc>
-            영향을 받은 2명만 재확인해서, 처음부터 다시 조율하지 않고 변경했어요.
-          </PanelDesc>
+          <PanelTitle>회의 시간을 다시 확정했어요</PanelTitle>
+          <PanelDesc>2명만 다시 확인해서, 처음부터 다시 잡지 않았어요.</PanelDesc>
 
           <div className="mt-4 space-y-3">
             <Card tone="green">
@@ -1177,10 +1169,10 @@ export default function MeetingPanel({
 
             <Card>
               <ul className="space-y-2">
-                <CheckItem>영향받은 필수 참석자 2명 재확인 완료</CheckItem>
-                <CheckItem>기존 응답 유효 3명 유지</CheckItem>
-                <CheckItem>회의실 B 예약 완료</CheckItem>
-                <CheckItem>캘린더 업데이트 완료</CheckItem>
+                <CheckItem>영향받은 2명만 다시 확인했어요</CheckItem>
+                <CheckItem>나머지 3명은 다시 안 물었어요</CheckItem>
+                <CheckItem>회의실 B 다시 잡았어요</CheckItem>
+                <CheckItem>캘린더 업데이트했어요</CheckItem>
               </ul>
             </Card>
           </div>
@@ -1206,12 +1198,12 @@ export default function MeetingPanel({
             <div className="h-1.5 overflow-hidden rounded-full bg-zinc-100">
               <div
                 className="h-full rounded-full bg-zinc-900"
-                style={{ animation: 'fill-bar 1.3s ease-out forwards' }}
+                style={{ animation: 'fill-bar 2.9s ease-out forwards' }}
               />
             </div>
             <p className="mt-3 text-xs leading-relaxed text-zinc-500">
-              캘린더 겹침 · 점심시간 · 회의실을 함께 확인해요. 캘린더에 없는 조건은
-              참석자에게 직접 확인해요.
+              겹치는 일정 · 점심시간 · 회의실을 함께 봐요. 캘린더에 없는 건 참석자에게
+              직접 물어봐요.
             </p>
           </Card>
         </div>
@@ -1271,20 +1263,20 @@ export default function MeetingPanel({
           >
             <p className="text-base font-bold text-zinc-900">
               필수 참석자 {selected.suggestedBy ? requiredCount - 2 : requiredCount - 1}명에게 이
-              시간의 확인을 요청할까요?
+              시간 괜찮은지 물어볼까요?
             </p>
             <p className="mt-1.5 text-[13px] text-zinc-600">
               {selected.label} · {meeting.title}
             </p>
             <p className="mt-2.5 rounded-lg bg-zinc-50 px-3 py-2 text-xs leading-relaxed text-zinc-500">
               {selected.suggestedBy
-                ? `이지은님이 직접 제안한 시간이라 다시 묻지 않아요. 나머지 필수 ${requiredCount - 2}명이 확인하면 확정할 수 있어요.`
-                : `필수 참석자 ${requiredCount - 1}명이 직접 확인해야 회의를 확정할 수 있어요.${
+                ? `이지은님이 제안한 시간이라 다시 묻지 않아요. 나머지 ${requiredCount - 2}명이 답하면 확정할 수 있어요.`
+                : `필수 참석자 ${requiredCount - 1}명이 답해야 회의를 확정할 수 있어요.${
                     optionalCount > 0
-                      ? ` 선택 참석자 ${optionalCount}명에게는 제안 시간을 알려드리고, 어려우면 응답으로 알려줄 수 있어요.`
+                      ? ` 선택 참석자 ${optionalCount}명에게는 이 시간을 알려드리고, 어려우면 답으로 알려줄 수 있어요.`
                       : ''
                   }`}{' '}
-              메일과 앱 알림으로 전달돼요.
+              메일과 앱 알림으로 보내요.
             </p>
             <div className="mt-5 flex gap-2">
               <button
@@ -1300,7 +1292,7 @@ export default function MeetingPanel({
                 }}
                 className="flex-1 rounded-xl bg-zinc-900 py-2.5 text-sm font-bold text-white transition-colors hover:bg-zinc-800"
               >
-                확인 요청 보내기
+                물어보기
               </button>
             </div>
           </div>
