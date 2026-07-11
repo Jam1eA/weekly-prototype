@@ -131,6 +131,8 @@ interface Props {
   bookedDirectly: boolean;
   onBookDirectly: () => void;
   onEnterParticipant: () => void;
+  recheckAnswer: 'ok' | 'busy' | null;
+  onEnterRecheck: () => void;
   attendees: Attendee[];
   candidates: CandidateSlot[];
   alternatives: CandidateSlot[];
@@ -154,6 +156,8 @@ export default function MeetingPanel({
   bookedDirectly,
   onBookDirectly,
   onEnterParticipant,
+  recheckAnswer,
+  onEnterRecheck,
   attendees,
   candidates,
   alternatives,
@@ -316,16 +320,22 @@ export default function MeetingPanel({
   const shareAtt = attendees.filter((a) => a.role === 'share');
 
   // Step 10: 영향받는 2명(박서준·이지은) 재확인 애니메이션
+  // Step 10: 박서준은 자동 응답(1틱), 이지은은 참여자 화면에서 직접 답한다
   const [recheckCount, setRecheckCount] = useState(0);
   useEffect(() => {
     if (step !== 10) return;
+    // 이지은 응답 후 복귀했다면 박서준은 이미 답한 상태
+    if (recheckAnswer !== null) {
+      setRecheckCount(1);
+      return;
+    }
     setRecheckCount(0);
     const started = Date.now();
     const update = () =>
-      setRecheckCount(Math.min(2, Math.floor((Date.now() - started) / 1100)));
+      setRecheckCount(Math.min(1, Math.floor((Date.now() - started) / 1100)));
     const iv = setInterval(update, 300);
     return () => clearInterval(iv);
-  }, [step]);
+  }, [step, recheckAnswer]);
 
   /* 단계별 본문 + CTA 정의 */
   let body: React.ReactNode = null;
@@ -1261,7 +1271,11 @@ export default function MeetingPanel({
 
     case 10: {
       const a1 = alternatives[0];
-      const recheckDone = recheckCount >= 2;
+      const parkDone = recheckCount >= 1;
+      const leeDone = recheckAnswer === 'ok';
+      const leeBusy = recheckAnswer === 'busy';
+      const doneCount = (parkDone ? 1 : 0) + (leeDone ? 1 : 0);
+      const recheckDone = parkDone && leeDone;
       body = (
         <>
           <PanelTitle>2명에게 다시 확인하고 있어요</PanelTitle>
@@ -1274,12 +1288,12 @@ export default function MeetingPanel({
             <Card tone="blue">
               <div className="flex items-center justify-between">
                 <p className="text-[13px] font-semibold text-zinc-700">다시 확인 중</p>
-                <span className="text-xs font-bold text-[#6f7d00]">{recheckCount}/2</span>
+                <span className="text-xs font-bold text-[#6f7d00]">{doneCount}/2</span>
               </div>
               <div className="mt-2 h-1.5 overflow-hidden rounded-full bg-zinc-200">
                 <div
                   className="h-full rounded-full bg-[#E1F045] transition-all duration-500"
-                  style={{ width: `${(recheckCount / 2) * 100}%` }}
+                  style={{ width: `${(doneCount / 2) * 100}%` }}
                 />
               </div>
             </Card>
@@ -1289,17 +1303,26 @@ export default function MeetingPanel({
               <ResponseRow
                 name="박서준"
                 title="개발 리드"
-                status={recheckCount >= 1 ? '확인했어요' : '확인 중'}
-                tone={recheckCount >= 1 ? 'ok' : 'wait'}
+                status={parkDone ? '확인했어요' : '확인 중'}
+                tone={parkDone ? 'ok' : 'wait'}
                 note="새 외근 일정과 겹치지 않는지 확인"
               />
               <ResponseRow
                 name="이지은"
                 title="PM"
-                status={recheckCount >= 2 ? '확인했어요' : '확인 중'}
-                tone={recheckCount >= 2 ? 'ok' : 'wait'}
+                status={leeDone ? '확인했어요' : leeBusy ? '어렵다고 답했어요' : '응답 대기'}
+                tone={leeDone ? 'ok' : leeBusy ? 'no' : 'wait'}
                 note="화요일 14:00만 직접 확인했었어요"
               />
+
+              {!recheckAnswer && (
+                <button
+                  onClick={onEnterRecheck}
+                  className="mt-1.5 w-full rounded-lg border border-zinc-300 bg-white py-2 text-xs font-semibold text-zinc-700 transition-colors hover:bg-zinc-50"
+                >
+                  이지은님 화면에서 답하기
+                </button>
+              )}
 
               <GroupLabel>이미 답한 사람</GroupLabel>
               {a1.recheck
@@ -1323,6 +1346,14 @@ export default function MeetingPanel({
                 </p>
               </Card>
             )}
+
+            {leeBusy && (
+              <Card tone="amber">
+                <p className="text-[13px] font-medium leading-relaxed text-zinc-700">
+                  이지은님이 새 시간도 어렵다고 해요. 다른 시간을 다시 찾아볼게요.
+                </p>
+              </Card>
+            )}
           </div>
         </>
       );
@@ -1332,6 +1363,7 @@ export default function MeetingPanel({
         tone: 'green',
         disabled: !recheckDone,
       };
+      secondary = leeBusy ? { label: '다른 시간 다시 보기', onClick: () => onNext(9) } : null;
       break;
     }
 

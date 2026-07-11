@@ -27,6 +27,8 @@ interface Props {
   attendees: Attendee[];
   onComplete: (answer: 'ok' | 'busy', detail: ParticipantDetail) => void;
   onReturn: () => void;
+  // recheck: 확정 후 변경된 시간을 다시 확인하는 모드 (누락 보완·대안 제안 없이 바로 확인만)
+  mode?: 'initial' | 'recheck';
 }
 
 const noStyle = {
@@ -45,7 +47,10 @@ export default function ParticipantView({
   attendees,
   onComplete,
   onReturn,
+  mode = 'initial',
 }: Props) {
+  const recheck = mode === 'recheck';
+  const shortTime = proposed.label.replace(/ - .*$/, '');
   const [phase, setPhase] = useState<Phase>('calendar');
   const [answer, setAnswer] = useState<'ok' | 'busy' | null>(null);
   const [volatile, setVolatile] = useState(false);
@@ -209,19 +214,23 @@ export default function ParticipantView({
             >
               {phase === 'done'
                 ? '응답을 보냈어요'
-                : `유나영님이 '${meeting.title}' 시간이 괜찮은지 물어봤어요`}
+                : recheck
+                  ? `유나영님이 바뀐 회의 시간이 괜찮은지 물어봤어요`
+                  : `유나영님이 '${meeting.title}' 시간이 괜찮은지 물어봤어요`}
             </p>
             <p
               className={`text-xs ${phase === 'done' ? 'text-emerald-600/70' : 'text-[#6f7d00]'}`}
             >
               {phase === 'done'
                 ? '회의가 확정되면 알려드릴게요.'
-                : '필수 참석자라 직접 확인이 필요해요. 연두색 시간을 눌러주세요.'}
+                : recheck
+                  ? `박서준님 일정 변경으로 ${shortTime}로 옮기려고 해요. 연두색 시간을 눌러주세요.`
+                  : '필수 참석자라 직접 확인이 필요해요. 연두색 시간을 눌러주세요.'}
             </p>
           </div>
           {phase === 'calendar' && (
             <button
-              onClick={() => setPhase('gap')}
+              onClick={() => setPhase(recheck ? 'confirm' : 'gap')}
               className="shrink-0 rounded-lg bg-zinc-900 px-3 py-2 text-xs font-bold text-white transition-colors hover:bg-zinc-700"
             >
               확인하기
@@ -385,7 +394,7 @@ export default function ParticipantView({
                 {/* 제안된 시간 */}
                 {proposed.day === day && (
                   <button
-                    onClick={() => phase === 'calendar' && setPhase('gap')}
+                    onClick={() => phase === 'calendar' && setPhase(recheck ? 'confirm' : 'gap')}
                     className={`absolute inset-x-1 z-30 flex flex-col justify-center rounded-lg border px-2.5 text-left transition-all ${
                       phase === 'done' && answer === 'ok'
                         ? 'border-emerald-500 bg-emerald-500 text-white'
@@ -563,7 +572,7 @@ export default function ParticipantView({
                 이 시간 괜찮아요
               </button>
               <button
-                onClick={() => setPhase('alt')}
+                onClick={() => (recheck ? send('busy') : setPhase('alt'))}
                 className="rounded-xl border border-zinc-200 py-3.5 text-sm font-bold text-zinc-600 transition-colors hover:border-zinc-300 hover:bg-zinc-50"
               >
                 이 시간은 어려워요

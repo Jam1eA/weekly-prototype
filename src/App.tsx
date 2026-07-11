@@ -36,6 +36,9 @@ export default function App() {
   // 참여자(정하늘) 화면 전환과 응답 상태
   const [participantOpen, setParticipantOpen] = useState(false);
   const [participantAnswer, setParticipantAnswer] = useState<'ok' | 'busy' | null>(null);
+  // 변경 후 재확인: 이지은이 바뀐 시간(수15)에 직접 답하는 참여자 화면
+  const [recheckOpen, setRecheckOpen] = useState(false);
+  const [recheckAnswer, setRecheckAnswer] = useState<'ok' | 'busy' | null>(null);
   // 이지은이 실제로 입력한 응답 내용 (주최자 화면 요약이 이 데이터에서만 파생된다)
   const [participantDetail, setParticipantDetail] = useState<ParticipantDetail | null>(null);
 
@@ -80,6 +83,8 @@ export default function App() {
 
   const handleNext = (next: Step) => {
     if (next === 5) setProposedId(selectedId);
+    // 재확인 화면에 다시 들어오면 이지은이 새로 답할 수 있게 초기화
+    if (next === 10) setRecheckAnswer(null);
     setStep(next);
   };
 
@@ -102,7 +107,23 @@ export default function App() {
     setParticipantOpen(false);
     setParticipantAnswer(null);
     setParticipantDetail(null);
+    setRecheckOpen(false);
+    setRecheckAnswer(null);
   };
+
+  // 변경 후 재확인: 바뀐 시간(수15)을 이지은 화면에서 직접 확인한다
+  if (recheckOpen) {
+    return (
+      <ParticipantView
+        mode="recheck"
+        proposed={alternatives[0]}
+        meeting={meeting}
+        attendees={attendees}
+        onComplete={(a) => setRecheckAnswer(a)}
+        onReturn={() => setRecheckOpen(false)}
+      />
+    );
+  }
 
   // 참여자 화면이 열려 있으면 앱 전체가 정하늘의 화면으로 전환된다
   if (participantOpen) {
@@ -156,6 +177,8 @@ export default function App() {
           bookedDirectly={bookedDirectly}
           onBookDirectly={handleBookDirectly}
           onEnterParticipant={() => setParticipantOpen(true)}
+          recheckAnswer={recheckAnswer}
+          onEnterRecheck={() => setRecheckOpen(true)}
           attendees={attendees}
           candidates={visibleCandidates}
           alternatives={alternatives}
