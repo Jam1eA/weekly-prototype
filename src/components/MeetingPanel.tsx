@@ -633,13 +633,16 @@ export default function MeetingPanel({
                   <div key={a.id} className="flex w-12 flex-col items-center gap-1">
                     <div
                       className={`relative flex h-9 w-9 items-center justify-center rounded-full text-xs font-semibold ${
-                        st === 'no' ? 'bg-zinc-50 text-zinc-300' : 'bg-zinc-100 text-zinc-600'
+                        st === 'no'
+                          ? 'bg-zinc-50 text-zinc-300'
+                          : selected.suggestedBy === a.id
+                            ? 'bg-emerald-100 text-emerald-700'
+                            : 'bg-zinc-100 text-zinc-600'
                       }`}
                     >
                       {a.name[0]}
-                      {/* 걸리는 사람만 배지로 표시한다. 배지 없음 = 캘린더상 가능이며,
-                          초록 체크는 직접 응답 후에만 — 본인이 제안한 시간의 제안자가 그 경우다. */}
-                      {st ? (
+                      {/* 배지는 걸리는 사람에게만 — 배지 없음 = 캘린더상 가능 */}
+                      {st && (
                         <span
                           className={`absolute -bottom-0.5 -right-0.5 flex h-4 w-4 items-center justify-center rounded-full text-[9px] font-bold text-white ring-2 ring-white ${
                             st === 'no' ? 'bg-red-500' : 'bg-amber-400'
@@ -647,11 +650,7 @@ export default function MeetingPanel({
                         >
                           {st === 'no' ? '×' : st === 'unsure' ? '?' : '!'}
                         </span>
-                      ) : selected.suggestedBy === a.id ? (
-                        <span className="absolute -bottom-0.5 -right-0.5 flex h-4 w-4 items-center justify-center rounded-full bg-emerald-500 text-[9px] font-bold text-white ring-2 ring-white">
-                          ✓
-                        </span>
-                      ) : null}
+                      )}
                     </div>
                     <p
                       className={`max-w-full truncate text-[10px] ${
@@ -660,6 +659,11 @@ export default function MeetingPanel({
                     >
                       {a.name}
                     </p>
+                    {selected.suggestedBy === a.id && (
+                      <p className="-mt-0.5 text-[10px] font-semibold text-emerald-600">
+                        직접 제안
+                      </p>
+                    )}
                   </div>
                 );
               })}
