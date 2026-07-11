@@ -167,6 +167,16 @@ export default function MeetingPanel({
   const [customStart, setCustomStart] = useState('2026-07-13');
   const [customEnd, setCustomEnd] = useState('2026-07-17');
   const [query, setQuery] = useState('');
+  // Step 2 → 3: 후보 탐색 전환 (시스템이 캘린더를 살펴보는 순간을 보여준다)
+  const [finding, setFinding] = useState(false);
+  useEffect(() => {
+    if (!finding) return;
+    const t = setTimeout(() => {
+      setFinding(false);
+      onNext(3);
+    }, 1400);
+    return () => clearTimeout(t);
+  }, [finding]);
   // Step 4: 제안을 보내기 전 확인 모달
   const [confirmOpen, setConfirmOpen] = useState(false);
   // Step 5: 미응답자에게 리마인드 발송 (리서치: 응답 지연 시 멘션·전화로 쫓아다님)
@@ -424,14 +434,7 @@ export default function MeetingPanel({
                       <>
                         <button
                           onClick={() =>
-                            onChangeRole(
-                              a.id,
-                              a.role === 'required'
-                                ? 'optional'
-                                : a.role === 'optional'
-                                  ? 'share'
-                                  : 'required',
-                            )
+                            onChangeRole(a.id, a.role === 'required' ? 'optional' : 'required')
                           }
                           className={`shrink-0 rounded-md px-2 py-1 text-xs font-semibold transition-colors ${
                             a.role === 'required'
@@ -516,13 +519,23 @@ export default function MeetingPanel({
             꼭 참석해야 할 사람이 맞는지 확인하세요. 이 구성이 곧 회의 성립 조건이 돼요.
           </PanelDesc>
 
-          <div className="mt-3 rounded-xl bg-zinc-50 px-3.5 py-2.5">
-            <p className="truncate text-[13px] font-semibold text-zinc-800">
-              {meeting.title}
-            </p>
-            <p className="mt-0.5 text-xs text-zinc-500">
-              {meetingInfo.duration} · {meetingInfo.period}
-            </p>
+          <div className="mt-3 rounded-xl border border-zinc-200 bg-white p-4">
+            <p className="text-[15px] font-bold leading-snug text-zinc-900">{meeting.title}</p>
+            {meeting.purpose && (
+              <p className="mt-1 text-xs leading-relaxed text-zinc-500">{meeting.purpose}</p>
+            )}
+            <div className="mt-2.5 flex flex-wrap gap-1.5">
+              {[meetingInfo.duration, '다음 주 (7/13 – 7/17)', `참석자 ${attendees.length}명`].map(
+                (chip) => (
+                  <span
+                    key={chip}
+                    className="rounded-md bg-zinc-100 px-2 py-1 text-xs font-medium text-zinc-600"
+                  >
+                    {chip}
+                  </span>
+                ),
+              )}
+            </div>
           </div>
 
           <div className="mt-4 space-y-4">
@@ -530,10 +543,13 @@ export default function MeetingPanel({
               [
                 { role: 'required', label: '필수' },
                 { role: 'optional', label: '선택' },
+                // 공유는 구성 단계에서 고르는 역할이 아니라 불참 응답 후의 결과 상태 —
+                // 전환된 사람이 있을 때만 그룹이 나타난다
                 { role: 'share', label: '공유' },
               ] as { role: Role; label: string }[]
             ).map(({ role, label }) => {
               const group = attendees.filter((a) => a.role === role);
+              if (role === 'share' && group.length === 0) return null;
               return (
                 <div key={role}>
                   <div className="mb-1.5 flex items-baseline gap-2 px-1">
@@ -560,21 +576,11 @@ export default function MeetingPanel({
             })}
           </div>
 
-          <Card tone="blue">
-            <p className="text-[13px] font-medium text-zinc-700">
-              {[
-                `필수 ${requiredCount}명 (주최자 포함)`,
-                `선택 ${optionalCount}명`,
-                shareCount > 0 ? `공유 ${shareCount}명` : null,
-              ]
-                .filter(Boolean)
-                .join(', ')}
-              으로 회의 시간을 찾을게요.
-            </p>
-          </Card>
         </>
       );
-      cta = { label: '후보 시간 비교하기', onClick: () => onNext(3) };
+      cta = finding
+        ? { label: '겹치는 시간을 찾는 중이에요', onClick: () => {}, disabled: true }
+        : { label: '후보 시간 비교하기', onClick: () => setFinding(true) };
       break;
 
     case 3:
@@ -1182,6 +1188,35 @@ export default function MeetingPanel({
       );
       cta = { label: '완료', onClick: onReset, tone: 'green' };
       break;
+  }
+
+  // 후보 탐색 전환: "N명으로 시간을 찾는다"는 문장이 실제로 일어나는 순간
+  if (step === 2 && finding) {
+    body = (
+      <>
+        <PanelTitle>겹치는 시간을 찾고 있어요</PanelTitle>
+        <PanelDesc>
+          필수 {requiredCount}명{optionalCount > 0 ? `, 선택 ${optionalCount}명` : ''}
+          {shareCount > 0 ? `, 공유 ${shareCount}명` : ''}의 다음 주 캘린더를 살펴보고
+          있어요.
+        </PanelDesc>
+
+        <div className="mt-5">
+          <Card>
+            <div className="h-1.5 overflow-hidden rounded-full bg-zinc-100">
+              <div
+                className="h-full rounded-full bg-zinc-900"
+                style={{ animation: 'fill-bar 1.3s ease-out forwards' }}
+              />
+            </div>
+            <p className="mt-3 text-xs leading-relaxed text-zinc-500">
+              캘린더 겹침 · 점심시간 · 회의실을 함께 확인해요. 캘린더에 없는 조건은
+              참석자에게 직접 확인해요.
+            </p>
+          </Card>
+        </div>
+      </>
+    );
   }
 
   return (

@@ -46,3 +46,12 @@ body {
   font-variant-numeric: tabular-nums;
   letter-spacing: 0.02em;
 }
+
+@keyframes fill-bar {
+  from {
+    width: 6%;
+  }
+  to {
+    width: 100%;
+  }
+}

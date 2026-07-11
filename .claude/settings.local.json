@@ -39,7 +39,8 @@
       "Bash(git -c user.name=yujeongA commit -m '상태 용어 통일: 캘린더 추정과 본인 응답을 표현에서 분리 *)",
       "Bash(git -c user.name=yujeongA commit -m '예외만 배지 표시 + 거절 후 대안 제안 단계 + 선택 참석자 응답 경로 명시 *)",
       "Bash(git -c user.name=yujeongA commit -m '거절 대안을 후보로 승격: 거절 경로가 확정까지 이어지도록 *)",
-      "Bash(git -c user.name=yujeongA commit -m '캘린더 범례·설명 문장 제거, 제안자 표현을 라벨로 교체 *)"
+      "Bash(git -c user.name=yujeongA commit -m '캘린더 범례·설명 문장 제거, 제안자 표현을 라벨로 교체 *)",
+      "Bash(git -c user.name=yujeongA commit -m '구성 단계 2분법 + 회의 정보 카드 승격 + 후보 탐색 전환 *)"
     ]
   }
 }

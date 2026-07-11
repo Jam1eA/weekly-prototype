@@ -1,9 +1,10 @@
 import type { Attendee, Role } from '../types';
 
-// 역할 배지 원클릭 순환: 필수 → 선택 → 공유 (회의 만들기 화면과 동일한 컨트롤)
+// 역할 배지 원클릭 전환: 필수 ↔ 선택.
+// '공유'는 여기서 고르는 역할이 아니라, 불참 응답 후 전환되는 결과 상태다.
 const nextRole: Record<Role, Role> = {
   required: 'optional',
-  optional: 'share',
+  optional: 'required',
   share: 'required',
 };
 
