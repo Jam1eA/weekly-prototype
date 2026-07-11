@@ -23,7 +23,7 @@ export default function CandidateCard({
       onClick={onSelect}
       className={`cursor-pointer rounded-xl border bg-white p-4 transition-all ${
         selected
-          ? 'border-blue-500 ring-2 ring-blue-100'
+          ? 'border-[#c9d631] ring-2 ring-[#F0F6C2]'
           : 'border-zinc-200 hover:border-zinc-300'
       }`}
     >
@@ -31,10 +31,6 @@ export default function CandidateCard({
         <p className="text-sm font-bold text-zinc-900">{candidate.label}</p>
         <ConfidenceBadge recommend={candidate.recommend} />
       </div>
-
-      {candidate.availabilityText && (
-        <p className="-mt-1 mb-2.5 text-xs text-zinc-500">{candidate.availabilityText}</p>
-      )}
 
       {direct && (
         <div className="mb-2.5 flex items-center justify-between rounded-lg border border-amber-200 bg-amber-50 px-2.5 py-1.5">

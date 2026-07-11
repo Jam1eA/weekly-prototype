@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import type { Attendee, CandidateSlot, Role, Step } from '../types';
-import {
+import { initialOf,
   directoryExtras,
   initialAttendees,
   jungResponse,
@@ -444,7 +444,7 @@ export default function MeetingPanel({
                 {attendees.map((a) => (
                   <div key={a.id} className="flex items-center gap-2.5 py-2">
                     <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-zinc-100 text-xs font-semibold text-zinc-600">
-                      {a.name[0]}
+                      {initialOf(a.name)}
                     </div>
                     <div className="min-w-0 flex-1">
                       <p className="truncate text-[13px] font-medium text-zinc-800">
@@ -464,7 +464,7 @@ export default function MeetingPanel({
                           }
                           className={`shrink-0 rounded-md px-2 py-1 text-xs font-semibold transition-colors ${
                             a.role === 'required'
-                              ? 'bg-zinc-900 text-white hover:bg-zinc-800'
+                              ? 'bg-zinc-900 text-white hover:bg-zinc-700'
                               : a.role === 'optional'
                                 ? 'bg-zinc-100 text-zinc-500 hover:bg-zinc-200'
                                 : 'bg-zinc-100 text-zinc-400 hover:bg-zinc-200'
@@ -499,7 +499,7 @@ export default function MeetingPanel({
                 {results.map((p) => (
                   <div key={p.id} className="flex items-center gap-2.5 py-2">
                     <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-zinc-100 text-xs font-semibold text-zinc-600">
-                      {p.name[0]}
+                      {initialOf(p.name)}
                     </div>
                     <div className="min-w-0 flex-1">
                       <p className="truncate text-[13px] font-medium text-zinc-800">
@@ -512,7 +512,7 @@ export default function MeetingPanel({
                       className={`shrink-0 rounded-md px-2 py-1 text-xs font-semibold transition-colors ${
                         isSelected(p.id)
                           ? 'text-zinc-400 hover:text-zinc-600'
-                          : 'bg-zinc-900 text-white hover:bg-zinc-800'
+                          : 'bg-zinc-900 text-white hover:bg-zinc-700'
                       }`}
                     >
                       {isSelected(p.id) ? '✓ 추가됨' : '+ 추가'}
@@ -631,9 +631,6 @@ export default function MeetingPanel({
               />
             ))}
           </div>
-          <p className="mt-3 text-center text-xs text-zinc-400">
-            누르면 캘린더에서 그 시간이 강조돼요.
-          </p>
         </>
       );
       break;
@@ -670,7 +667,7 @@ export default function MeetingPanel({
                             : 'bg-zinc-100 text-zinc-600'
                       }`}
                     >
-                      {a.name[0]}
+                      {initialOf(a.name)}
                       {/* 배지는 걸리는 사람에게만 — 배지 없음 = 캘린더상 가능 */}
                       {st && (
                         <span
@@ -798,13 +795,13 @@ export default function MeetingPanel({
               <Card tone="blue">
                 <div className="flex items-center justify-between">
                   <p className="text-[13px] font-semibold text-zinc-700">확인 진행</p>
-                  <span className="text-xs font-bold text-blue-600">
+                  <span className="text-xs font-bold text-[#6f7d00]">
                     {done ? proposedUncertain.length : 0}/{proposedUncertain.length}
                   </span>
                 </div>
-                <div className="mt-2 h-1.5 overflow-hidden rounded-full bg-blue-100">
+                <div className="mt-2 h-1.5 overflow-hidden rounded-full bg-zinc-200">
                   <div
-                    className="h-full rounded-full bg-blue-500 transition-all duration-500"
+                    className="h-full rounded-full bg-[#E1F045] transition-all duration-500"
                     style={{ width: done ? '100%' : '8%' }}
                   />
                 </div>
@@ -877,11 +874,11 @@ export default function MeetingPanel({
                 <p className="text-[13px] font-semibold text-zinc-700">
                   필수 참석자 응답
                 </p>
-                <span className="text-xs font-bold text-blue-600">{directConfirmed}/3</span>
+                <span className="text-xs font-bold text-[#6f7d00]">{directConfirmed}/3</span>
               </div>
-              <div className="mt-2 h-1.5 overflow-hidden rounded-full bg-blue-100">
+              <div className="mt-2 h-1.5 overflow-hidden rounded-full bg-zinc-200">
                 <div
-                  className="h-full rounded-full bg-blue-500 transition-all duration-500"
+                  className="h-full rounded-full bg-[#E1F045] transition-all duration-500"
                   style={{ width: `${(directConfirmed / 3) * 100}%` }}
                 />
               </div>
@@ -1148,7 +1145,7 @@ export default function MeetingPanel({
             <Card>
               <div className="flex items-start gap-2.5">
                 <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-zinc-100 text-sm font-semibold text-zinc-600">
-                  박
+                  P
                 </div>
                 <p className="text-[13px] leading-relaxed text-zinc-700">
                   확정한 뒤에 생긴 일정이라{' '}
@@ -1242,11 +1239,11 @@ export default function MeetingPanel({
             <Card tone="blue">
               <div className="flex items-center justify-between">
                 <p className="text-[13px] font-semibold text-zinc-700">다시 확인 중</p>
-                <span className="text-xs font-bold text-blue-600">{recheckCount}/2</span>
+                <span className="text-xs font-bold text-[#6f7d00]">{recheckCount}/2</span>
               </div>
-              <div className="mt-2 h-1.5 overflow-hidden rounded-full bg-blue-100">
+              <div className="mt-2 h-1.5 overflow-hidden rounded-full bg-zinc-200">
                 <div
-                  className="h-full rounded-full bg-blue-500 transition-all duration-500"
+                  className="h-full rounded-full bg-[#E1F045] transition-all duration-500"
                   style={{ width: `${(recheckCount / 2) * 100}%` }}
                 />
               </div>
@@ -1445,7 +1442,7 @@ export default function MeetingPanel({
                   setConfirmOpen(false);
                   onNext(5);
                 }}
-                className="flex-1 rounded-xl bg-zinc-900 py-2.5 text-sm font-bold text-white transition-colors hover:bg-zinc-800"
+                className="flex-1 rounded-xl bg-zinc-900 py-2.5 text-sm font-bold text-white transition-colors hover:bg-zinc-700"
               >
                 물어보기
               </button>
@@ -1465,8 +1462,8 @@ export default function MeetingPanel({
                 cta.disabled
                   ? 'cursor-default bg-zinc-100 text-zinc-400'
                   : cta.tone === 'green'
-                    ? 'bg-emerald-600 text-white hover:bg-emerald-700'
-                    : 'bg-zinc-900 text-white hover:bg-zinc-800'
+                    ? 'bg-emerald-600 text-white hover:bg-emerald-500'
+                    : 'bg-zinc-900 text-white hover:bg-zinc-700'
               }`}
             >
               {cta.label}

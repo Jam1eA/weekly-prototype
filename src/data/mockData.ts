@@ -7,6 +7,12 @@ export const meetingInfo = {
   period: '다음 주 안 (7월 13일 – 7월 17일)',
 };
 
+// 아바타 이니셜 — 성씨를 영문 대문자로 표기한다
+const SURNAME_INITIAL: Record<string, string> = {
+  유: 'Y', 김: 'K', 박: 'P', 이: 'L', 최: 'C', 정: 'J', 한: 'H', 서: 'S', 임: 'L', 강: 'K',
+};
+export const initialOf = (name: string) => SURNAME_INITIAL[name[0]] ?? name[0].toUpperCase();
+
 export const weekDays = [
   { label: '월', date: '7/13' },
   { label: '화', date: '7/14' },
@@ -242,6 +248,7 @@ export const busyBlocks: BusyBlock[] = [
   { day: 1, startHour: 9, duration: 1, label: '이지은 · 바쁨', kind: 'busy' },
   { day: 1, startHour: 16, duration: 1, label: '최유리 · 바쁨', kind: 'busy' },
   { day: 2, startHour: 10, duration: 2, label: '박서준 · 바쁨', kind: 'busy' },
+  { day: 2, startHour: 14, duration: 1, label: '김민준 · 바쁨', kind: 'busy' },
   // 2명이 겹치는 시간은 나란히 표시
   { day: 2, startHour: 16, duration: 1, label: '김민준 · 바쁨', kind: 'busy', col: 0 },
   { day: 2, startHour: 16, duration: 1, label: '최유리 · 바쁨', kind: 'busy', col: 1 },

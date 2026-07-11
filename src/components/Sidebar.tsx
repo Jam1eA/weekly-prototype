@@ -1,4 +1,5 @@
 import type { Attendee } from '../types';
+import { initialOf } from '../data/mockData';
 
 const roleLabel: Record<string, string> = {
   required: '필수',
@@ -31,7 +32,7 @@ export default function Sidebar({
           className={`flex w-full items-center justify-center gap-1.5 rounded-xl py-3 text-sm font-bold transition-colors ${
             started
               ? 'cursor-default bg-zinc-100 text-zinc-300'
-              : 'bg-zinc-900 text-white hover:bg-zinc-800'
+              : 'bg-zinc-900 text-white hover:bg-zinc-700'
           }`}
         >
           <span className="text-base leading-none">+</span> 회의 만들기
@@ -79,7 +80,7 @@ export default function Sidebar({
           {attendees.map((a) => (
             <li key={a.id} className="flex items-center gap-2.5 rounded-lg px-2 py-1.5">
               <div className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-zinc-100 text-[11px] font-semibold text-zinc-600">
-                {a.name[0]}
+                {initialOf(a.name)}
               </div>
               <div className="min-w-0 flex-1">
                 <p className="truncate text-[13px] font-medium text-zinc-800">

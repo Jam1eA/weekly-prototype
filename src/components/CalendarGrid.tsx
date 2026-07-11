@@ -28,10 +28,10 @@ interface Overlay {
 
 const overlayClass: Record<OverlayStyle, string> = {
   candidate:
-    'border-2 border-dashed border-blue-400 bg-blue-50/70 text-blue-700 hover:bg-blue-100 cursor-pointer',
+    'border-2 border-dashed border-[#c9d631] bg-[#F7FBDC] text-[#5c6800] hover:bg-[#EFF6BE] cursor-pointer',
   candidateSelected:
-    'border border-blue-600 bg-blue-600 text-white shadow-sm cursor-pointer',
-  proposed: 'border border-blue-500 bg-blue-500 text-white shadow-sm',
+    'border border-[#c9d631] bg-[#E1F045] text-zinc-900 shadow-sm cursor-pointer',
+  proposed: 'border border-[#c9d631] bg-[#E1F045] text-zinc-900 shadow-sm',
   confirmed: 'border border-emerald-500 bg-emerald-500 text-white shadow-sm',
   conflict: 'border border-red-400 bg-red-50 text-red-600',
   conflictFaded: 'border border-dashed border-red-300 bg-red-50/50 text-red-400',

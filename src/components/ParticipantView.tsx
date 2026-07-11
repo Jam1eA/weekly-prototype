@@ -169,7 +169,7 @@ export default function ParticipantView({
           </button>
           <div className="flex items-center gap-2">
             <div className="flex h-8 w-8 items-center justify-center rounded-full bg-emerald-100 text-sm font-bold text-emerald-700">
-              이
+              L
             </div>
             <span className="text-sm font-medium text-zinc-700">이지은</span>
           </div>
@@ -182,12 +182,12 @@ export default function ParticipantView({
           className={`flex shrink-0 items-center gap-3 border-b px-5 py-3 ${
             phase === 'done'
               ? 'border-emerald-100 bg-emerald-50/60'
-              : 'border-blue-100 bg-blue-50/60'
+              : 'border-[#E9F2B8] bg-[#F7FBDC]'
           }`}
         >
           <span
             className={`flex h-7 w-7 shrink-0 items-center justify-center rounded-full ${
-              phase === 'done' ? 'bg-emerald-100 text-emerald-600' : 'bg-blue-100 text-blue-600'
+              phase === 'done' ? 'bg-emerald-100 text-emerald-600' : 'bg-[#F0F6C2] text-[#6f7d00]'
             }`}
           >
             <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
@@ -204,7 +204,7 @@ export default function ParticipantView({
           <div className="min-w-0 flex-1">
             <p
               className={`text-[13px] font-semibold ${
-                phase === 'done' ? 'text-emerald-700' : 'text-blue-700'
+                phase === 'done' ? 'text-emerald-700' : 'text-[#4f5a00]'
               }`}
             >
               {phase === 'done'
@@ -212,17 +212,17 @@ export default function ParticipantView({
                 : `유나영님이 '${meeting.title}' 시간이 괜찮은지 물어봤어요`}
             </p>
             <p
-              className={`text-xs ${phase === 'done' ? 'text-emerald-600/70' : 'text-blue-600/70'}`}
+              className={`text-xs ${phase === 'done' ? 'text-emerald-600/70' : 'text-[#6f7d00]'}`}
             >
               {phase === 'done'
                 ? '회의가 확정되면 알려드릴게요.'
-                : '필수 참석자라 직접 확인이 필요해요. 파란 시간을 눌러주세요.'}
+                : '필수 참석자라 직접 확인이 필요해요. 연두색 시간을 눌러주세요.'}
             </p>
           </div>
           {phase === 'calendar' && (
             <button
               onClick={() => setPhase('gap')}
-              className="shrink-0 rounded-lg bg-zinc-900 px-3 py-2 text-xs font-bold text-white transition-colors hover:bg-zinc-800"
+              className="shrink-0 rounded-lg bg-zinc-900 px-3 py-2 text-xs font-bold text-white transition-colors hover:bg-zinc-700"
             >
               확인하기
             </button>
@@ -230,7 +230,7 @@ export default function ParticipantView({
           {phase === 'done' && (
             <button
               onClick={onReturn}
-              className="shrink-0 rounded-lg bg-zinc-900 px-3 py-2 text-xs font-bold text-white transition-colors hover:bg-zinc-800"
+              className="shrink-0 rounded-lg bg-zinc-900 px-3 py-2 text-xs font-bold text-white transition-colors hover:bg-zinc-700"
             >
               주최자 화면으로
             </button>
@@ -391,7 +391,7 @@ export default function ParticipantView({
                         ? 'border-emerald-500 bg-emerald-500 text-white'
                         : phase === 'done'
                           ? 'border-dashed border-zinc-300 bg-white text-zinc-400'
-                          : 'border-blue-500 bg-blue-500 text-white shadow-sm hover:bg-blue-600'
+                          : 'border-[#c9d631] bg-[#E1F045] text-zinc-900 shadow-sm hover:bg-[#d6e63e]'
                     }`}
                     style={{
                       top: (proposed.startHour - START) * HOUR_PX + 2,
@@ -434,7 +434,7 @@ export default function ParticipantView({
               </button>
               <button
                 onClick={() => setPhase('confirm')}
-                className="rounded-xl bg-zinc-900 px-5 py-2.5 text-sm font-bold text-white transition-colors hover:bg-zinc-800"
+                className="rounded-xl bg-zinc-900 px-5 py-2.5 text-sm font-bold text-white transition-colors hover:bg-zinc-700"
               >
                 입력 완료
               </button>
@@ -464,7 +464,7 @@ export default function ParticipantView({
             <div className="mt-5 space-y-2">
               <button
                 onClick={() => setPhase('confirm')}
-                className="w-full rounded-xl bg-zinc-900 py-3.5 text-sm font-bold text-white transition-colors hover:bg-zinc-800"
+                className="w-full rounded-xl bg-zinc-900 py-3.5 text-sm font-bold text-white transition-colors hover:bg-zinc-700"
               >
                 다 등록했어요
               </button>
@@ -558,7 +558,7 @@ export default function ParticipantView({
             <div className="mt-3 grid grid-cols-2 gap-2.5">
               <button
                 onClick={() => send('ok')}
-                className="rounded-xl bg-zinc-900 py-3.5 text-sm font-bold text-white transition-colors hover:bg-zinc-800"
+                className="rounded-xl bg-zinc-900 py-3.5 text-sm font-bold text-white transition-colors hover:bg-zinc-700"
               >
                 이 시간 괜찮아요
               </button>
@@ -618,7 +618,7 @@ export default function ParticipantView({
               </button>
               <button
                 onClick={() => send('busy')}
-                className="flex-1 rounded-xl bg-zinc-900 py-2.5 text-sm font-bold text-white transition-colors hover:bg-zinc-800"
+                className="flex-1 rounded-xl bg-zinc-900 py-2.5 text-sm font-bold text-white transition-colors hover:bg-zinc-700"
               >
                 {selectedAlts.length > 0
                   ? `고른 시간과 함께 보내기`

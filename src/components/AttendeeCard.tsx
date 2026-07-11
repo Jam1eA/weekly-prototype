@@ -1,4 +1,5 @@
 import type { Attendee, Role } from '../types';
+import { initialOf } from '../data/mockData';
 
 // 역할 배지 원클릭 전환: 필수 ↔ 선택.
 // '공유'는 여기서 고르는 역할이 아니라, 불참 응답 후 전환되는 결과 상태다.
@@ -15,7 +16,7 @@ const roleLabel: Record<Role, string> = {
 };
 
 const roleBadge: Record<Role, string> = {
-  required: 'bg-zinc-900 text-white hover:bg-zinc-800',
+  required: 'bg-zinc-900 text-white hover:bg-zinc-700',
   optional: 'bg-zinc-100 text-zinc-500 hover:bg-zinc-200',
   share: 'bg-zinc-100 text-zinc-400 hover:bg-zinc-200',
 };
@@ -32,7 +33,7 @@ export default function AttendeeCard({
       <div className="flex items-start justify-between gap-3">
         <div className="flex items-center gap-2.5">
           <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-zinc-100 text-sm font-semibold text-zinc-600">
-            {attendee.name[0]}
+            {initialOf(attendee.name)}
           </div>
           <div>
             <p className="text-sm font-semibold text-zinc-900">

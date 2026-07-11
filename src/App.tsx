@@ -125,6 +125,7 @@ export default function App() {
       <Header
         hasAlert={hasAlert}
         onAlertClick={openAlert}
+        onHome={handleReset}
         started={started}
         attendees={attendees}
       />

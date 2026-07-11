@@ -1,13 +1,16 @@
 import type { Attendee } from '../types';
+import { initialOf } from '../data/mockData';
 
 export default function Header({
   hasAlert,
   onAlertClick,
+  onHome,
   started,
   attendees,
 }: {
   hasAlert: boolean;
   onAlertClick: () => void;
+  onHome: () => void;
   started: boolean;
   attendees: Attendee[];
 }) {
@@ -15,12 +18,13 @@ export default function Header({
   const others = attendees.filter((a) => !a.isOrganizer);
   return (
     <header className="flex h-14 shrink-0 items-center justify-between border-b border-zinc-200 bg-white px-5">
-      <div className="flex items-center gap-2">
+      {/* 로고 클릭 = 홈(내 캘린더)으로 */}
+      <button onClick={onHome} className="flex items-center gap-2">
         <div className="flex h-7 w-7 items-center justify-center rounded-lg bg-zinc-900 text-sm font-bold text-white">
           W
         </div>
         <span className="text-[15px] font-bold text-zinc-900">위클리</span>
-      </div>
+      </button>
 
       <div className="flex items-center gap-2 text-sm">
         <button className="rounded-md border border-zinc-200 px-2 py-1 text-zinc-400" disabled>
@@ -59,7 +63,7 @@ export default function Header({
                 title={`${a.name} ${a.title}`}
                 className="flex h-7 w-7 items-center justify-center rounded-full border-2 border-white bg-zinc-100 text-[11px] font-semibold text-zinc-600"
               >
-                {a.name[0]}
+                {initialOf(a.name)}
               </div>
             ))}
             {others.length > 5 && (
@@ -70,7 +74,7 @@ export default function Header({
           </div>
         )}
         <div className="flex h-8 w-8 items-center justify-center rounded-full bg-zinc-900 text-sm font-bold text-white">
-          유
+          Y
         </div>
       </div>
     </header>
