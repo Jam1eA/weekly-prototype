@@ -10,14 +10,18 @@ const stepStatus: Record<Step, { label: string; className: string; dot: string }
   5: { label: '확인 요청 중', className: 'bg-blue-50 text-blue-600', dot: 'bg-blue-500' },
   6: { label: '확인 요청 중', className: 'bg-blue-50 text-blue-600', dot: 'bg-blue-500' },
   7: { label: '확정 완료', className: 'bg-emerald-50 text-emerald-600', dot: 'bg-emerald-500' },
-  8: { label: '변경 발생', className: 'bg-red-50 text-red-600', dot: 'bg-red-500' },
-  9: { label: '변경 발생', className: 'bg-red-50 text-red-600', dot: 'bg-red-500' },
+  8: { label: '변경 필요', className: 'bg-red-50 text-red-600', dot: 'bg-red-500' },
+  9: { label: '변경 필요', className: 'bg-red-50 text-red-600', dot: 'bg-red-500' },
   10: { label: '재확인 중', className: 'bg-blue-50 text-blue-600', dot: 'bg-blue-500' },
-  11: { label: '변경 완료', className: 'bg-emerald-50 text-emerald-600', dot: 'bg-emerald-500' },
+  11: { label: '확정 완료', className: 'bg-emerald-50 text-emerald-600', dot: 'bg-emerald-500' },
 };
 
-export default function StatusBadge({ step }: { step: Step }) {
-  const s = stepStatus[step];
+// 필수 참석자 응답이 모두 완료되면(ready) 확인 요청 중 → 확정 준비 완료로 전환
+export default function StatusBadge({ step, ready = false }: { step: Step; ready?: boolean }) {
+  const s =
+    step === 6 && ready
+      ? { label: '확정 준비 완료', className: 'bg-emerald-50 text-emerald-600', dot: 'bg-emerald-500' }
+      : stepStatus[step];
   return (
     <span
       className={`inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 text-xs font-semibold ${s.className}`}

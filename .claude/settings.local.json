@@ -34,7 +34,9 @@
       "Bash(git -c user.name=yujeongA commit -q -m '만들기 버튼을 사이드바로, 헤더 정리, 캘린더 색 언어 범례화 *)",
       "Bash(git -c user.name=yujeongA commit -q -m '불확실성 라벨 정정, 응답 요약 정합성, 단계 축소, 리마인드 *)",
       "Bash(git -c user.name=yujeongA commit -q -m '확정 후 변경 알림 지연을 3초로 되돌림 *)",
-      "Bash(git -c user.name=yujeongA commit -q -m '문제정의 재정렬: 캘린더 추정과 직접 확인의 구분을 상태 체계로 *)"
+      "Bash(git -c user.name=yujeongA commit -q -m '문제정의 재정렬: 캘린더 추정과 직접 확인의 구분을 상태 체계로 *)",
+      "Bash(npx tsc *)",
+      "Bash(git -c user.name=yujeongA commit -m '상태 용어 통일: 캘린더 추정과 본인 응답을 표현에서 분리 *)"
     ]
   }
 }

@@ -67,7 +67,7 @@ function buildOverlays(
         key: 'p',
         day: proposed.day,
         startHour: proposed.startHour,
-        label: '제안 중',
+        label: '확인 요청 중',
         time: time(proposed),
         style: 'proposed',
       },
@@ -132,7 +132,7 @@ function buildOverlays(
         key: next.id,
         day: next.day,
         startHour: next.startHour,
-        label: '제안 중',
+        label: '확인 요청 중',
         time: time(next),
         style: 'proposed',
       },
@@ -211,7 +211,7 @@ export default function CalendarGrid({
               </span>
               <span className="flex items-center gap-1">
                 <span className="h-2.5 w-2.5 rounded-sm bg-blue-500" />
-                제안 중
+                확인 요청 중
               </span>
               <span className="flex items-center gap-1">
                 <span className="h-2.5 w-2.5 rounded-sm bg-emerald-500" />

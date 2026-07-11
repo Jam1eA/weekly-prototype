@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import type { Attendee, CandidateSlot } from '../types';
-import { LUNCH_END, LUNCH_START, leeAlternatives, leeBlocks, weekDays } from '../data/mockData';
+import { LUNCH_END, LUNCH_START, leeBlocks, weekDays } from '../data/mockData';
 
 const START = 9;
 const END = 18;
@@ -49,9 +49,7 @@ export default function ParticipantView({
   const [answer, setAnswer] = useState<'ok' | 'busy' | null>(null);
   const [volatile, setVolatile] = useState(false);
   const [marks, setMarks] = useState<Record<string, Mark>>({});
-  const [selectedAlts, setSelectedAlts] = useState<string[]>([]);
   const [paint, setPaint] = useState<Mark | null | undefined>(undefined);
-  const [confirmedAt, setConfirmedAt] = useState('');
 
   useEffect(() => {
     const up = () => setPaint(undefined);
@@ -108,9 +106,6 @@ export default function ParticipantView({
     });
   };
 
-  const toggleAlt = (id: string) =>
-    setSelectedAlts((p) => (p.includes(id) ? p.filter((x) => x !== id) : [...p, id]));
-
   const summarizeDays = (type: Mark) =>
     DAY_NAMES.map((name, day) => {
       const count = HOURS.filter((h) => marks[cellKey(day, h)] === type).length;
@@ -121,21 +116,17 @@ export default function ParticipantView({
 
   const noSummary = summarizeDays('no');
   const avoidSummary = summarizeDays('avoid');
-  const altLabels = leeAlternatives
-    .filter((a) => selectedAlts.includes(a.id))
-    .map((a) => a.label);
   const hasMarks = noSummary.length > 0 || avoidSummary.length > 0;
 
   const send = (a: 'ok' | 'busy') => {
-    const t = nowLabel();
     setAnswer(a);
-    setConfirmedAt(t);
     onComplete(a, {
       volatile: a === 'ok' ? volatile : false,
       no: noSummary,
       avoid: avoidSummary,
-      alts: altLabels,
-      confirmedAt: t,
+      alts: [],
+      // 확인 시각은 데이터로만 저장하고 UI에는 노출하지 않는다
+      confirmedAt: nowLabel(),
     });
     setPhase('done');
   };
@@ -208,7 +199,7 @@ export default function ParticipantView({
               }`}
             >
               {phase === 'done'
-                ? `직접 확인을 마쳤어요 · ${confirmedAt}`
+                ? '본인 확인을 마쳤어요'
                 : `유나영님이 '${meeting.title}' 시간의 확인을 요청했어요`}
             </p>
             <p
@@ -423,28 +414,9 @@ export default function ParticipantView({
       {phase === 'editing' && (
         <div className="shrink-0 border-t border-zinc-200 bg-white px-5 py-3">
           <div className="flex items-center justify-between gap-6">
-            <div className="min-w-0 flex-1">
-              <p className="mb-1.5 text-xs font-semibold text-zinc-500">
-                대신 이 시간은 어때요?{' '}
-                <span className="font-normal text-zinc-400">내 캘린더 기준으로 미리 찾았어요</span>
-              </p>
-              <div className="flex flex-wrap gap-2">
-                {leeAlternatives.map((a) => (
-                  <button
-                    key={a.id}
-                    onClick={() => toggleAlt(a.id)}
-                    className={`rounded-full border px-3 py-1.5 text-xs font-semibold transition-colors ${
-                      selectedAlts.includes(a.id)
-                        ? 'border-zinc-900 bg-zinc-100 text-zinc-900'
-                        : 'border-zinc-200 bg-white text-zinc-500 hover:border-zinc-300'
-                    }`}
-                  >
-                    {selectedAlts.includes(a.id) ? '✓ ' : ''}
-                    {a.label}
-                  </button>
-                ))}
-              </div>
-            </div>
+            <p className="min-w-0 flex-1 text-xs leading-relaxed text-zinc-400">
+              표시한 시간은 응답과 함께 주최자에게 전달돼요.
+            </p>
             <div className="flex shrink-0 items-center gap-2">
               <button
                 onClick={() => setPhase('gap')}
@@ -554,7 +526,6 @@ export default function ParticipantView({
                     {[
                       noSummary.length ? `안 돼요: ${noSummary.join(', ')}` : null,
                       avoidSummary.length ? `피하고 싶어요: ${avoidSummary.join(', ')}` : null,
-                      altLabels.length ? `대안: ${altLabels.join(', ')}` : null,
                     ]
                       .filter(Boolean)
                       .join(' · ')}
@@ -610,10 +581,6 @@ export default function ParticipantView({
                   {answer === 'ok' ? '참석할 수 있어요' : '이 시간은 어려워요'}
                   {answer === 'ok' && volatile ? ' · 변동 가능성 있음' : ''}
                 </span>
-              </div>
-              <div className="flex justify-between gap-3">
-                <span className="text-zinc-400">직접 확인</span>
-                <span className="font-medium text-zinc-800">{confirmedAt}</span>
               </div>
               {hasMarks && (
                 <>

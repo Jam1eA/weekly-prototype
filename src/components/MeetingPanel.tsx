@@ -185,7 +185,7 @@ export default function MeetingPanel({
 
   // Step 5: 확인 요청 후 자동 응답 스크립트.
   // tick1 김민준 직접 확인 → tick2 박서준 직접 확인 → tick3 정하늘 불가 응답.
-  // 최유리(선택)는 응답 없이 '캘린더 기준 가능', 이지은(필수)은 참여자 화면에서 직접 확인한다.
+  // 최유리(선택)는 응답 없이 '캘린더상 가능', 이지은(필수)은 참여자 화면에서 직접 확인한다.
   const AUTO_TICKS = 3;
   const leeResponded = participantAnswer !== null;
   const [autoCount, setAutoCount] = useState(0);
@@ -219,28 +219,29 @@ export default function MeetingPanel({
     switch (a.id) {
       case 'kim':
         return autoCount >= 1
-          ? { label: '직접 확인', tone: 'ok', sub: '오늘 16:05' }
+          ? { label: '본인 확인 완료', tone: 'ok' }
           : { label: '응답 대기', tone: 'wait' };
       case 'park':
         return autoCount >= 2
-          ? { label: '직접 확인', tone: 'ok', sub: '오늘 16:10' }
+          ? { label: '본인 확인 완료', tone: 'ok' }
           : { label: '응답 대기', tone: 'wait' };
       case 'jung':
-        if (autoCount < 3) return { label: '캘린더 기준 가능', tone: 'neutral' };
+        if (autoCount < 3) return { label: '캘린더상 가능', tone: 'neutral' };
         return jungShared
           ? { label: '회의록 공유 예정', tone: 'neutral' }
-          : { label: '불가', tone: 'no' };
+          : { label: '참석 어려움', tone: 'no' };
       case 'choi':
-        return { label: '캘린더 기준 가능', tone: 'neutral', sub: '응답 전' };
+        return { label: '캘린더상 가능', tone: 'neutral', sub: '응답 전' };
       case 'lee':
         if (!leeResponded) return { label: '응답 대기', tone: 'wait' };
+        // 확인 시각(confirmedAt)은 데이터로만 유지하고 UI에는 노출하지 않는다
         if (participantAnswer === 'ok')
           return participantDetail?.volatile
-            ? { label: '직접 확인 · 변동 가능성', tone: 'warn', sub: participantDetail?.confirmedAt }
-            : { label: '직접 확인', tone: 'ok', sub: participantDetail?.confirmedAt };
-        return { label: '불가', tone: 'no' };
+            ? { label: '본인 확인 완료 · 변동 가능성', tone: 'warn' }
+            : { label: '본인 확인 완료', tone: 'ok' };
+        return { label: '참석 어려움', tone: 'no' };
       default:
-        return { label: '캘린더 기준 가능', tone: 'neutral' };
+        return { label: '캘린더상 가능', tone: 'neutral' };
     }
   };
 
@@ -613,17 +614,23 @@ export default function MeetingPanel({
                       }`}
                     >
                       {a.name[0]}
-                      <span
-                        className={`absolute -bottom-0.5 -right-0.5 flex h-4 w-4 items-center justify-center rounded-full text-[9px] font-bold text-white ring-2 ring-white ${
-                          st === 'no'
-                            ? 'bg-red-500'
-                            : st === 'unsure' || st === 'avoid'
-                              ? 'bg-amber-400'
-                              : 'bg-emerald-500'
-                        }`}
-                      >
-                        {st === 'no' ? '×' : st === 'unsure' ? '?' : st === 'avoid' ? '!' : '✓'}
-                      </span>
+                      {st ? (
+                        <span
+                          className={`absolute -bottom-0.5 -right-0.5 flex h-4 w-4 items-center justify-center rounded-full text-[9px] font-bold text-white ring-2 ring-white ${
+                            st === 'no' ? 'bg-red-500' : 'bg-amber-400'
+                          }`}
+                        >
+                          {st === 'no' ? '×' : st === 'unsure' ? '?' : '!'}
+                        </span>
+                      ) : (
+                        // 응답 전에는 캘린더 기준 추정임을 아이콘으로 드러낸다. 초록 체크는 직접 응답 후에만 쓴다.
+                        <span className="absolute -bottom-0.5 -right-0.5 flex h-4 w-4 items-center justify-center rounded-full border border-zinc-300 bg-white text-zinc-400 ring-2 ring-white">
+                          <svg width="9" height="9" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                            <rect x="3" y="4" width="18" height="18" rx="2" />
+                            <path d="M16 2v4M8 2v4M3 10h18" />
+                          </svg>
+                        </span>
+                      )}
                     </div>
                     <p
                       className={`max-w-full truncate text-[10px] ${
@@ -636,6 +643,9 @@ export default function MeetingPanel({
                 );
               })}
             </div>
+            <p className="mt-3 border-t border-zinc-100 pt-2 text-[11px] leading-relaxed text-zinc-400">
+              캘린더 아이콘은 캘린더상 가능이라는 뜻이에요 · 아직 본인 응답 전
+            </p>
           </div>
 
           <p className="mb-2 mt-5 text-sm font-bold text-zinc-800">캘린더 기준</p>
@@ -648,14 +658,14 @@ export default function MeetingPanel({
                     <span className="shrink-0 text-zinc-400">{f.label}</span>
                     <span
                       className={`text-right font-medium ${
-                        f.label === '직접 확인'
+                        f.label === '필수 참석자 응답'
                           ? 'text-amber-700'
                           : f.ok
                             ? 'text-zinc-800'
                             : 'text-amber-700'
                       }`}
                     >
-                      {f.label === '직접 확인' ? '0/3 · 요청 전' : f.value}
+                      {f.label === '필수 참석자 응답' ? '0/3 · 요청 전' : f.value}
                     </span>
                   </li>
                 ))}
@@ -706,7 +716,7 @@ export default function MeetingPanel({
             <Card tone="blue">
               <div className="flex items-center justify-between">
                 <p className="text-[13px] font-semibold text-zinc-700">
-                  필수 참석자 직접 확인
+                  필수 참석자 응답
                 </p>
                 <span className="text-xs font-bold text-blue-600">{directConfirmed}/3</span>
               </div>
@@ -830,7 +840,7 @@ export default function MeetingPanel({
           <PanelDesc>
             {readyToConfirm
               ? '회의 성립에 필요한 조건이 모두 확인됐어요.'
-              : '필수 참석자의 직접 확인 상태를 확인해요.'}
+              : '필수 참석자의 응답 상태를 확인해요.'}
           </PanelDesc>
 
           {readyToConfirm && (
@@ -838,9 +848,9 @@ export default function MeetingPanel({
               <Card tone="green">
                 <p className="mb-2 text-xs font-semibold text-emerald-600">확정 준비 완료</p>
                 <ul className="space-y-2">
-                  <CheckItem>초대된 필수 참석자 3/3 직접 확인</CheckItem>
+                  <CheckItem>필수 참석자 응답 3/3 완료</CheckItem>
                   <CheckItem>주최자 포함 필수 참석자 4명 모두 가능</CheckItem>
-                  <CheckItem>선택 참석자 1명 참석 (캘린더 기준)</CheckItem>
+                  <CheckItem>선택 참석자 1명 캘린더상 가능 (확정 조건 아님)</CheckItem>
                   <CheckItem ok={jungShared}>
                     {jungShared
                       ? '정하늘 QA 불참 → 회의록 공유 대상으로 전환'
@@ -919,7 +929,7 @@ export default function MeetingPanel({
 
             <Card>
               <ul className="space-y-2">
-                <CheckItem>필수 참석자 전원 직접 확인</CheckItem>
+                <CheckItem>필수 참석자 전원 본인 확인 완료</CheckItem>
                 <CheckItem>회의실 확보</CheckItem>
                 <CheckItem>캘린더 등록 완료</CheckItem>
               </ul>
@@ -1062,14 +1072,14 @@ export default function MeetingPanel({
               <ResponseRow
                 name="박서준"
                 title="개발 리드"
-                status={recheckCount >= 1 ? '직접 확인 · 방금' : '재확인 요청 중'}
+                status={recheckCount >= 1 ? '본인 확인 완료' : '재확인 요청 중'}
                 tone={recheckCount >= 1 ? 'ok' : 'wait'}
                 note="새 외근 일정과 겹치지 않는지 확인"
               />
               <ResponseRow
                 name="이지은"
                 title="PM"
-                status={recheckCount >= 2 ? '직접 확인 · 방금' : '재확인 요청 중'}
+                status={recheckCount >= 2 ? '본인 확인 완료' : '재확인 요청 중'}
                 tone={recheckCount >= 2 ? 'ok' : 'wait'}
                 note="화요일 14:00만 직접 확인했었어요"
               />
@@ -1128,7 +1138,7 @@ export default function MeetingPanel({
 
             <Card>
               <ul className="space-y-2">
-                <CheckItem>영향받은 필수 참석자 2명 직접 재확인</CheckItem>
+                <CheckItem>영향받은 필수 참석자 2명 재확인 완료</CheckItem>
                 <CheckItem>기존 응답 유효 3명 유지</CheckItem>
                 <CheckItem>회의실 B 예약 완료</CheckItem>
                 <CheckItem>캘린더 업데이트 완료</CheckItem>
@@ -1146,7 +1156,7 @@ export default function MeetingPanel({
       {/* 패널 헤더 */}
       <div className="flex shrink-0 items-center justify-between border-b border-zinc-200 bg-white px-5 py-3">
         <p className="text-xs font-semibold tracking-wide text-zinc-400">회의 조율</p>
-        <StatusBadge step={step} />
+        <StatusBadge step={step} ready={readyToConfirm} />
       </div>
 
       {/* 변경 알림 배너 (회의 확정 후 도착) */}
@@ -1192,14 +1202,17 @@ export default function MeetingPanel({
             onClick={(e) => e.stopPropagation()}
           >
             <p className="text-base font-bold text-zinc-900">
-              참석자 {attendees.length - 1}명에게 이 시간의 확인을 요청할까요?
+              필수 참석자 {requiredCount - 1}명에게 이 시간의 확인을 요청할까요?
             </p>
             <p className="mt-1.5 text-[13px] text-zinc-600">
               {selected.label} · {meeting.title}
             </p>
             <p className="mt-2.5 rounded-lg bg-zinc-50 px-3 py-2 text-xs leading-relaxed text-zinc-500">
-              메일과 앱 알림으로 전달돼요. 필수 참석자 3명이 직접 확인해야 회의를 확정할
-              수 있어요.
+              필수 참석자 {requiredCount - 1}명이 직접 확인해야 회의를 확정할 수 있어요.
+              {optionalCount > 0
+                ? ` 선택 참석자 ${optionalCount}명에게는 제안 시간을 알려드려요.`
+                : ''}{' '}
+              메일과 앱 알림으로 전달돼요.
             </p>
             <div className="mt-5 flex gap-2">
               <button

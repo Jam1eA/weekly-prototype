@@ -131,9 +131,9 @@ export const candidates: CandidateSlot[] = [
     attendeeStatus: {},
     facts: [
       { label: '필수 참석자', value: '일정 충돌 없음', ok: true },
-      { label: '선택 참석자', value: '2명 가능 (캘린더 기준)', ok: true },
+      { label: '선택 참석자', value: '2명 캘린더상 가능', ok: true },
       { label: '회의실', value: '회의실 A · 본관 7층 · 8인실', ok: true },
-      { label: '직접 확인', value: '필수 3명 필요', ok: false },
+      { label: '필수 참석자 응답', value: '요청 전 · 3명 필요', ok: false },
     ],
     note: '캘린더상 충돌은 없지만, 필수 참석자의 직접 확인이 필요해요.',
   },
@@ -152,7 +152,7 @@ export const candidates: CandidateSlot[] = [
       { label: '필수 참석자', value: '일정 충돌 없음', ok: true },
       { label: '선택 참석자', value: '최유리 점심 직후 비선호', ok: false },
       { label: '회의실', value: '회의실 B · 본관 3층 · 6인실', ok: true },
-      { label: '직접 확인', value: '필수 3명 필요', ok: false },
+      { label: '필수 참석자 응답', value: '요청 전 · 3명 필요', ok: false },
     ],
     note: '점심 직후 제약이 있어, 확정 전에 직접 확인이 더 중요해요.',
   },
@@ -169,9 +169,9 @@ export const candidates: CandidateSlot[] = [
     attendeeStatus: { park: 'unsure' },
     facts: [
       { label: '필수 참석자', value: '박서준 외근 가능성', ok: false },
-      { label: '선택 참석자', value: '2명 가능 (캘린더 기준)', ok: true },
+      { label: '선택 참석자', value: '2명 캘린더상 가능', ok: true },
       { label: '회의실', value: '회의실 C · 별관 2층 · 4인실', ok: true },
-      { label: '직접 확인', value: '필수 3명 필요', ok: false },
+      { label: '필수 참석자 응답', value: '요청 전 · 3명 필요', ok: false },
     ],
     note: '외근이 확정되지 않아, 이 시간은 직접 확인 없이는 추천하기 어려워요.',
   },
@@ -267,14 +267,8 @@ export const leeBlocks: BusyBlock[] = [
   { day: 4, startHour: 13, duration: 5, label: '오후 반차', kind: 'leave' },
 ];
 
-// 이지은 캘린더 기준으로 시스템이 미리 계산한 대안 시간
+// 이지은 캘린더 기준 대안 시간 — 제안을 거절한 이후 단계에서 쓸 예비 데이터 (현재 화면에는 노출하지 않음)
 export const leeAlternatives = [
   { id: 'wed15', label: '수요일 15:00 가능해요' },
   { id: 'wed16', label: '수요일 16:00 가능해요' },
 ];
-
-export const confidenceLabel: Record<string, string> = {
-  high: '높음',
-  medium: '보통',
-  low: '낮음',
-};
