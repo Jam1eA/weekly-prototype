@@ -36,7 +36,8 @@
       "Bash(git -c user.name=yujeongA commit -q -m '확정 후 변경 알림 지연을 3초로 되돌림 *)",
       "Bash(git -c user.name=yujeongA commit -q -m '문제정의 재정렬: 캘린더 추정과 직접 확인의 구분을 상태 체계로 *)",
       "Bash(npx tsc *)",
-      "Bash(git -c user.name=yujeongA commit -m '상태 용어 통일: 캘린더 추정과 본인 응답을 표현에서 분리 *)"
+      "Bash(git -c user.name=yujeongA commit -m '상태 용어 통일: 캘린더 추정과 본인 응답을 표현에서 분리 *)",
+      "Bash(git -c user.name=yujeongA commit -m '예외만 배지 표시 + 거절 후 대안 제안 단계 + 선택 참석자 응답 경로 명시 *)"
     ]
   }
 }

@@ -267,7 +267,7 @@ export const leeBlocks: BusyBlock[] = [
   { day: 4, startHour: 13, duration: 5, label: '오후 반차', kind: 'leave' },
 ];
 
-// 이지은 캘린더 기준 대안 시간 — 제안을 거절한 이후 단계에서 쓸 예비 데이터 (현재 화면에는 노출하지 않음)
+// 이지은 캘린더 기준 대안 시간 — '이 시간은 어려워요'를 선택한 뒤 대안 제안 단계에서 노출
 export const leeAlternatives = [
   { id: 'wed15', label: '수요일 15:00 가능해요' },
   { id: 'wed16', label: '수요일 16:00 가능해요' },

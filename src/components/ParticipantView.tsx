@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import type { Attendee, CandidateSlot } from '../types';
-import { LUNCH_END, LUNCH_START, leeBlocks, weekDays } from '../data/mockData';
+import { LUNCH_END, LUNCH_START, leeAlternatives, leeBlocks, weekDays } from '../data/mockData';
 
 const START = 9;
 const END = 18;
@@ -9,8 +9,9 @@ const HOURS = Array.from({ length: END - START }, (_, i) => START + i);
 const DAY_NAMES = ['월요일', '화요일', '수요일', '목요일', '금요일'];
 
 type Mark = 'no' | 'avoid';
-// gap: 캘린더 누락 확인 → (editing: 조건 보완) → confirm: 제안 시간 직접 확인 → done
-type Phase = 'calendar' | 'gap' | 'editing' | 'confirm' | 'done';
+// gap: 캘린더 누락 확인 → (editing: 조건 보완) → confirm: 제안 시간 직접 확인
+// → (alt: 어려울 때만 대안 제안) → done
+type Phase = 'calendar' | 'gap' | 'editing' | 'confirm' | 'alt' | 'done';
 
 export interface ParticipantDetail {
   volatile: boolean;
@@ -49,6 +50,7 @@ export default function ParticipantView({
   const [answer, setAnswer] = useState<'ok' | 'busy' | null>(null);
   const [volatile, setVolatile] = useState(false);
   const [marks, setMarks] = useState<Record<string, Mark>>({});
+  const [selectedAlts, setSelectedAlts] = useState<string[]>([]);
   const [paint, setPaint] = useState<Mark | null | undefined>(undefined);
 
   useEffect(() => {
@@ -106,6 +108,9 @@ export default function ParticipantView({
     });
   };
 
+  const toggleAlt = (id: string) =>
+    setSelectedAlts((p) => (p.includes(id) ? p.filter((x) => x !== id) : [...p, id]));
+
   const summarizeDays = (type: Mark) =>
     DAY_NAMES.map((name, day) => {
       const count = HOURS.filter((h) => marks[cellKey(day, h)] === type).length;
@@ -116,6 +121,9 @@ export default function ParticipantView({
 
   const noSummary = summarizeDays('no');
   const avoidSummary = summarizeDays('avoid');
+  const altLabels = leeAlternatives
+    .filter((a) => selectedAlts.includes(a.id))
+    .map((a) => a.label);
   const hasMarks = noSummary.length > 0 || avoidSummary.length > 0;
 
   const send = (a: 'ok' | 'busy') => {
@@ -124,7 +132,8 @@ export default function ParticipantView({
       volatile: a === 'ok' ? volatile : false,
       no: noSummary,
       avoid: avoidSummary,
-      alts: [],
+      // 대안은 제안을 거절할 때만 함께 보낸다
+      alts: a === 'busy' ? altLabels : [],
       // 확인 시각은 데이터로만 저장하고 UI에는 노출하지 않는다
       confirmedAt: nowLabel(),
     });
@@ -556,10 +565,66 @@ export default function ParticipantView({
                 이 시간에 참석할 수 있어요
               </button>
               <button
-                onClick={() => send('busy')}
+                onClick={() => setPhase('alt')}
                 className="rounded-xl border border-zinc-200 py-3.5 text-sm font-bold text-zinc-600 transition-colors hover:border-zinc-300 hover:bg-zinc-50"
               >
                 이 시간은 어려워요
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* 3단계: 어려울 때만 — 대안 제안 */}
+      {phase === 'alt' && (
+        <div
+          className="fixed inset-0 z-50 flex items-center justify-center bg-zinc-900/40 px-4"
+          onClick={() => setPhase('confirm')}
+        >
+          <div
+            className="w-[420px] rounded-2xl bg-white p-6 shadow-xl"
+            style={{ animation: 'slide-down 0.25s ease-out' }}
+            onClick={(e) => e.stopPropagation()}
+          >
+            <p className="text-lg font-bold leading-snug text-zinc-900">
+              대신 가능한 시간이 있나요?
+            </p>
+            <p className="mt-2 text-[13px] leading-relaxed text-zinc-500">
+              내 캘린더 기준으로 미리 찾은 시간이에요. 함께 보내면 유나영님이 처음부터
+              다시 조율하지 않아도 돼요.
+            </p>
+
+            <div className="mt-4 flex flex-wrap gap-2">
+              {leeAlternatives.map((a) => (
+                <button
+                  key={a.id}
+                  onClick={() => toggleAlt(a.id)}
+                  className={`rounded-full border px-3 py-1.5 text-xs font-semibold transition-colors ${
+                    selectedAlts.includes(a.id)
+                      ? 'border-zinc-900 bg-zinc-100 text-zinc-900'
+                      : 'border-zinc-200 bg-white text-zinc-500 hover:border-zinc-300'
+                  }`}
+                >
+                  {selectedAlts.includes(a.id) ? '✓ ' : ''}
+                  {a.label}
+                </button>
+              ))}
+            </div>
+
+            <div className="mt-5 flex gap-2">
+              <button
+                onClick={() => setPhase('confirm')}
+                className="flex-1 rounded-xl border border-zinc-200 py-2.5 text-sm font-semibold text-zinc-600 transition-colors hover:bg-zinc-50"
+              >
+                뒤로
+              </button>
+              <button
+                onClick={() => send('busy')}
+                className="flex-1 rounded-xl bg-zinc-900 py-2.5 text-sm font-bold text-white transition-colors hover:bg-zinc-800"
+              >
+                {selectedAlts.length > 0
+                  ? `대안 ${selectedAlts.length}개와 함께 보내기`
+                  : '대안 없이 보내기'}
               </button>
             </div>
           </div>
@@ -582,6 +647,14 @@ export default function ParticipantView({
                   {answer === 'ok' && volatile ? ' · 변동 가능성 있음' : ''}
                 </span>
               </div>
+              {answer === 'busy' && altLabels.length > 0 && (
+                <div className="flex justify-between gap-3">
+                  <span className="shrink-0 text-zinc-400">대신 가능한 시간</span>
+                  <span className="text-right font-medium text-zinc-800">
+                    {altLabels.join(', ')}
+                  </span>
+                </div>
+              )}
               {hasMarks && (
                 <>
                   <div className="flex justify-between gap-3">

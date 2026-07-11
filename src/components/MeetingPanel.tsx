@@ -614,21 +614,14 @@ export default function MeetingPanel({
                       }`}
                     >
                       {a.name[0]}
-                      {st ? (
+                      {/* 걸리는 사람만 배지로 표시한다. 배지 없음 = 캘린더상 가능이며, 초록 체크는 직접 응답 후에만 쓴다. */}
+                      {st && (
                         <span
                           className={`absolute -bottom-0.5 -right-0.5 flex h-4 w-4 items-center justify-center rounded-full text-[9px] font-bold text-white ring-2 ring-white ${
                             st === 'no' ? 'bg-red-500' : 'bg-amber-400'
                           }`}
                         >
                           {st === 'no' ? '×' : st === 'unsure' ? '?' : '!'}
-                        </span>
-                      ) : (
-                        // 응답 전에는 캘린더 기준 추정임을 아이콘으로 드러낸다. 초록 체크는 직접 응답 후에만 쓴다.
-                        <span className="absolute -bottom-0.5 -right-0.5 flex h-4 w-4 items-center justify-center rounded-full border border-zinc-300 bg-white text-zinc-400 ring-2 ring-white">
-                          <svg width="9" height="9" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-                            <rect x="3" y="4" width="18" height="18" rx="2" />
-                            <path d="M16 2v4M8 2v4M3 10h18" />
-                          </svg>
                         </span>
                       )}
                     </div>
@@ -644,7 +637,8 @@ export default function MeetingPanel({
               })}
             </div>
             <p className="mt-3 border-t border-zinc-100 pt-2 text-[11px] leading-relaxed text-zinc-400">
-              캘린더 아이콘은 캘린더상 가능이라는 뜻이에요 · 아직 본인 응답 전
+              {attendees.filter((a) => !selected.attendeeStatus?.[a.id]).length}명 캘린더상 가능
+              · 아직 본인 응답 전이에요
             </p>
           </div>
 
@@ -1210,7 +1204,7 @@ export default function MeetingPanel({
             <p className="mt-2.5 rounded-lg bg-zinc-50 px-3 py-2 text-xs leading-relaxed text-zinc-500">
               필수 참석자 {requiredCount - 1}명이 직접 확인해야 회의를 확정할 수 있어요.
               {optionalCount > 0
-                ? ` 선택 참석자 ${optionalCount}명에게는 제안 시간을 알려드려요.`
+                ? ` 선택 참석자 ${optionalCount}명에게는 제안 시간을 알려드리고, 어려우면 응답으로 알려줄 수 있어요.`
                 : ''}{' '}
               메일과 앱 알림으로 전달돼요.
             </p>
