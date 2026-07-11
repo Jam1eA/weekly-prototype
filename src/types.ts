@@ -24,6 +24,10 @@ export interface ParticipantResponse {
 export type Recommend = 'good' | 'check' | 'hard';
 
 export interface CandidateSlot {
+  // 참석자가 거절 응답에서 직접 제안한 시간이면 그 참석자 id (본인 확인으로 인정)
+  suggestedBy?: string;
+  // 후보 상세 하단 요약을 덮어쓸 때 사용
+  summary?: string;
   id: string;
   day: number; // 0 = 월요일
   startHour: number;

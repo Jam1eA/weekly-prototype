@@ -188,25 +188,33 @@ export default function MeetingPanel({
   // 최유리(선택)는 응답 없이 '캘린더상 가능', 이지은(필수)은 참여자 화면에서 직접 확인한다.
   const AUTO_TICKS = 3;
   const leeResponded = participantAnswer !== null;
+  // 이지은이 거절하며 직접 제안한 시간을 재제안한 경우 — 본인이 언급한 시간이라 다시 묻지 않는다
+  const proposedIsLeeAlt = proposed.suggestedBy === 'lee';
   const [autoCount, setAutoCount] = useState(0);
   useEffect(() => {
     if (step !== 5) return;
-    if (leeResponded) {
+    if (leeResponded && !proposedIsLeeAlt) {
       setAutoCount(AUTO_TICKS);
       return;
     }
+    // 승격 후보 재제안 시에는 나머지 필수 2명의 확인 스크립트를 다시 돌린다.
+    // 경과 시간 기준으로 계산해, 백그라운드 탭에서 타이머가 스로틀돼도 복귀 즉시 따라잡는다.
     setAutoCount(0);
-    const iv = setInterval(() => setAutoCount((c) => (c >= AUTO_TICKS ? c : c + 1)), 850);
+    const started = Date.now();
+    const update = () =>
+      setAutoCount(Math.min(AUTO_TICKS, Math.floor((Date.now() - started) / 850)));
+    const iv = setInterval(update, 300);
     return () => clearInterval(iv);
-  }, [step, leeResponded]);
+  }, [step, leeResponded, proposedIsLeeAlt]);
   const autoDone = autoCount >= AUTO_TICKS;
   const waitingLee = autoDone && !leeResponded;
 
   // 주최자를 제외한 필수 3명(김민준·박서준·이지은)의 직접 확인 수
+  const leeCounts = participantAnswer === 'ok' || proposedIsLeeAlt;
   const directConfirmed =
-    (autoCount >= 1 ? 1 : 0) + (autoCount >= 2 ? 1 : 0) + (participantAnswer === 'ok' ? 1 : 0);
+    (autoCount >= 1 ? 1 : 0) + (autoCount >= 2 ? 1 : 0) + (leeCounts ? 1 : 0);
   // 필수 전원 직접 확인 전에는 확정할 수 없다
-  const readyToConfirm = autoDone && participantAnswer === 'ok';
+  const readyToConfirm = autoDone && leeCounts;
 
   // 참석자별 확인 상태 — '가능' 하나로 뭉개지 않고 정보의 출처를 구분한다
   type RState = {
@@ -226,6 +234,11 @@ export default function MeetingPanel({
           ? { label: '본인 확인 완료', tone: 'ok' }
           : { label: '응답 대기', tone: 'wait' };
       case 'jung':
+        // "수요일 오후만 가능" 응답은 수요일 승격 후보를 직접 언급한 것으로 본다
+        if (proposedIsLeeAlt)
+          return jungShared
+            ? { label: '회의록 공유 예정', tone: 'neutral' }
+            : { label: '가능 · 본인 응답', tone: 'ok' };
         if (autoCount < 3) return { label: '캘린더상 가능', tone: 'neutral' };
         return jungShared
           ? { label: '회의록 공유 예정', tone: 'neutral' }
@@ -233,13 +246,18 @@ export default function MeetingPanel({
       case 'choi':
         return { label: '캘린더상 가능', tone: 'neutral', sub: '응답 전' };
       case 'lee':
+        // 본인이 대안으로 직접 제안한 시간은 본인 확인으로 인정한다
+        if (proposedIsLeeAlt) return { label: '본인 확인 완료 · 직접 제안', tone: 'ok' };
         if (!leeResponded) return { label: '응답 대기', tone: 'wait' };
         // 확인 시각(confirmedAt)은 데이터로만 유지하고 UI에는 노출하지 않는다
         if (participantAnswer === 'ok')
           return participantDetail?.volatile
             ? { label: '본인 확인 완료 · 변동 가능성', tone: 'warn' }
             : { label: '본인 확인 완료', tone: 'ok' };
-        return { label: '참석 어려움', tone: 'no' };
+        // 거절 응답은 그 시간에만 유효 — 다른 시간은 다시 물어야 한다
+        return proposed.id === 'c1'
+          ? { label: '참석 어려움', tone: 'no' }
+          : { label: '재확인 필요', tone: 'warn' };
       default:
         return { label: '캘린더상 가능', tone: 'neutral' };
     }
@@ -266,7 +284,10 @@ export default function MeetingPanel({
   useEffect(() => {
     if (step !== 10) return;
     setRecheckCount(0);
-    const iv = setInterval(() => setRecheckCount((c) => (c >= 2 ? c : c + 1)), 1100);
+    const started = Date.now();
+    const update = () =>
+      setRecheckCount(Math.min(2, Math.floor((Date.now() - started) / 1100)));
+    const iv = setInterval(update, 300);
     return () => clearInterval(iv);
   }, [step]);
 
@@ -561,7 +582,9 @@ export default function MeetingPanel({
         <>
           <PanelTitle>후보 시간 비교</PanelTitle>
           <PanelDesc>
-            캘린더로 후보를 좁혔어요. 확정은 필수 참석자의 직접 확인 뒤에 할 수 있어요.
+            {participantAnswer === 'busy'
+              ? '이지은님의 응답을 반영해 후보를 다시 정리했어요. 본인이 제안한 시간부터 보여드려요.'
+              : '캘린더로 후보를 좁혔어요. 확정은 필수 참석자의 직접 확인 뒤에 할 수 있어요.'}
           </PanelDesc>
 
           <div className="mt-4 space-y-3">
@@ -614,8 +637,9 @@ export default function MeetingPanel({
                       }`}
                     >
                       {a.name[0]}
-                      {/* 걸리는 사람만 배지로 표시한다. 배지 없음 = 캘린더상 가능이며, 초록 체크는 직접 응답 후에만 쓴다. */}
-                      {st && (
+                      {/* 걸리는 사람만 배지로 표시한다. 배지 없음 = 캘린더상 가능이며,
+                          초록 체크는 직접 응답 후에만 — 본인이 제안한 시간의 제안자가 그 경우다. */}
+                      {st ? (
                         <span
                           className={`absolute -bottom-0.5 -right-0.5 flex h-4 w-4 items-center justify-center rounded-full text-[9px] font-bold text-white ring-2 ring-white ${
                             st === 'no' ? 'bg-red-500' : 'bg-amber-400'
@@ -623,7 +647,11 @@ export default function MeetingPanel({
                         >
                           {st === 'no' ? '×' : st === 'unsure' ? '?' : '!'}
                         </span>
-                      )}
+                      ) : selected.suggestedBy === a.id ? (
+                        <span className="absolute -bottom-0.5 -right-0.5 flex h-4 w-4 items-center justify-center rounded-full bg-emerald-500 text-[9px] font-bold text-white ring-2 ring-white">
+                          ✓
+                        </span>
+                      ) : null}
                     </div>
                     <p
                       className={`max-w-full truncate text-[10px] ${
@@ -637,8 +665,8 @@ export default function MeetingPanel({
               })}
             </div>
             <p className="mt-3 border-t border-zinc-100 pt-2 text-[11px] leading-relaxed text-zinc-400">
-              {attendees.filter((a) => !selected.attendeeStatus?.[a.id]).length}명 캘린더상 가능
-              · 아직 본인 응답 전이에요
+              {selected.summary ??
+                `${attendees.filter((a) => !selected.attendeeStatus?.[a.id]).length}명 캘린더상 가능 · 아직 본인 응답 전이에요`}
             </p>
           </div>
 
@@ -659,7 +687,7 @@ export default function MeetingPanel({
                             : 'text-amber-700'
                       }`}
                     >
-                      {f.label === '필수 참석자 응답' ? '0/3 · 요청 전' : f.value}
+                      {f.label === '필수 참석자 응답' && !selected.suggestedBy ? '0/3 · 요청 전' : f.value}
                     </span>
                   </li>
                 ))}
@@ -695,7 +723,11 @@ export default function MeetingPanel({
       body = (
         <>
           <PanelTitle>확인 요청을 보냈어요</PanelTitle>
-          <PanelDesc>필수 참석자 3명이 직접 확인해야 회의를 확정할 수 있어요.</PanelDesc>
+          <PanelDesc>
+            {proposedIsLeeAlt
+              ? '이지은님이 직접 제안한 시간이라 다시 묻지 않아요. 나머지 필수 2명의 확인만 기다리면 돼요.'
+              : '필수 참석자 3명이 직접 확인해야 회의를 확정할 수 있어요.'}
+          </PanelDesc>
 
           <div className="mt-4 space-y-3">
             <Card>
@@ -815,7 +847,7 @@ export default function MeetingPanel({
               ) : undefined
             }
             action={
-              a.id === 'jung' && autoDone && !jungShared
+              a.id === 'jung' && autoDone && !jungShared && !proposedIsLeeAlt
                 ? {
                     label: '회의록 공유 대상으로 바꾸기',
                     onClick: () => onChangeRole('jung', 'share'),
@@ -845,10 +877,12 @@ export default function MeetingPanel({
                   <CheckItem>필수 참석자 응답 3/3 완료</CheckItem>
                   <CheckItem>주최자 포함 필수 참석자 4명 모두 가능</CheckItem>
                   <CheckItem>선택 참석자 1명 캘린더상 가능 (확정 조건 아님)</CheckItem>
-                  <CheckItem ok={jungShared}>
-                    {jungShared
-                      ? '정하늘 QA 불참 → 회의록 공유 대상으로 전환'
-                      : '정하늘 QA 불참 (회의 진행 가능)'}
+                  <CheckItem ok={proposedIsLeeAlt || jungShared}>
+                    {proposedIsLeeAlt
+                      ? '정하늘 QA 가능 (본인 응답)'
+                      : jungShared
+                        ? '정하늘 QA 불참 → 회의록 공유 대상으로 전환'
+                        : '정하늘 QA 불참 (회의 진행 가능)'}
                   </CheckItem>
                   {proposed.room && (
                     <CheckItem>
@@ -881,9 +915,9 @@ export default function MeetingPanel({
             <div className="mt-3">
               <Card tone="amber">
                 <p className="text-[13px] font-medium leading-relaxed text-zinc-700">
-                  {participantAnswer === 'busy'
+                  {participantAnswer === 'busy' && !proposedIsLeeAlt
                     ? '필수 참석자 이지은님이 이 시간에 참석할 수 없어요. 이 시간으로는 확정할 수 없어요.'
-                    : '필수 참석자 1명(이지은님)의 확인을 기다리고 있어요.'}
+                    : `필수 참석자 ${3 - directConfirmed}명의 확인을 기다리고 있어요.`}
                 </p>
               </Card>
             </div>
@@ -897,7 +931,7 @@ export default function MeetingPanel({
         disabled: !readyToConfirm,
       };
       secondary =
-        participantAnswer === 'busy'
+        participantAnswer === 'busy' && !proposedIsLeeAlt
           ? { label: '다른 시간 다시 비교하기', onClick: () => onNext(3) }
           : null;
       break;
@@ -935,6 +969,7 @@ export default function MeetingPanel({
           </div>
         </>
       );
+      if (proposedIsLeeAlt) cta = { label: '완료', onClick: onReset, tone: 'green' };
       break;
 
     case 8:
@@ -1196,16 +1231,20 @@ export default function MeetingPanel({
             onClick={(e) => e.stopPropagation()}
           >
             <p className="text-base font-bold text-zinc-900">
-              필수 참석자 {requiredCount - 1}명에게 이 시간의 확인을 요청할까요?
+              필수 참석자 {selected.suggestedBy ? requiredCount - 2 : requiredCount - 1}명에게 이
+              시간의 확인을 요청할까요?
             </p>
             <p className="mt-1.5 text-[13px] text-zinc-600">
               {selected.label} · {meeting.title}
             </p>
             <p className="mt-2.5 rounded-lg bg-zinc-50 px-3 py-2 text-xs leading-relaxed text-zinc-500">
-              필수 참석자 {requiredCount - 1}명이 직접 확인해야 회의를 확정할 수 있어요.
-              {optionalCount > 0
-                ? ` 선택 참석자 ${optionalCount}명에게는 제안 시간을 알려드리고, 어려우면 응답으로 알려줄 수 있어요.`
-                : ''}{' '}
+              {selected.suggestedBy
+                ? `이지은님이 직접 제안한 시간이라 다시 묻지 않아요. 나머지 필수 ${requiredCount - 2}명이 확인하면 확정할 수 있어요.`
+                : `필수 참석자 ${requiredCount - 1}명이 직접 확인해야 회의를 확정할 수 있어요.${
+                    optionalCount > 0
+                      ? ` 선택 참석자 ${optionalCount}명에게는 제안 시간을 알려드리고, 어려우면 응답으로 알려줄 수 있어요.`
+                      : ''
+                  }`}{' '}
               메일과 앱 알림으로 전달돼요.
             </p>
             <div className="mt-5 flex gap-2">

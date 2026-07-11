@@ -5,7 +5,9 @@ import {
   candidates,
   directoryExtras,
   initialAttendees,
+  leeAltCandidates,
   meetingInfo as defaultMeeting,
+  rejectedC1,
 } from './data/mockData';
 import Header from './components/Header';
 import Sidebar from './components/Sidebar';
@@ -35,10 +37,21 @@ export default function App() {
   // 이지은이 실제로 입력한 응답 내용 (주최자 화면 요약이 이 데이터에서만 파생된다)
   const [participantDetail, setParticipantDetail] = useState<ParticipantDetail | null>(null);
 
-  const proposed = candidates.find((c) => c.id === proposedId) ?? candidates[0];
+  // 이지은이 거절하면 그가 제안한 대안이 후보로 승격되고, 화요일 후보는 강등된다
+  const leeRejected = participantAnswer === 'busy';
+  const promotedAlts = leeRejected
+    ? (participantDetail?.alts ?? []).map((l) => leeAltCandidates[l]).filter(Boolean)
+    : [];
+  const visibleCandidates = leeRejected
+    ? [...promotedAlts, rejectedC1, ...candidates.slice(1)]
+    : candidates;
+
+  const allSlots = [...candidates, ...Object.values(leeAltCandidates)];
+  const proposed = allSlots.find((c) => c.id === proposedId) ?? candidates[0];
 
   useEffect(() => {
-    if (step !== 7) return;
+    // 확정 후 변경 스토리(외근 확정)는 화요일 확정에만 해당한다
+    if (step !== 7 || proposedId !== 'c1') return;
     const t = setTimeout(() => setAlertReady(true), 3000);
     return () => clearTimeout(t);
   }, [step]);
@@ -114,7 +127,7 @@ export default function App() {
         <CalendarGrid
           step={step}
           started={started}
-          candidates={candidates}
+          candidates={visibleCandidates}
           selectedId={selectedId}
           proposed={proposed}
           alternatives={alternatives}
@@ -131,7 +144,7 @@ export default function App() {
           participantDetail={participantDetail}
           onEnterParticipant={() => setParticipantOpen(true)}
           attendees={attendees}
-          candidates={candidates}
+          candidates={visibleCandidates}
           alternatives={alternatives}
           selectedId={selectedId}
           proposed={proposed}

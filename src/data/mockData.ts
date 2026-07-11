@@ -272,3 +272,63 @@ export const leeAlternatives = [
   { id: 'wed15', label: '수요일 15:00 가능해요' },
   { id: 'wed16', label: '수요일 16:00 가능해요' },
 ];
+
+// 이지은의 대안이 후보로 승격될 때 쓰는 슬롯 — 응답의 label을 키로 찾는다.
+// 본인이 직접 언급한 시간이므로 이지은은 다시 묻지 않는다.
+export const leeAltCandidates: Record<string, CandidateSlot> = {
+  '수요일 15:00 가능해요': {
+    id: 'lw15',
+    day: 2,
+    startHour: 15,
+    label: '수요일 15:00 - 16:00',
+    shortLabel: '수 15:00',
+    recommend: 'good',
+    suggestedBy: 'lee',
+    room: { name: '회의실 B', place: '본관 3층', capacity: '6인실' },
+    avail: '이지은님 제안',
+    availabilityText: '이지은님이 대신 제안한 시간이에요 · 다른 5명 캘린더상 가능',
+    attendeeStatus: {},
+    summary: '5명 캘린더상 가능 · 이지은님은 직접 제안한 시간이에요',
+    facts: [
+      { label: '이지은 PM', value: '본인이 직접 제안', ok: true },
+      { label: '다른 필수 참석자', value: '일정 충돌 없음', ok: true },
+      { label: '회의실', value: '회의실 B · 본관 3층 · 6인실', ok: true },
+      { label: '필수 참석자 응답', value: '나머지 2명 필요', ok: false },
+    ],
+    note: '이지은님이 직접 언급한 시간이라, 나머지 필수 2명만 확인하면 확정할 수 있어요.',
+  },
+  '수요일 16:00 가능해요': {
+    id: 'lw16',
+    day: 2,
+    startHour: 16,
+    label: '수요일 16:00 - 17:00',
+    shortLabel: '수 16:00',
+    recommend: 'hard',
+    suggestedBy: 'lee',
+    room: { name: '회의실 C', place: '별관 2층', capacity: '4인실' },
+    avail: '필수 충돌',
+    availabilityText: '이지은님이 대신 제안했지만, 김민준님 캘린더에 일정이 있어요',
+    attendeeStatus: { kim: 'no', choi: 'no' },
+    summary: '4명 캘린더상 가능 · 이지은님은 직접 제안한 시간이에요',
+    facts: [
+      { label: '이지은 PM', value: '본인이 직접 제안', ok: true },
+      { label: '필수 참석자', value: '김민준 일정 충돌', ok: false },
+      { label: '회의실', value: '회의실 C · 별관 2층 · 4인실', ok: true },
+    ],
+    note: '이지은님 제안 시간이지만 필수 참석자 일정과 겹쳐 추천하기 어려워요.',
+  },
+};
+
+// 이지은이 어렵다고 응답한 뒤의 화요일 후보 — 거절 응답을 반영해 강등된 상태
+export const rejectedC1: CandidateSlot = {
+  ...candidates[0],
+  recommend: 'hard',
+  availabilityText: '이지은님이 직접 어렵다고 응답했어요',
+  attendeeStatus: { lee: 'no' },
+  facts: [
+    { label: '필수 참석자', value: '이지은 참석 어려움', ok: false },
+    { label: '선택 참석자', value: '2명 캘린더상 가능', ok: true },
+    { label: '회의실', value: '회의실 A · 본관 7층 · 8인실', ok: true },
+  ],
+  note: '필수 참석자가 직접 어렵다고 응답한 시간이라 이 시간으로는 확정할 수 없어요.',
+};
