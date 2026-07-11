@@ -199,12 +199,20 @@ export default function MeetingPanel({
 
   // 낙관적 확정: 캘린더에 신호(외근·비선호·불확실)가 있는 사람만 확인이 필요하다.
   // 신호가 없으면 바로 잡고, 신호가 있는 사람에게만 선택적으로 물어본다.
-  // 확정을 가로막는 리스크는 '필수 참석자'의 캘린더 신호만 — 선택 참석자 비선호는 참고용
-  const riskyAtt = attendees.filter(
-    (a) => a.role === 'required' && !a.isOrganizer && selected.attendeeStatus?.[a.id],
+  // 확인은 '물어보면 풀리는 불확실성'(unsure)에만 의미가 있다.
+  // 확정된 충돌(no)은 물어봐도 바뀌지 않으니 다른 시간을 권하고,
+  // 선택 참석자의 사정은 확정을 막지 않는 참고 정보로 둔다.
+  const uncertainReq = attendees.filter(
+    (a) => a.role === 'required' && !a.isOrganizer && selected.attendeeStatus?.[a.id] === 'unsure',
   );
-  const hasRisk = riskyAtt.length > 0;
-  const riskyNames = riskyAtt.map((a) => a.name).join(', ');
+  const blockedReq = attendees.filter(
+    (a) => a.role === 'required' && !a.isOrganizer && selected.attendeeStatus?.[a.id] === 'no',
+  );
+  const optSignals = attendees.filter(
+    (a) => a.role !== 'required' && selected.attendeeStatus?.[a.id],
+  );
+  const hasRisk = uncertainReq.length > 0;
+  const riskyNames = uncertainReq.map((a) => a.name).join(', ');
 
   // Step 5: 확인 요청 후 자동 응답 스크립트.
   // tick1 김민준 직접 확인 → tick2 박서준 직접 확인 → tick3 정하늘 불가 응답.
@@ -213,6 +221,11 @@ export default function MeetingPanel({
   const leeResponded = participantAnswer !== null;
   // 이지은이 거절하며 직접 제안한 시간을 재제안한 경우 — 본인이 언급한 시간이라 다시 묻지 않는다
   const proposedIsLeeAlt = proposed.suggestedBy === 'lee';
+  // 선택적 확인: 불확실 신호가 있는 필수 참석자에게만 묻는 경로 (예: 박서준 외근 가능성)
+  const proposedUncertain = attendees.filter(
+    (a) => a.role === 'required' && !a.isOrganizer && proposed.attendeeStatus?.[a.id] === 'unsure',
+  );
+  const riskyConfirm = proposedUncertain.length > 0 && !proposedIsLeeAlt;
   const [autoCount, setAutoCount] = useState(0);
   useEffect(() => {
     if (step !== 5) return;
@@ -687,9 +700,13 @@ export default function MeetingPanel({
             </div>
             <p className="mt-3 border-t border-zinc-100 pt-2 text-[11px] leading-relaxed text-zinc-400">
               {selected.summary ??
-                (hasRisk
-                  ? `${riskyNames}님만 캘린더에 신호가 있어 확인이 필요해 보여요`
-                  : '필수 참석자 모두 캘린더가 비어 있어요 · 확인 없이 바로 잡아도 괜찮아요')}
+                (blockedReq.length > 0
+                  ? `${blockedReq.map((a) => a.name).join(', ')}님 일정과 겹쳐요 · 다른 시간이 나아요`
+                  : hasRisk
+                    ? `${riskyNames}님만 물어보면 확실해져요 · 나머지는 캘린더가 비어 있어요`
+                    : optSignals.length > 0
+                      ? `필수 참석자는 모두 비어 있어요 · ${optSignals.map((a) => a.name).join(', ')}님 사정은 참고해 주세요`
+                      : '필수 참석자 모두 캘린더가 비어 있어요 · 확인 없이 바로 잡아도 괜찮아요')}
             </p>
           </div>
 
@@ -710,11 +727,7 @@ export default function MeetingPanel({
                             : 'text-amber-700'
                       }`}
                     >
-                      {f.label === '필수 참석자 응답' && !selected.suggestedBy
-                        ? hasRisk
-                          ? `${riskyNames}님 확인 권장`
-                          : '확인 안 해도 돼요'
-                        : f.value}
+                      {f.value}
                     </span>
                   </li>
                 ))}
@@ -743,18 +756,103 @@ export default function MeetingPanel({
           )}
         </>
       );
-      // 낙관적 확정이 기본. 신호가 없으면 바로 잡고, 확인은 보조 선택지.
-      // 신호가 있으면 그 사람에게만 확인하는 걸 앞세우되, 바로 잡기도 열어둔다.
-      if (hasRisk) {
+      // 낙관적 확정이 기본. 후보 3분류에 따라 행동이 달라진다:
+      // 깨끗하면 바로 잡기(초록) / 불확실성만 있으면 그 사람에게 확인 / 확정 충돌은 다른 시간
+      if (blockedReq.length > 0) {
+        cta = { label: '다른 시간 보기', onClick: () => onNext(3) };
+      } else if (hasRisk) {
         cta = { label: `${riskyNames}님에게 확인하고 잡기`, onClick: () => setConfirmOpen(true) };
         secondary = { label: '확인 없이 바로 잡기', onClick: onBookDirectly };
+      } else if (selected.recommend === 'hard') {
+        // 선택 참석자 쪽 확정된 사정만 있는 경우 — 잡을 수는 있지만 권하지 않는다
+        cta = { label: '그래도 이 시간으로 잡기', onClick: onBookDirectly };
+        secondary = { label: '다른 시간 보기', onClick: () => onNext(3) };
       } else {
         cta = { label: '이 시간으로 회의 잡기', onClick: onBookDirectly, tone: 'green' };
         secondary = { label: '그래도 필수 참석자에게 먼저 확인받기', onClick: () => setConfirmOpen(true) };
       }
       break;
 
-    case 5:
+    case 5: {
+      if (riskyConfirm) {
+        // 불확실 신호가 있는 사람에게만 물었다 — 그 사람 답만 오면 바로 잡는다
+        const done = autoCount >= 1;
+        const rNames = proposedUncertain.map((a) => a.name).join(', ');
+        body = (
+          <>
+            <PanelTitle>{rNames}님에게 물어봤어요</PanelTitle>
+            <PanelDesc>
+              확인이 필요한 사람에게만 물어봤어요. 답이 오면 바로 잡을 수 있어요.
+            </PanelDesc>
+
+            <div className="mt-4 space-y-3">
+              <Card>
+                <p className="mb-1 text-xs font-semibold text-zinc-400">물어본 시간</p>
+                <p className="text-base font-bold text-zinc-900">{proposed.label}</p>
+                <p className="mt-0.5 text-xs text-zinc-500">
+                  {meeting.title}
+                  {proposed.room ? ` · ${proposed.room.name}` : ''}
+                </p>
+              </Card>
+
+              <Card tone="blue">
+                <div className="flex items-center justify-between">
+                  <p className="text-[13px] font-semibold text-zinc-700">확인 진행</p>
+                  <span className="text-xs font-bold text-blue-600">
+                    {done ? proposedUncertain.length : 0}/{proposedUncertain.length}
+                  </span>
+                </div>
+                <div className="mt-2 h-1.5 overflow-hidden rounded-full bg-blue-100">
+                  <div
+                    className="h-full rounded-full bg-blue-500 transition-all duration-500"
+                    style={{ width: done ? '100%' : '8%' }}
+                  />
+                </div>
+                <div className="mt-3 border-t border-zinc-100">
+                  {attendees
+                    .filter((a) => !a.isOrganizer)
+                    .map((a) => {
+                      const asked = proposedUncertain.some((u) => u.id === a.id);
+                      return (
+                        <div key={a.id} className="flex items-center justify-between py-1.5">
+                          <p className="text-[13px] text-zinc-700">
+                            {a.name} <span className="text-zinc-400">{a.title}</span>
+                          </p>
+                          <span
+                            className={`rounded-md px-2 py-0.5 text-xs font-semibold ${
+                              asked
+                                ? done
+                                  ? 'bg-emerald-50 text-emerald-600'
+                                  : 'border border-zinc-200 bg-white text-zinc-400'
+                                : 'bg-zinc-100 text-zinc-600'
+                            }`}
+                          >
+                            {asked ? (done ? '괜찮다고 답했어요' : '응답 대기') : '캘린더상 가능'}
+                          </span>
+                        </div>
+                      );
+                    })}
+                </div>
+              </Card>
+
+              {done && (
+                <Card tone="green">
+                  <p className="text-[13px] font-medium leading-relaxed text-zinc-700">
+                    {rNames}님이 괜찮다고 답했어요. 이 시간으로 잡을 수 있어요.
+                  </p>
+                </Card>
+              )}
+            </div>
+          </>
+        );
+        cta = {
+          label: done ? '이 시간으로 회의 잡기' : '답을 기다리는 중이에요',
+          onClick: () => onNext(7),
+          tone: 'green',
+          disabled: !done,
+        };
+        break;
+      }
       body = (
         <>
           <PanelTitle>물어봤어요</PanelTitle>
@@ -853,6 +951,7 @@ export default function MeetingPanel({
         disabled: !(leeResponded && autoDone),
       };
       break;
+    }
 
     case 6: {
       const rowFor = (a: Attendee) => {
@@ -972,11 +1071,17 @@ export default function MeetingPanel({
       break;
     }
 
-    case 7:
+    case 7: {
+      // 선택적 확인 경로: 불확실한 사람 답만 받고 잡은 경우
+      const riskyBooked = !bookedDirectly && participantAnswer === null && riskyConfirm;
       body = (
         <>
           <PanelTitle>
-            {bookedDirectly ? '회의를 잡았어요' : '모두 확인했어요. 이제 다시 조율하지 않아도 돼요'}
+            {bookedDirectly
+              ? '회의를 잡았어요'
+              : riskyBooked
+                ? '확인하고 잡았어요'
+                : '모두 확인했어요. 이제 다시 조율하지 않아도 돼요'}
           </PanelTitle>
           <PanelDesc>참석자 캘린더에 일정을 등록했어요.</PanelDesc>
 
@@ -999,6 +1104,13 @@ export default function MeetingPanel({
                     <CheckItem>필수 참석자 모두 캘린더가 비어 바로 잡았어요</CheckItem>
                     <CheckItem>확인이 필요한 사람이 없었어요</CheckItem>
                   </>
+                ) : riskyBooked ? (
+                  <>
+                    <CheckItem>
+                      {proposedUncertain.map((a) => a.name).join(', ')}님만 확인하고 잡았어요
+                    </CheckItem>
+                    <CheckItem>나머지는 캘린더가 비어 있어 묻지 않았어요</CheckItem>
+                  </>
                 ) : (
                   <CheckItem>필수 참석자 모두 확인했어요</CheckItem>
                 )}
@@ -1008,7 +1120,7 @@ export default function MeetingPanel({
             </Card>
 
             <p className="px-1 text-xs leading-relaxed text-zinc-400">
-              {bookedDirectly
+              {bookedDirectly || riskyBooked
                 ? '혹시 겹치는 일정이 생기면, 영향받는 사람에게만 다시 확인할게요.'
                 : '일정이 바뀌면 알려드릴게요.'}
             </p>
@@ -1018,6 +1130,7 @@ export default function MeetingPanel({
       // 확정은 종착점 — 완료로 끝낼 수 있다. 변경 스토리는 상단 알림 배너로 진입한다.
       cta = { label: '완료', onClick: onReset, tone: 'green' };
       break;
+    }
 
     case 8:
       body = (
@@ -1241,8 +1354,8 @@ export default function MeetingPanel({
               />
             </div>
             <p className="mt-3 text-xs leading-relaxed text-zinc-500">
-              겹치는 일정 · 점심시간 · 회의실을 함께 봐요. 캘린더에 없는 건 참석자에게
-              직접 물어봐요.
+              겹치는 일정 · 점심시간 · 회의실을 함께 봐요. 확인이 필요한 사람이 있으면
+              알려드려요.
             </p>
           </Card>
         </div>
@@ -1301,20 +1414,23 @@ export default function MeetingPanel({
             onClick={(e) => e.stopPropagation()}
           >
             <p className="text-base font-bold text-zinc-900">
-              필수 참석자 {selected.suggestedBy ? requiredCount - 2 : requiredCount - 1}명에게 이
-              시간 괜찮은지 물어볼까요?
+              {hasRisk
+                ? `${riskyNames}님에게 이 시간 괜찮은지 물어볼까요?`
+                : `필수 참석자 ${selected.suggestedBy ? requiredCount - 2 : requiredCount - 1}명에게 이 시간 괜찮은지 물어볼까요?`}
             </p>
             <p className="mt-1.5 text-[13px] text-zinc-600">
               {selected.label} · {meeting.title}
             </p>
             <p className="mt-2.5 rounded-lg bg-zinc-50 px-3 py-2 text-xs leading-relaxed text-zinc-500">
-              {selected.suggestedBy
-                ? `이지은님이 제안한 시간이라 다시 묻지 않아요. 나머지 ${requiredCount - 2}명이 답하면 확정할 수 있어요.`
-                : `필수 참석자 ${requiredCount - 1}명이 답해야 회의를 확정할 수 있어요.${
-                    optionalCount > 0
-                      ? ` 선택 참석자 ${optionalCount}명에게는 이 시간을 알려드리고, 어려우면 답으로 알려줄 수 있어요.`
-                      : ''
-                  }`}{' '}
+              {hasRisk
+                ? `${riskyNames}님만 확인하면 바로 잡을 수 있어요. 다른 참석자에게는 따로 묻지 않아요.`
+                : selected.suggestedBy
+                  ? `이지은님이 제안한 시간이라 다시 묻지 않아요. 나머지 ${requiredCount - 2}명이 답하면 확정할 수 있어요.`
+                  : `필수 참석자 ${requiredCount - 1}명이 답해야 회의를 확정할 수 있어요.${
+                      optionalCount > 0
+                        ? ` 선택 참석자 ${optionalCount}명에게는 이 시간을 알려드리고, 어려우면 답으로 알려줄 수 있어요.`
+                        : ''
+                    }`}{' '}
               메일과 앱 알림으로 보내요.
             </p>
             <div className="mt-5 flex gap-2">

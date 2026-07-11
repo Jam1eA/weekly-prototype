@@ -142,17 +142,18 @@ export const candidates: CandidateSlot[] = [
     startHour: 13,
     label: '수요일 13:00 - 14:00',
     shortLabel: '수 13:00',
-    recommend: 'check',
+    // 정하늘 불가·최유리 비선호는 물어봐도 바뀌지 않는 확정된 사정 → 다른 시간 권장
+    recommend: 'hard',
     room: { name: '회의실 B', place: '본관 3층', capacity: '6인실' },
     avail: '비선호 1명',
-    availabilityText: '점심 직후라 최유리님이 선호하지 않아요',
+    availabilityText: '정하늘님이 어렵고, 최유리님은 점심 직후를 피하고 싶어 해요',
     attendeeStatus: { jung: 'no', choi: 'avoid' },
     facts: [
       { label: '필수 참석자', value: '겹치는 일정 없어요', ok: true },
-      { label: '선택 참석자', value: '최유리님 점심 직후 선호 낮음', ok: false },
+      { label: '선택 참석자', value: '정하늘님 어려움 · 최유리님 비선호', ok: false },
       { label: '회의실', value: '회의실 B · 본관 3층 · 6인실', ok: true },
     ],
-    note: '필수 참석자는 다 비어 있어요. 최유리님만 이 시간을 선호하지 않아요',
+    note: '물어봐도 바뀌지 않는 사정이라, 다른 시간을 고르는 게 나아요',
   },
   {
     id: 'c3',
@@ -160,7 +161,8 @@ export const candidates: CandidateSlot[] = [
     startHour: 11,
     label: '목요일 11:00 - 12:00',
     shortLabel: '목 11:00',
-    recommend: 'hard',
+    // 외근 '가능성'은 본인에게 물어보면 풀리는 불확실성 → 그 사람에게만 확인
+    recommend: 'check',
     room: { name: '회의실 C', place: '별관 2층', capacity: '4인실' },
     avail: '외근 가능성',
     availabilityText: '박서준님 외근 가능성이 있어 아직 확실하지 않아요',
@@ -170,7 +172,7 @@ export const candidates: CandidateSlot[] = [
       { label: '선택 참석자', value: '2명 캘린더상 가능', ok: true },
       { label: '회의실', value: '회의실 C · 별관 2층 · 4인실', ok: true },
     ],
-    note: '박서준님 외근이 아직 정해지지 않아 추천하기 어려워요',
+    note: '박서준님 외근이 아직 확실하지 않아요. 본인에게 물어보면 바로 알 수 있어요',
   },
 ];
 
@@ -290,9 +292,8 @@ export const leeAltCandidates: Record<string, CandidateSlot> = {
       { label: '이지은 PM', value: '본인이 직접 제안', ok: true },
       { label: '다른 필수 참석자', value: '일정 충돌 없음', ok: true },
       { label: '회의실', value: '회의실 B · 본관 3층 · 6인실', ok: true },
-      { label: '필수 참석자 응답', value: '2명만 확인하면 돼요', ok: false },
     ],
-    note: '이지은님이 직접 언급한 시간이라, 나머지 필수 2명만 확인하면 확정할 수 있어요.',
+    note: '이지은님이 직접 제안했고, 다른 사람들 캘린더도 비어 있어요',
   },
   '수요일 16:00 가능해요': {
     id: 'lw16',
