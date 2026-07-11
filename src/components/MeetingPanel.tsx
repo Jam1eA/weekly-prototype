@@ -665,14 +665,22 @@ export default function MeetingPanel({
                           : selected.suggestedBy === a.id
                             ? 'bg-emerald-100 text-emerald-700'
                             : 'bg-zinc-100 text-zinc-600'
+                      } ${
+                        // 8. 필수는 링, 선택은 링 없음 — 이 제품의 핵심 구분을 아바타 자체에서 표현
+                        a.role === 'required' ? 'ring-2 ring-zinc-900 ring-offset-1' : ''
                       }`}
                     >
                       {initialOf(a.name)}
-                      {/* 배지는 걸리는 사람에게만 — 배지 없음 = 캘린더상 가능 */}
+                      {/* 배지는 걸리는 사람에게만.
+                          ? 불확실(물어보면 풀림) = 회색, ! 비선호(안 풀림) = 노랑, × 불가 = 빨강 */}
                       {st && (
                         <span
                           className={`absolute -bottom-0.5 -right-0.5 flex h-4 w-4 items-center justify-center rounded-full text-[9px] font-bold text-white ring-2 ring-white ${
-                            st === 'no' ? 'bg-red-500' : 'bg-amber-400'
+                            st === 'no'
+                              ? 'bg-red-500'
+                              : st === 'unsure'
+                                ? 'bg-zinc-400'
+                                : 'bg-amber-400'
                           }`}
                         >
                           {st === 'no' ? '×' : st === 'unsure' ? '?' : '!'}
@@ -681,14 +689,18 @@ export default function MeetingPanel({
                     </div>
                     <p
                       className={`max-w-full truncate text-[10px] ${
-                        st === 'no' ? 'text-zinc-300 line-through' : 'text-zinc-500'
+                        st === 'no' ? 'text-zinc-300 line-through' : 'text-zinc-700'
                       }`}
                     >
                       {a.name}
                     </p>
-                    {selected.suggestedBy === a.id && (
+                    {selected.suggestedBy === a.id ? (
                       <p className="-mt-0.5 text-[10px] font-semibold text-emerald-600">
                         직접 제안
+                      </p>
+                    ) : (
+                      <p className="-mt-0.5 text-[10px] text-zinc-400">
+                        {a.isOrganizer ? '주최자' : a.role === 'required' ? '필수' : '선택'}
                       </p>
                     )}
                   </div>
@@ -709,36 +721,50 @@ export default function MeetingPanel({
 
           <p className="mb-2 mt-5 text-sm font-bold text-zinc-800">캘린더로 본 상태</p>
           <Card>
-            <ul className="space-y-2.5 text-[13px]">
+            {/* 7. 위계: 필수 참석자 줄만 진하게, 선택은 한 톤 낮게. 회의실은 카드 하단으로 분리. */}
+            <ul className="space-y-2 text-[13px]">
               {selected.facts
                 .filter((f) => f.label !== '회의실')
-                .map((f) => (
-                  <li key={f.label} className="flex items-start justify-between gap-3">
-                    <span className="shrink-0 text-zinc-400">{f.label}</span>
-                    <span
-                      className={`text-right font-medium ${
-                        f.label === '필수 참석자 응답'
-                          ? 'text-amber-700'
-                          : f.ok
-                            ? 'text-zinc-800'
-                            : 'text-amber-700'
-                      }`}
+                .map((f) => {
+                  const isRequired = f.label === '필수 참석자';
+                  return (
+                    <li
+                      key={f.label}
+                      className="flex items-baseline justify-between gap-3"
                     >
-                      {f.value}
-                    </span>
-                  </li>
-                ))}
+                      <span
+                        className={`shrink-0 ${
+                          isRequired
+                            ? 'font-semibold text-zinc-700'
+                            : 'text-zinc-400'
+                        }`}
+                      >
+                        {f.label}
+                      </span>
+                      <span
+                        className={`text-right ${
+                          isRequired
+                            ? f.ok
+                              ? 'font-semibold text-zinc-900'
+                              : 'font-semibold text-amber-700'
+                            : f.ok
+                              ? 'text-zinc-600'
+                              : 'text-amber-700'
+                        }`}
+                      >
+                        {f.value}
+                      </span>
+                    </li>
+                  );
+                })}
             </ul>
             {selected.room && (
-              <div className="mt-3 flex items-center gap-2 rounded-lg bg-zinc-50 px-3 py-2.5">
-                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="shrink-0 text-zinc-400">
+              <div className="mt-3 flex items-center gap-2 border-t border-zinc-100 pt-2.5 text-xs text-zinc-500">
+                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="shrink-0 text-zinc-400">
                   <path d="M3 21h18M9 8h1M9 12h1M9 16h1M14 8h1M14 12h1M14 16h1M5 21V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2v16" />
                 </svg>
-                <span className="text-[13px] font-semibold text-zinc-800">
-                  {selected.room.name}
-                </span>
-                <span className="text-xs text-zinc-500">
-                  {selected.room.place} · {selected.room.capacity}
+                <span>
+                  {selected.room.name} · {selected.room.place} · {selected.room.capacity}
                 </span>
               </div>
             )}
@@ -746,7 +772,16 @@ export default function MeetingPanel({
 
           {selected.note && (
             <div className="mt-3">
-              <Card tone={selected.recommend === 'good' ? 'blue' : 'amber'}>
+              {/* 6. 색 규칙: 확인 필요=앰버 유지, hard=중립 회색, good=배경 없이 담담 */}
+              <Card
+                tone={
+                  selected.recommend === 'check'
+                    ? 'amber'
+                    : selected.recommend === 'good'
+                      ? 'blue'
+                      : 'default'
+                }
+              >
                 <p className="text-[13px] leading-relaxed text-zinc-700">{selected.note}</p>
               </Card>
             </div>
@@ -761,11 +796,12 @@ export default function MeetingPanel({
         cta = { label: `${riskyNames}님에게 확인하고 잡기`, onClick: () => setConfirmOpen(true) };
         secondary = { label: '확인 없이 바로 잡기', onClick: onBookDirectly };
       } else if (selected.recommend === 'hard') {
-        // 선택 참석자 쪽 확정된 사정만 있는 경우 — 잡을 수는 있지만 권하지 않는다
-        cta = { label: '그래도 이 시간으로 잡기', onClick: onBookDirectly };
-        secondary = { label: '다른 시간 보기', onClick: () => onNext(3) };
+        // 시스템이 권하는 행동('다른 시간 보기')이 주 버튼, 잡기는 보조
+        cta = { label: '다른 시간 보기', onClick: () => onNext(3) };
+        secondary = { label: '그래도 이 시간으로 잡기', onClick: onBookDirectly };
       } else {
-        cta = { label: '이 시간으로 회의 잡기', onClick: onBookDirectly, tone: 'green' };
+        // 낙관 확정은 다크 CTA — 진한 초록은 '최종 확정된 회의' 순간에만 쓴다
+        cta = { label: '이 시간으로 회의 잡기', onClick: onBookDirectly };
         secondary = { label: '그래도 필수 참석자에게 먼저 확인받기', onClick: () => setConfirmOpen(true) };
       }
       break;
@@ -845,7 +881,6 @@ export default function MeetingPanel({
         cta = {
           label: done ? '이 시간으로 회의 잡기' : '답을 기다리는 중이에요',
           onClick: () => onNext(7),
-          tone: 'green',
           disabled: !done,
         };
         break;
@@ -1472,7 +1507,7 @@ export default function MeetingPanel({
           {secondary && (
             <button
               onClick={secondary.onClick}
-              className="mt-2 w-full py-1 text-center text-xs font-medium text-zinc-400 transition-colors hover:text-zinc-600"
+              className="mt-2 w-full py-2 text-center text-[13px] font-semibold text-zinc-600 underline-offset-4 transition-colors hover:text-zinc-900 hover:underline"
             >
               {secondary.label}
             </button>

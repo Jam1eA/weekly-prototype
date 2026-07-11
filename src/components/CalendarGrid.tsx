@@ -26,12 +26,14 @@ interface Overlay {
   candidateId?: string;
 }
 
+// 색 규칙: 확정만 진한 초록 solid, 후보/제안은 옅은 배경+테두리로 통일.
+// 우측 패널의 카드 선택 표현('border-[#c9d631] ring-2 ring-[#F0F6C2]')과 같은 언어를 쓴다.
 const overlayClass: Record<OverlayStyle, string> = {
   candidate:
-    'border-2 border-dashed border-[#c9d631] bg-[#F7FBDC] text-[#5c6800] hover:bg-[#EFF6BE] cursor-pointer',
+    'border border-dashed border-[#c9d631] bg-[#F7FBDC]/70 text-[#4f5a00] hover:bg-[#F7FBDC] cursor-pointer',
   candidateSelected:
-    'border border-[#c9d631] bg-[#E1F045] text-zinc-900 shadow-sm cursor-pointer',
-  proposed: 'border border-[#c9d631] bg-[#E1F045] text-zinc-900 shadow-sm',
+    'border-2 border-[#c9d631] bg-[#F4F9D0] text-[#4f5a00] shadow-sm cursor-pointer',
+  proposed: 'border-2 border-[#c9d631] bg-[#F4F9D0] text-[#4f5a00] shadow-sm',
   confirmed: 'border border-emerald-500 bg-emerald-500 text-white shadow-sm',
   conflict: 'border border-red-400 bg-red-50 text-red-600',
   conflictFaded: 'border border-dashed border-red-300 bg-red-50/50 text-red-400',
