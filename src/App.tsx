@@ -7,7 +7,10 @@ import {
   initialAttendees,
   leeAltCandidates,
   meetingInfo as defaultMeeting,
+  parkBlocks,
+  parkBlocksAfterChange,
   rejectedC1,
+  rejectedC3,
 } from './data/mockData';
 import Header from './components/Header';
 import Sidebar from './components/Sidebar';
@@ -36,23 +39,30 @@ export default function App() {
   // 참여자(정하늘) 화면 전환과 응답 상태
   const [participantOpen, setParticipantOpen] = useState(false);
   const [participantAnswer, setParticipantAnswer] = useState<'ok' | 'busy' | null>(null);
-  // 변경 후 재확인: 이지은이 바뀐 시간(수15)에 직접 답하는 참여자 화면
+  // 변경 후 재확인: 새 외근의 당사자인 박서준이 바뀐 시간(수15)에 직접 답하는 화면
   const [recheckOpen, setRecheckOpen] = useState(false);
   const [recheckAnswer, setRecheckAnswer] = useState<'ok' | 'busy' | null>(null);
   // 이지은이 실제로 입력한 응답 내용 (주최자 화면 요약이 이 데이터에서만 파생된다)
   const [participantDetail, setParticipantDetail] = useState<ParticipantDetail | null>(null);
 
+  const allSlots = [...candidates, ...Object.values(leeAltCandidates)];
+  const proposed = allSlots.find((c) => c.id === proposedId) ?? candidates[0];
+
+  // 선택적 확인의 응답 주체 구분: 제안 후보에 박서준 불확실 신호가 있으면 박서준의 응답이다
+  const answeredByPark =
+    participantAnswer !== null && proposed.attendeeStatus?.park === 'unsure';
+  // 박서준이 거절하면 목요일 후보의 불확실성이 '불가'로 풀린다
+  const parkRejected = participantAnswer === 'busy' && answeredByPark;
   // 이지은이 거절하면 그가 제안한 대안이 후보로 승격되고, 화요일 후보는 강등된다
-  const leeRejected = participantAnswer === 'busy';
+  const leeRejected = participantAnswer === 'busy' && !answeredByPark;
   const promotedAlts = leeRejected
     ? (participantDetail?.alts ?? []).map((l) => leeAltCandidates[l]).filter(Boolean)
     : [];
   const visibleCandidates = leeRejected
     ? [...promotedAlts, rejectedC1, ...candidates.slice(1)]
-    : candidates;
-
-  const allSlots = [...candidates, ...Object.values(leeAltCandidates)];
-  const proposed = allSlots.find((c) => c.id === proposedId) ?? candidates[0];
+    : parkRejected
+      ? candidates.map((c) => (c.id === 'c3' ? rejectedC3 : c))
+      : candidates;
 
   useEffect(() => {
     // 확정 후 변경 스토리(외근 확정)는 화요일 확정에만 해당한다
@@ -82,7 +92,11 @@ export default function App() {
   };
 
   const handleNext = (next: Step) => {
-    if (next === 5) setProposedId(selectedId);
+    if (next === 5) {
+      setProposedId(selectedId);
+      setParticipantAnswer(null);
+      setParticipantDetail(null);
+    }
     // 재확인 화면에 다시 들어오면 이지은이 새로 답할 수 있게 초기화
     if (next === 10) setRecheckAnswer(null);
     setStep(next);
@@ -111,7 +125,7 @@ export default function App() {
     setRecheckAnswer(null);
   };
 
-  // 변경 후 재확인: 바뀐 시간(수15)을 이지은 화면에서 직접 확인한다
+  // 변경 후 재확인: 새 외근의 당사자인 박서준만 바뀐 시간(수15)을 직접 확인한다
   if (recheckOpen) {
     return (
       <ParticipantView
@@ -119,19 +133,26 @@ export default function App() {
         proposed={alternatives[0]}
         meeting={meeting}
         attendees={attendees}
+        participant={attendees.find((a) => a.id === 'park')}
+        blocks={parkBlocksAfterChange}
         onComplete={(a) => setRecheckAnswer(a)}
         onReturn={() => setRecheckOpen(false)}
       />
     );
   }
 
-  // 참여자 화면이 열려 있으면 앱 전체가 정하늘의 화면으로 전환된다
+  // 참여자 화면이 열려 있으면 앱 전체가 확인 대상자의 화면으로 전환된다
   if (participantOpen) {
+    const target = proposed.attendeeStatus?.park === 'unsure'
+      ? attendees.find((a) => a.id === 'park')
+      : attendees.find((a) => a.id === 'lee');
     return (
       <ParticipantView
         proposed={proposed}
         meeting={meeting}
         attendees={attendees}
+        participant={target}
+        blocks={target?.id === 'park' ? parkBlocks : undefined}
         onComplete={(a, d) => {
           setParticipantAnswer(a);
           setParticipantDetail(d);

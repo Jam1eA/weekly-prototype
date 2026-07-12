@@ -8,6 +8,7 @@ const HOUR_PX = 58;
 type OverlayStyle =
   | 'candidate'
   | 'candidateSelected'
+  | 'candidateConflict'
   | 'proposed'
   | 'confirmed'
   | 'conflict'
@@ -33,6 +34,9 @@ const overlayClass: Record<OverlayStyle, string> = {
     'border border-dashed border-[#c9d631] bg-[#F7FBDC]/70 text-[#4f5a00] hover:bg-[#F7FBDC] cursor-pointer',
   candidateSelected:
     'border-2 border-[#c9d631] bg-[#F4F9D0] text-[#4f5a00] shadow-sm cursor-pointer',
+  // hard 후보: 뒤에 깔린 필수 참석자 일정이 비치도록 반투명 + 점선 경고
+  candidateConflict:
+    'border-2 border-dashed border-amber-400 bg-amber-100/45 text-amber-800 cursor-pointer',
   proposed: 'border-2 border-[#c9d631] bg-[#F4F9D0] text-[#4f5a00] shadow-sm',
   confirmed: 'border border-emerald-500 bg-emerald-500 text-white shadow-sm',
   conflict: 'border border-red-400 bg-red-50 text-red-600',
@@ -43,6 +47,7 @@ const overlayClass: Record<OverlayStyle, string> = {
 
 function buildOverlays(
   step: Step,
+  started: boolean,
   candidates: CandidateSlot[],
   selectedId: string,
   proposed: CandidateSlot,
@@ -51,7 +56,7 @@ function buildOverlays(
   const time = (s: CandidateSlot) =>
     `${String(s.startHour).padStart(2, '0')}:00`;
 
-  if (step === 3 || step === 4) {
+  if ((started && step === 0) || step === 3 || step === 4) {
     return candidates.map((c, i) => ({
       key: c.id,
       day: c.day,
@@ -59,9 +64,15 @@ function buildOverlays(
       label: `후보 ${i + 1}`,
       time: time(c),
       sub: c.avail,
-      style: c.id === selectedId ? 'candidateSelected' : 'candidate',
+      // hard 후보는 뒤 일정이 비치는 반투명 스타일로 — 필수 충돌을 가리지 않는다
+      style:
+        c.recommend === 'hard'
+          ? 'candidateConflict'
+          : c.id === selectedId
+            ? 'candidateSelected'
+            : 'candidate',
       candidateId: c.id,
-    }));
+    })) as Overlay[];
   }
   if (step === 5 || step === 6) {
     return [
@@ -176,7 +187,7 @@ export default function CalendarGrid({
   onSelectCandidate,
 }: Props) {
   const hours = Array.from({ length: END - START }, (_, i) => START + i);
-  const overlays = buildOverlays(step, candidates, selectedId, proposed, alternatives);
+  const overlays = buildOverlays(step, started, candidates, selectedId, proposed, alternatives);
 
   return (
     <main className="flex min-w-0 flex-1 flex-col overflow-hidden bg-white">
@@ -185,13 +196,13 @@ export default function CalendarGrid({
         {/* 블록마다 상태 라벨이 붙어 있어 별도 범례는 두지 않는다 */}
         <div className="flex items-center gap-2">
           <h2 className="text-sm font-bold text-zinc-800">
-            {started && step > 0 ? '다음 주 팀 캘린더' : '내 캘린더'}
+            {started ? '다음 주 팀 캘린더' : '내 캘린더'}
           </h2>
           {(!started || step === 0) && (
             <span className="text-xs text-zinc-400">
               {!started
                 ? '회의를 만들면 참석자의 일정을 함께 볼 수 있어요'
-                : '참석자를 선택하면 팀 일정을 함께 볼 수 있어요'}
+                : '조건을 바꾸는 동안 후보 시간이 바로 갱신돼요'}
             </span>
           )}
         </div>
@@ -256,8 +267,8 @@ export default function CalendarGrid({
               {/* 기존 일정 */}
               {busyBlocks
                 .filter((b) => b.day === day)
-                // 회의 만들기(참석자 선택 전)에는 내 일정만 보인다
-                .filter((b) => step > 0 || b.mine)
+                // 회의를 만들기 시작하면 후보와 함께 팀 일정도 바로 보인다
+                .filter((b) => started || step > 0 || b.mine)
                 .filter(
                   (b) =>
                     !b.stage ||

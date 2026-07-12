@@ -1,6 +1,14 @@
 import { useEffect, useState } from 'react';
-import type { Attendee, CandidateSlot } from '../types';
-import { LUNCH_END, LUNCH_START, leeAlternatives, leeBlocks, weekDays } from '../data/mockData';
+import type { Attendee, BusyBlock, CandidateSlot } from '../types';
+import {
+  LUNCH_END,
+  LUNCH_START,
+  initialOf,
+  leeAlternatives,
+  leeBlocks,
+  parkBlocks,
+  weekDays,
+} from '../data/mockData';
 
 const START = 9;
 const END = 18;
@@ -29,6 +37,8 @@ interface Props {
   onReturn: () => void;
   // recheck: 확정 후 변경된 시간을 다시 확인하는 모드 (누락 보완·대안 제안 없이 바로 확인만)
   mode?: 'initial' | 'recheck';
+  participant?: Attendee;
+  blocks?: BusyBlock[];
 }
 
 const noStyle = {
@@ -48,8 +58,16 @@ export default function ParticipantView({
   onComplete,
   onReturn,
   mode = 'initial',
+  participant,
+  blocks,
 }: Props) {
   const recheck = mode === 'recheck';
+  const currentParticipant =
+    participant ?? attendees.find((a) => a.id === 'lee') ?? attendees[0];
+  const participantBlocks =
+    blocks ?? (currentParticipant?.id === 'park' ? parkBlocks : leeBlocks);
+  const participantInitial = initialOf(currentParticipant.name);
+  const isParkCheck = currentParticipant.id === 'park' && !recheck;
   const shortTime = proposed.label.replace(/ - .*$/, '');
   const [phase, setPhase] = useState<Phase>('calendar');
   const [answer, setAnswer] = useState<'ok' | 'busy' | null>(null);
@@ -66,7 +84,7 @@ export default function ParticipantView({
 
   const cellKey = (day: number, hour: number) => `${day}-${hour}`;
   const isBusy = (day: number, hour: number) =>
-    leeBlocks.some(
+    participantBlocks.some(
       (b) => b.day === day && hour >= b.startHour && hour < b.startHour + b.duration,
     );
 
@@ -162,7 +180,7 @@ export default function ParticipantView({
             <span className="text-[15px] font-bold text-zinc-900">위클리</span>
           </div>
           <span className="rounded-md bg-zinc-100 px-2 py-1 text-xs font-semibold text-zinc-500">
-            참여자 화면
+            확인 대상자 화면
           </span>
         </div>
         <div className="flex items-center gap-3">
@@ -174,9 +192,11 @@ export default function ParticipantView({
           </button>
           <div className="flex items-center gap-2">
             <div className="flex h-8 w-8 items-center justify-center rounded-full bg-emerald-100 text-sm font-bold text-emerald-700">
-              L
+              {participantInitial}
             </div>
-            <span className="text-sm font-medium text-zinc-700">이지은</span>
+            <span className="text-sm font-medium text-zinc-700">
+              {currentParticipant.name}
+            </span>
           </div>
         </div>
       </header>
@@ -216,6 +236,8 @@ export default function ParticipantView({
                 ? '응답을 보냈어요'
                 : recheck
                   ? `유나영님이 바뀐 회의 시간이 괜찮은지 물어봤어요`
+                  : isParkCheck
+                    ? `유나영님이 ${currentParticipant.name}님의 외근 가능성을 확인하고 있어요`
                   : `유나영님이 '${meeting.title}' 시간이 괜찮은지 물어봤어요`}
             </p>
             <p
@@ -224,7 +246,9 @@ export default function ParticipantView({
               {phase === 'done'
                 ? '회의가 확정되면 알려드릴게요.'
                 : recheck
-                  ? `박서준님 일정 변경으로 ${shortTime}로 옮기려고 해요. 연두색 시간을 눌러주세요.`
+                  ? `화요일 외근이 확정되면서 ${shortTime}로 옮기려고 해요. 연두색 시간을 눌러주세요.`
+                  : isParkCheck
+                    ? `${shortTime} 외근 가능성이 아직 확정되지 않아, 이 시간 참석 가능 여부만 확인하면 돼요.`
                   : '필수 참석자라 직접 확인이 필요해요. 연두색 시간을 눌러주세요.'}
             </p>
           </div>
@@ -374,7 +398,7 @@ export default function ParticipantView({
                 })}
 
                 {/* 내 일정 */}
-                {leeBlocks
+                {participantBlocks
                   .filter((b) => b.day === day)
                   .map((b, i) => (
                     <div
@@ -467,7 +491,9 @@ export default function ParticipantView({
               캘린더에 없는 일정이 있나요?
             </p>
             <p className="mt-2 text-[13px] leading-relaxed text-zinc-500">
-              캘린더에 등록한 일정은 반영했어요. 아직 등록 안 한 외근, 이동, 연차가 있나요?
+              {isParkCheck
+                ? '목요일 외근 가능성이 아직 확정되지 않았어요. 이 시간에 참석할 수 있는지 확인해주세요.'
+                : '캘린더에 등록한 일정은 반영했어요. 아직 등록 안 한 외근, 이동, 연차가 있나요?'}
             </p>
 
             <div className="mt-5 space-y-2">
@@ -475,14 +501,16 @@ export default function ParticipantView({
                 onClick={() => setPhase('confirm')}
                 className="w-full rounded-xl bg-zinc-900 py-3.5 text-sm font-bold text-white transition-colors hover:bg-zinc-700"
               >
-                다 등록했어요
+                {isParkCheck ? '참석 가능 여부 확인하기' : '다 등록했어요'}
               </button>
-              <button
-                onClick={() => setPhase('editing')}
-                className="w-full rounded-xl border border-zinc-200 py-3.5 text-sm font-bold text-zinc-600 transition-colors hover:border-zinc-300 hover:bg-zinc-50"
-              >
-                더 추가할 게 있어요
-              </button>
+              {!isParkCheck && (
+                <button
+                  onClick={() => setPhase('editing')}
+                  className="w-full rounded-xl border border-zinc-200 py-3.5 text-sm font-bold text-zinc-600 transition-colors hover:border-zinc-300 hover:bg-zinc-50"
+                >
+                  더 추가할 게 있어요
+                </button>
+              )}
             </div>
           </div>
         </div>
@@ -528,7 +556,10 @@ export default function ParticipantView({
               <div className="flex gap-3">
                 <span className="w-16 shrink-0 text-zinc-400">내 역할</span>
                 <span className="font-medium text-zinc-800">
-                  필수 참석자 <span className="font-normal text-zinc-400">· 직접 확인이 필요해요</span>
+                  {currentParticipant.role === 'required' ? '필수 참석자' : '선택 참석자'}{' '}
+                  <span className="font-normal text-zinc-400">
+                    · {isParkCheck ? '외근 가능성 확인이 필요해요' : '직접 확인이 필요해요'}
+                  </span>
                 </span>
               </div>
               <div className="flex gap-3">
@@ -551,28 +582,32 @@ export default function ParticipantView({
             </div>
 
             <p className="mt-3.5 text-[13px] font-semibold text-zinc-800">
-              이동 시간까지 생각했을 때, 이 시간에 올 수 있나요?
+              {isParkCheck
+                ? '외근 가능성을 확인했을 때, 이 시간에 참석할 수 있나요?'
+                : '이동 시간까지 생각했을 때, 이 시간에 올 수 있나요?'}
             </p>
 
-            <label className="mt-3 flex cursor-pointer items-center gap-2 rounded-lg bg-zinc-50 px-3 py-2.5">
-              <input
-                type="checkbox"
-                checked={volatile}
-                onChange={(e) => setVolatile(e.target.checked)}
-                className="h-4 w-4 accent-zinc-900"
-              />
-              <span className="text-xs text-zinc-600">일정이 변경될 가능성이 있어요</span>
-            </label>
+            {!isParkCheck && (
+              <label className="mt-3 flex cursor-pointer items-center gap-2 rounded-lg bg-zinc-50 px-3 py-2.5">
+                <input
+                  type="checkbox"
+                  checked={volatile}
+                  onChange={(e) => setVolatile(e.target.checked)}
+                  className="h-4 w-4 accent-zinc-900"
+                />
+                <span className="text-xs text-zinc-600">일정이 변경될 가능성이 있어요</span>
+              </label>
+            )}
 
             <div className="mt-3 grid grid-cols-2 gap-2.5">
               <button
                 onClick={() => send('ok')}
                 className="rounded-xl bg-zinc-900 py-3.5 text-sm font-bold text-white transition-colors hover:bg-zinc-700"
               >
-                이 시간 괜찮아요
+                참석할 수 있어요
               </button>
               <button
-                onClick={() => (recheck ? send('busy') : setPhase('alt'))}
+                onClick={() => (recheck || isParkCheck ? send('busy') : setPhase('alt'))}
                 className="rounded-xl border border-zinc-200 py-3.5 text-sm font-bold text-zinc-600 transition-colors hover:border-zinc-300 hover:bg-zinc-50"
               >
                 이 시간은 어려워요
@@ -650,7 +685,7 @@ export default function ParticipantView({
               <div className="flex justify-between gap-3">
                 <span className="text-zinc-400">이 시간</span>
                 <span className="font-medium text-zinc-800">
-                  {answer === 'ok' ? '참석할 수 있어요' : '어려워요'}
+                  {answer === 'ok' ? '참석할 수 있어요' : '이 시간은 어려워요'}
                   {answer === 'ok' && volatile ? ' · 변동 가능성 있음' : ''}
                 </span>
               </div>

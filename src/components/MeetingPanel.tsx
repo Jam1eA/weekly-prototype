@@ -185,8 +185,6 @@ export default function MeetingPanel({
     }, 3000);
     return () => clearTimeout(t);
   }, [finding]);
-  // Step 4: 제안을 보내기 전 확인 모달
-  const [confirmOpen, setConfirmOpen] = useState(false);
   // Step 5: 미응답자에게 리마인드 발송 (리서치: 응답 지연 시 멘션·전화로 쫓아다님)
   const [reminded, setReminded] = useState(false);
   const fullDirectory = [...initialAttendees, ...directoryExtras].filter(
@@ -319,24 +317,6 @@ export default function MeetingPanel({
   const optionalAtt = attendees.filter((a) => a.role === 'optional');
   const shareAtt = attendees.filter((a) => a.role === 'share');
 
-  // Step 10: 영향받는 2명(박서준·이지은) 재확인 애니메이션
-  // Step 10: 박서준은 자동 응답(1틱), 이지은은 참여자 화면에서 직접 답한다
-  const [recheckCount, setRecheckCount] = useState(0);
-  useEffect(() => {
-    if (step !== 10) return;
-    // 이지은 응답 후 복귀했다면 박서준은 이미 답한 상태
-    if (recheckAnswer !== null) {
-      setRecheckCount(1);
-      return;
-    }
-    setRecheckCount(0);
-    const started = Date.now();
-    const update = () =>
-      setRecheckCount(Math.min(1, Math.floor((Date.now() - started) / 1100)));
-    const iv = setInterval(update, 300);
-    return () => clearInterval(iv);
-  }, [step, recheckAnswer]);
-
   /* 단계별 본문 + CTA 정의 */
   let body: React.ReactNode = null;
   let cta:
@@ -359,7 +339,10 @@ export default function MeetingPanel({
       body = (
         <>
           <PanelTitle>회의 만들기</PanelTitle>
-          <PanelDesc>어떤 회의인지 정하고, 함께할 사람을 골라주세요.</PanelDesc>
+          <PanelDesc>
+            어떤 회의인지 정하고, 함께할 사람을 골라주세요. 조건을 바꾸는 동안 후보 시간이
+            캘린더에 바로 반영돼요.
+          </PanelDesc>
 
           <div className="mt-4 space-y-3">
             <Card>
@@ -536,12 +519,38 @@ export default function MeetingPanel({
                 )}
               </div>
             </Card>
+
+            <Card tone="blue">
+              <p className="mb-2 text-xs font-semibold text-zinc-400">실시간 후보</p>
+              <div className="space-y-2">
+                {candidates.map((c) => (
+                  <button
+                    key={c.id}
+                    onClick={() => {
+                      onSelectCandidate(c.id);
+                      onNext(3);
+                    }}
+                    className="flex w-full items-center justify-between gap-2 rounded-lg bg-white px-3 py-2 text-left transition-colors hover:bg-zinc-50"
+                  >
+                    <span className="min-w-0">
+                      <span className="block truncate text-[13px] font-semibold text-zinc-800">
+                        {c.label}
+                      </span>
+                      <span className="block truncate text-xs text-zinc-400">
+                        {c.availabilityText}
+                      </span>
+                    </span>
+                    <ConfidenceBadge recommend={c.recommend} />
+                  </button>
+                ))}
+              </div>
+            </Card>
           </div>
         </>
       );
       cta = {
-        label: '참석자 확인하기',
-        onClick: () => onNext(2),
+        label: '후보 시간 자세히 보기',
+        onClick: () => onNext(3),
         disabled: attendees.length < 2 || meeting.title.trim() === '',
       };
       break;
@@ -617,14 +626,18 @@ export default function MeetingPanel({
         : { label: '가능한 시간 찾기', onClick: () => setFinding(true) };
       break;
 
+    // 후보 비교와 상세를 한 화면에서: 카드를 고르면 아래 참석자 상태와 CTA가 함께 바뀐다
     case 3:
+    case 4:
       body = (
         <>
-          <PanelTitle>가능한 시간</PanelTitle>
+          <PanelTitle>후보 시간</PanelTitle>
           <PanelDesc>
             {participantAnswer === 'busy'
-              ? '이지은님 응답을 반영해 다시 정리했어요. 이지은님이 제안한 시간부터 보여드려요.'
-              : '캘린더로 후보를 좁혔어요. 걸리는 사람이 없으면 바로 잡고, 확인이 필요한 사람만 물어봐요.'}
+              ? proposedUncertain.length > 0
+                ? `${proposedUncertain.map((a) => a.name).join(', ')}님 응답을 반영해 다시 정리했어요. 그 시간 대신 다른 후보를 고를 수 있어요.`
+                : '이지은님 응답을 반영해 다시 정리했어요. 이지은님이 제안한 시간부터 보여드려요.'
+              : '참석자와 조건 기준으로 찾은 후보예요. 후보를 고르면 아래 상태와 다음 행동이 바뀌어요.'}
           </PanelDesc>
 
           <div className="mt-4 space-y-3">
@@ -634,35 +647,15 @@ export default function MeetingPanel({
                 candidate={c}
                 selected={c.id === selectedId}
                 onSelect={() => onSelectCandidate(c.id)}
-                onDetail={() => {
-                  onSelectCandidate(c.id);
-                  onNext(4);
-                }}
               />
             ))}
           </div>
-        </>
-      );
-      break;
 
-    case 4:
-      backButton = (
-        <button
-          onClick={() => onNext(3)}
-          className="mb-2 flex items-center gap-1 text-xs font-medium text-zinc-400 transition-colors hover:text-zinc-600"
-        >
-          ← 뒤로가기
-        </button>
-      );
-      body = (
-        <>
-          <PanelTitle>{selected.label}</PanelTitle>
-          <div className="mt-2">
-            <ConfidenceBadge recommend={selected.recommend} />
-          </div>
-
-          {/* 참석자별 캘린더 기준 상태 — 누가 걸리는지가 먼저 보이게 */}
-          <div className="mt-4 rounded-xl border border-zinc-200 bg-white p-3.5">
+          {/* 선택한 후보의 참석자별 캘린더 기준 상태 — 누가 걸리는지가 먼저 보이게 */}
+          <p className="mb-2 mt-5 text-sm font-bold text-zinc-800">
+            {selected.shortLabel} · 참석자 상태
+          </p>
+          <div className="rounded-xl border border-zinc-200 bg-white p-3.5">
             <div className="flex items-start justify-between">
               {attendees.map((a) => {
                 const st = selected.attendeeStatus?.[a.id];
@@ -725,107 +718,41 @@ export default function MeetingPanel({
                     ? `${riskyNames}님만 물어보면 확실해져요 · 나머지는 캘린더가 비어 있어요`
                     : optSignals.length > 0
                       ? `필수 참석자는 모두 비어 있어요 · ${optSignals.map((a) => a.name).join(', ')}님 사정은 참고해 주세요`
-                      : '필수 참석자 모두 캘린더가 비어 있어요 · 확인 없이 바로 잡아도 괜찮아요')}
+                      : '알려진 일정과 조건에 충돌이 없어요 · 확인 없이 바로 잡아도 괜찮아요')}
             </p>
           </div>
 
-          <p className="mb-2 mt-5 text-sm font-bold text-zinc-800">캘린더로 본 상태</p>
-          <Card>
-            {/* 7. 위계: 필수 참석자 줄만 진하게, 선택은 한 톤 낮게. 회의실은 카드 하단으로 분리. */}
-            <ul className="space-y-2 text-[13px]">
-              {selected.facts
-                .filter((f) => f.label !== '회의실')
-                .map((f) => {
-                  const isRequired = f.label === '필수 참석자';
-                  return (
-                    <li
-                      key={f.label}
-                      className="flex items-baseline justify-between gap-3"
-                    >
-                      <span
-                        className={`shrink-0 ${
-                          isRequired
-                            ? 'font-semibold text-zinc-700'
-                            : 'text-zinc-400'
-                        }`}
-                      >
-                        {f.label}
-                      </span>
-                      <span
-                        className={`text-right ${
-                          isRequired
-                            ? f.ok
-                              ? 'font-semibold text-zinc-900'
-                              : 'font-semibold text-amber-700'
-                            : f.ok
-                              ? 'text-zinc-600'
-                              : 'text-amber-700'
-                        }`}
-                      >
-                        {f.value}
-                      </span>
-                    </li>
-                  );
-                })}
-            </ul>
-            {selected.room && (
-              <div className="mt-3 flex items-center gap-2 border-t border-zinc-100 pt-2.5 text-xs text-zinc-500">
-                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="shrink-0 text-zinc-400">
-                  <path d="M3 21h18M9 8h1M9 12h1M9 16h1M14 8h1M14 12h1M14 16h1M5 21V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2v16" />
-                </svg>
-                <span>
-                  {selected.room.name} · {selected.room.place} · {selected.room.capacity}
-                </span>
-              </div>
-            )}
-          </Card>
-
-          {selected.note && (
-            <div className="mt-3">
-              {/* 6. 색 규칙: 확인 필요=앰버 유지, hard=중립 회색, good=배경 없이 담담 */}
-              <Card
-                tone={
-                  selected.recommend === 'check'
-                    ? 'amber'
-                    : selected.recommend === 'good'
-                      ? 'blue'
-                      : 'default'
-                }
-              >
-                <p className="text-[13px] leading-relaxed text-zinc-700">{selected.note}</p>
-              </Card>
-            </div>
-          )}
         </>
       );
       // 낙관적 확정이 기본. 후보 3분류에 따라 행동이 달라진다:
-      // 깨끗하면 바로 잡기(초록) / 불확실성만 있으면 그 사람에게 확인 / 확정 충돌은 다른 시간
-      if (blockedReq.length > 0) {
-        cta = { label: '다른 시간 보기', onClick: () => onNext(3) };
+      // 깨끗하면 바로 잡기 / 불확실성만 있으면 그 사람에게만 물어보기 / 확정 충돌은 다른 후보
+      if (blockedReq.length > 0 || selected.recommend === 'hard') {
+        cta = {
+          label: '다른 후보 보기',
+          onClick: () =>
+            onSelectCandidate(
+              (candidates.find((c) => c.recommend === 'good') ?? candidates[0]).id,
+            ),
+        };
       } else if (hasRisk) {
-        cta = { label: `${riskyNames}님에게 확인하고 잡기`, onClick: () => setConfirmOpen(true) };
-        secondary = { label: '확인 없이 바로 잡기', onClick: onBookDirectly };
-      } else if (selected.recommend === 'hard') {
-        // 시스템이 권하는 행동('다른 시간 보기')이 주 버튼, 잡기는 보조
-        cta = { label: '다른 시간 보기', onClick: () => onNext(3) };
-        secondary = { label: '그래도 이 시간으로 잡기', onClick: onBookDirectly };
+        cta = { label: `${riskyNames}님께 물어보기`, onClick: () => onNext(5) };
       } else {
-        // 낙관 확정은 다크 CTA — 진한 초록은 '최종 확정된 회의' 순간에만 쓴다
         cta = { label: '이 시간으로 회의 잡기', onClick: onBookDirectly };
-        secondary = { label: '그래도 필수 참석자에게 먼저 확인받기', onClick: () => setConfirmOpen(true) };
       }
       break;
 
     case 5: {
       if (riskyConfirm) {
-        // 불확실 신호가 있는 사람에게만 물었다 — 그 사람 답만 오면 바로 잡는다
-        const done = autoCount >= 1;
+        // 불확실 신호가 있는 사람에게만 물었다 — 응답 후에도 주최자가 최종 확정한다
+        const done = participantAnswer === 'ok';
+        const rejected = participantAnswer === 'busy';
         const rNames = proposedUncertain.map((a) => a.name).join(', ');
         body = (
           <>
             <PanelTitle>{rNames}님에게 물어봤어요</PanelTitle>
             <PanelDesc>
-              확인이 필요한 사람에게만 물어봤어요. 답이 오면 바로 잡을 수 있어요.
+              목요일 외근 가능성이 있는 {rNames}님에게만 확인을 보냈어요. 다른 참석자에게는
+              따로 묻지 않아요.
             </PanelDesc>
 
             <div className="mt-4 space-y-3">
@@ -870,29 +797,53 @@ export default function MeetingPanel({
                                 : 'bg-zinc-100 text-zinc-600'
                             }`}
                           >
-                            {asked ? (done ? '괜찮다고 답했어요' : '응답 대기') : '캘린더상 가능'}
+                            {asked
+                              ? done
+                                ? '참석 가능'
+                                : rejected
+                                  ? '참석 어려움'
+                                  : '응답 대기'
+                              : '캘린더상 가능'}
                           </span>
                         </div>
                       );
                     })}
                 </div>
+                {!participantAnswer && (
+                  <button
+                    onClick={onEnterParticipant}
+                    className="mt-2 w-full rounded-lg border border-zinc-300 bg-white py-2 text-xs font-semibold text-zinc-700 transition-colors hover:bg-zinc-50"
+                  >
+                    {rNames}님 화면에서 응답하기
+                  </button>
+                )}
               </Card>
 
               {done && (
                 <Card tone="green">
                   <p className="text-[13px] font-medium leading-relaxed text-zinc-700">
-                    {rNames}님이 괜찮다고 답했어요. 이 시간으로 잡을 수 있어요.
+                    {rNames}님도 참석할 수 있어요. 이제 이 시간으로 회의를 잡을 수 있어요.
+                  </p>
+                </Card>
+              )}
+
+              {rejected && (
+                <Card tone="amber">
+                  <p className="text-[13px] font-medium leading-relaxed text-zinc-700">
+                    {rNames}님이 외근 때문에 어렵다고 답했어요. 다른 후보를 고르는 게 좋아요.
                   </p>
                 </Card>
               )}
             </div>
           </>
         );
-        cta = {
-          label: done ? '이 시간으로 회의 잡기' : '답을 기다리는 중이에요',
-          onClick: () => onNext(7),
-          disabled: !done,
-        };
+        cta = rejected
+          ? { label: '다른 후보 보기', onClick: () => onNext(3) }
+          : {
+              label: done ? '이 시간으로 회의 잡기' : `${rNames}님 응답을 기다리는 중이에요`,
+              onClick: () => onNext(7),
+              disabled: !done,
+            };
         break;
       }
       body = (
@@ -901,7 +852,7 @@ export default function MeetingPanel({
           <PanelDesc>
             {proposedIsLeeAlt
               ? '이지은님이 제안한 시간이라 다시 묻지 않아요. 나머지 2명 답변만 오면 돼요.'
-              : '필수 참석자 3명이 답하면 회의를 확정할 수 있어요.'}
+              : '확인이 필요한 사람의 답을 받은 뒤 주최자가 회의를 확정할 수 있어요.'}
           </PanelDesc>
 
           <div className="mt-4 space-y-3">
@@ -1048,10 +999,10 @@ export default function MeetingPanel({
           {readyToConfirm && (
             <div className="mt-4">
               <Card tone="green">
-                <p className="mb-2 text-xs font-semibold text-emerald-600">확정 준비 완료</p>
+                <p className="mb-2 text-xs font-semibold text-emerald-600">필요한 확인 완료</p>
                 <ul className="space-y-2">
-                  <CheckItem>필수 참석자 3명 모두 확인했어요</CheckItem>
-                  <CheckItem>주최자 포함 필수 4명 모두 가능해요</CheckItem>
+                  <CheckItem>회의에 필요한 확인을 마쳤어요</CheckItem>
+                  <CheckItem>확인된 조건 기준으로 회의를 잡을 수 있어요</CheckItem>
                   <CheckItem>선택 참석자 1명도 캘린더상 가능해요</CheckItem>
                   <CheckItem ok={proposedIsLeeAlt || jungShared}>
                     {proposedIsLeeAlt
@@ -1101,7 +1052,7 @@ export default function MeetingPanel({
         </>
       );
       cta = {
-        label: readyToConfirm ? '회의 확정하기' : '모두 확인하면 확정할 수 있어요',
+        label: readyToConfirm ? '회의 확정하기' : '필요한 확인 후 확정할 수 있어요',
         onClick: () => onNext(7),
         tone: 'green',
         disabled: !readyToConfirm,
@@ -1115,17 +1066,18 @@ export default function MeetingPanel({
 
     case 7: {
       // 선택적 확인 경로: 불확실한 사람 답만 받고 잡은 경우
-      const riskyBooked = !bookedDirectly && participantAnswer === null && riskyConfirm;
+      const targetedBooked =
+        !bookedDirectly && proposedUncertain.length > 0 && participantAnswer === 'ok';
       body = (
         <>
           <PanelTitle>
-            {bookedDirectly
-              ? '회의를 잡았어요'
-              : riskyBooked
-                ? '확인하고 잡았어요'
-                : '모두 확인했어요. 이제 다시 조율하지 않아도 돼요'}
+            회의를 잡았어요
           </PanelTitle>
-          <PanelDesc>참석자 캘린더에 일정을 등록했어요.</PanelDesc>
+          <PanelDesc>
+            {targetedBooked
+              ? `${proposedUncertain.map((a) => a.name).join(', ')}님의 참석 가능 여부를 확인했어요.`
+              : '알려진 일정과 조건상 모두 참석할 수 있는 시간이에요.'}
+          </PanelDesc>
 
           <div className="mt-4 space-y-3">
             <Card tone="green">
@@ -1143,18 +1095,18 @@ export default function MeetingPanel({
               <ul className="space-y-2">
                 {bookedDirectly ? (
                   <>
-                    <CheckItem>필수 참석자 모두 캘린더가 비어 바로 잡았어요</CheckItem>
+                    <CheckItem>알려진 일정과 조건상 모두 참석할 수 있는 시간이에요</CheckItem>
                     <CheckItem>확인이 필요한 사람이 없었어요</CheckItem>
                   </>
-                ) : riskyBooked ? (
+                ) : targetedBooked ? (
                   <>
                     <CheckItem>
-                      {proposedUncertain.map((a) => a.name).join(', ')}님만 확인하고 잡았어요
+                      {proposedUncertain.map((a) => a.name).join(', ')}님의 참석 가능 여부를 확인했어요
                     </CheckItem>
                     <CheckItem>나머지는 캘린더가 비어 있어 묻지 않았어요</CheckItem>
                   </>
                 ) : (
-                  <CheckItem>필수 참석자 모두 확인했어요</CheckItem>
+                  <CheckItem>필요한 확인을 마치고 회의를 잡았어요</CheckItem>
                 )}
                 <CheckItem>회의실 잡았어요</CheckItem>
                 <CheckItem>캘린더에 등록했어요</CheckItem>
@@ -1162,7 +1114,7 @@ export default function MeetingPanel({
             </Card>
 
             <p className="px-1 text-xs leading-relaxed text-zinc-400">
-              {bookedDirectly || riskyBooked
+              {bookedDirectly || targetedBooked
                 ? '혹시 겹치는 일정이 생기면, 영향받는 사람에게만 다시 확인할게요.'
                 : '일정이 바뀌면 알려드릴게요.'}
             </p>
@@ -1183,7 +1135,7 @@ export default function MeetingPanel({
           <div className="mt-3 space-y-3">
             <Card tone="red">
               <p className="text-[13px] font-semibold leading-relaxed text-red-600">
-                박서준님 외근 일정이 새로 잡혔어요.
+                회의 확정 이후 화요일 외근 일정이 새로 추가됐어요.
               </p>
             </Card>
 
@@ -1193,7 +1145,8 @@ export default function MeetingPanel({
                   P
                 </div>
                 <p className="text-[13px] leading-relaxed text-zinc-700">
-                  확정한 뒤에 생긴 일정이라{' '}
+                  후보를 고를 때 보였던 목요일 외근 가능성과는 별개로, 확정한 뒤에 생긴
+                  화요일 외근 일정이라{' '}
                   <span className="font-semibold">{proposedShort}</span> 회의에 오기
                   어려워요. 박서준님은 필수 참석자라 회의에 영향이 있어요.
                 </p>
@@ -1246,7 +1199,7 @@ export default function MeetingPanel({
                             : 'bg-amber-50 text-amber-700'
                         }`}
                       >
-                        {r.state === 'valid' ? '이미 답했어요' : '다시 확인'}
+                        {r.state === 'valid' ? '그대로 유지' : '다시 확인'}
                       </span>
                     </div>
                     <p className="mt-0.5 text-xs text-zinc-400">{r.note}</p>
@@ -1257,7 +1210,8 @@ export default function MeetingPanel({
 
             <Card tone="blue">
               <p className="text-[13px] font-medium leading-relaxed text-zinc-700">
-                바뀐 시간에 영향받는 2명(박서준·이지은)에게만 다시 물어볼게요.
+                다른 참석자 5명은 수요일 15:00에도 캘린더 충돌이 없어 다시 묻지 않아요.
+                새 외근의 당사자인 박서준님만 다시 확인하면 돼요.
               </p>
             </Card>
 
@@ -1265,35 +1219,32 @@ export default function MeetingPanel({
           </div>
         </>
       );
-      cta = { label: '2명에게 다시 물어보기', onClick: () => onNext(10) };
+      cta = { label: '박서준님께 다시 물어보기', onClick: () => onNext(10) };
       break;
     }
 
     case 10: {
       const a1 = alternatives[0];
-      const parkDone = recheckCount >= 1;
-      const leeDone = recheckAnswer === 'ok';
-      const leeBusy = recheckAnswer === 'busy';
-      const doneCount = (parkDone ? 1 : 0) + (leeDone ? 1 : 0);
-      const recheckDone = parkDone && leeDone;
+      const parkDone = recheckAnswer === 'ok';
+      const parkBusy = recheckAnswer === 'busy';
       body = (
         <>
-          <PanelTitle>2명에게 다시 확인하고 있어요</PanelTitle>
+          <PanelTitle>박서준님에게 다시 확인하고 있어요</PanelTitle>
           <PanelDesc>
-            {nextSlot.label.replace(/ - .*$/, '')} 기준으로 박서준님과 이지은님만 다시
-            물어봐요. 나머지는 다시 안 물어도 돼요.
+            {nextSlot.label.replace(/ - .*$/, '')}은 다른 5명 모두 캘린더 충돌이 없어요.
+            새 외근의 당사자인 박서준님만 다시 물어봐요.
           </PanelDesc>
 
           <div className="mt-4 space-y-3">
             <Card tone="blue">
               <div className="flex items-center justify-between">
                 <p className="text-[13px] font-semibold text-zinc-700">다시 확인 중</p>
-                <span className="text-xs font-bold text-[#6f7d00]">{doneCount}/2</span>
+                <span className="text-xs font-bold text-[#6f7d00]">{parkDone ? 1 : 0}/1</span>
               </div>
               <div className="mt-2 h-1.5 overflow-hidden rounded-full bg-zinc-200">
                 <div
                   className="h-full rounded-full bg-[#E1F045] transition-all duration-500"
-                  style={{ width: `${(doneCount / 2) * 100}%` }}
+                  style={{ width: parkDone ? '100%' : '8%' }}
                 />
               </div>
             </Card>
@@ -1303,16 +1254,9 @@ export default function MeetingPanel({
               <ResponseRow
                 name="박서준"
                 title="개발 리드"
-                status={parkDone ? '확인했어요' : '확인 중'}
-                tone={parkDone ? 'ok' : 'wait'}
-                note="새 외근 일정과 겹치지 않는지 확인"
-              />
-              <ResponseRow
-                name="이지은"
-                title="PM"
-                status={leeDone ? '확인했어요' : leeBusy ? '어렵다고 답했어요' : '응답 대기'}
-                tone={leeDone ? 'ok' : leeBusy ? 'no' : 'wait'}
-                note="화요일 14:00만 직접 확인했었어요"
+                status={parkDone ? '확인했어요' : parkBusy ? '어렵다고 답했어요' : '응답 대기'}
+                tone={parkDone ? 'ok' : parkBusy ? 'no' : 'wait'}
+                note="새 외근 일정의 당사자라 직접 확인이 필요해요"
               />
 
               {!recheckAnswer && (
@@ -1320,11 +1264,11 @@ export default function MeetingPanel({
                   onClick={onEnterRecheck}
                   className="mt-1.5 w-full rounded-lg border border-zinc-300 bg-white py-2 text-xs font-semibold text-zinc-700 transition-colors hover:bg-zinc-50"
                 >
-                  이지은님 화면에서 답하기
+                  박서준님 화면에서 답하기
                 </button>
               )}
 
-              <GroupLabel>이미 답한 사람</GroupLabel>
+              <GroupLabel>변경 알림만 보낸 사람</GroupLabel>
               {a1.recheck
                 ?.filter((r) => r.state === 'valid')
                 .map((r) => (
@@ -1332,25 +1276,25 @@ export default function MeetingPanel({
                     key={r.id}
                     name={r.name}
                     title=""
-                    status="이미 답했어요"
+                    status="그대로 유지"
                     tone="neutral"
                     note={r.note}
                   />
                 ))}
             </Card>
 
-            {recheckDone && (
+            {parkDone && (
               <Card tone="green">
                 <p className="text-[13px] font-medium leading-relaxed text-zinc-700">
-                  2명 다시 확인 완료 · 필수 참석자 조건을 다시 채웠어요.
+                  박서준님도 새 시간이 괜찮다고 답했어요. 이제 변경을 확정할 수 있어요.
                 </p>
               </Card>
             )}
 
-            {leeBusy && (
+            {parkBusy && (
               <Card tone="amber">
                 <p className="text-[13px] font-medium leading-relaxed text-zinc-700">
-                  이지은님이 새 시간도 어렵다고 해요. 다른 시간을 다시 찾아볼게요.
+                  박서준님이 새 시간도 어렵다고 해요. 다른 시간을 다시 찾아볼게요.
                 </p>
               </Card>
             )}
@@ -1358,12 +1302,12 @@ export default function MeetingPanel({
         </>
       );
       cta = {
-        label: recheckDone ? '변경 확정하기' : '답변을 기다리는 중이에요',
+        label: parkDone ? '변경 확정하기' : '답변을 기다리는 중이에요',
         onClick: () => onNext(11),
         tone: 'green',
-        disabled: !recheckDone,
+        disabled: !parkDone,
       };
-      secondary = leeBusy ? { label: '다른 시간 다시 보기', onClick: () => onNext(9) } : null;
+      secondary = parkBusy ? { label: '다른 시간 다시 보기', onClick: () => onNext(9) } : null;
       break;
     }
 
@@ -1371,7 +1315,7 @@ export default function MeetingPanel({
       body = (
         <>
           <PanelTitle>회의 시간을 다시 확정했어요</PanelTitle>
-          <PanelDesc>2명만 다시 확인해서, 처음부터 다시 잡지 않았어요.</PanelDesc>
+          <PanelDesc>영향받은 1명만 다시 확인해서, 처음부터 다시 잡지 않았어요.</PanelDesc>
 
           <div className="mt-4 space-y-3">
             <Card tone="green">
@@ -1385,8 +1329,8 @@ export default function MeetingPanel({
 
             <Card>
               <ul className="space-y-2">
-                <CheckItem>영향받은 2명만 다시 확인했어요</CheckItem>
-                <CheckItem>나머지 3명은 다시 안 물었어요</CheckItem>
+                <CheckItem>영향받은 박서준님만 다시 확인했어요</CheckItem>
+                <CheckItem>나머지 5명은 충돌이 없어 변경 알림만 받았어요</CheckItem>
                 <CheckItem>회의실 B 다시 잡았어요</CheckItem>
                 <CheckItem>캘린더 업데이트했어요</CheckItem>
               </ul>
@@ -1450,10 +1394,10 @@ export default function MeetingPanel({
           </span>
           <span className="min-w-0 flex-1">
             <span className="block text-[13px] font-semibold text-red-600">
-              박서준님의 일정이 변경되었어요
+              화요일 외근 일정이 새로 추가됐어요
             </span>
             <span className="block text-xs text-red-400">
-              확정된 회의에 영향이 있는지 확인이 필요해요
+              확정된 회의에 영향이 있어 확인이 필요해요
             </span>
           </span>
           <span className="shrink-0 text-xs font-bold text-red-500">확인하기 →</span>
@@ -1465,58 +1409,6 @@ export default function MeetingPanel({
         {backButton}
         {body}
       </div>
-
-      {/* 제안 발송 확인 모달 */}
-      {step === 4 && confirmOpen && (
-        <div
-          className="fixed inset-0 z-50 flex items-center justify-center bg-zinc-900/40"
-          onClick={() => setConfirmOpen(false)}
-        >
-          <div
-            className="w-[380px] rounded-2xl bg-white p-6 shadow-xl"
-            style={{ animation: 'slide-down 0.25s ease-out' }}
-            onClick={(e) => e.stopPropagation()}
-          >
-            <p className="text-base font-bold text-zinc-900">
-              {hasRisk
-                ? `${riskyNames}님에게 이 시간 괜찮은지 물어볼까요?`
-                : `필수 참석자 ${selected.suggestedBy ? requiredCount - 2 : requiredCount - 1}명에게 이 시간 괜찮은지 물어볼까요?`}
-            </p>
-            <p className="mt-1.5 text-[13px] text-zinc-600">
-              {selected.label} · {meeting.title}
-            </p>
-            <p className="mt-2.5 rounded-lg bg-zinc-50 px-3 py-2 text-xs leading-relaxed text-zinc-500">
-              {hasRisk
-                ? `${riskyNames}님만 확인하면 바로 잡을 수 있어요. 다른 참석자에게는 따로 묻지 않아요.`
-                : selected.suggestedBy
-                  ? `이지은님이 제안한 시간이라 다시 묻지 않아요. 나머지 ${requiredCount - 2}명이 답하면 확정할 수 있어요.`
-                  : `필수 참석자 ${requiredCount - 1}명이 답해야 회의를 확정할 수 있어요.${
-                      optionalCount > 0
-                        ? ` 선택 참석자 ${optionalCount}명에게는 이 시간을 알려드리고, 어려우면 답으로 알려줄 수 있어요.`
-                        : ''
-                    }`}{' '}
-              메일과 앱 알림으로 보내요.
-            </p>
-            <div className="mt-5 flex gap-2">
-              <button
-                onClick={() => setConfirmOpen(false)}
-                className="flex-1 rounded-xl border border-zinc-200 py-2.5 text-sm font-semibold text-zinc-600 transition-colors hover:bg-zinc-50"
-              >
-                취소
-              </button>
-              <button
-                onClick={() => {
-                  setConfirmOpen(false);
-                  onNext(5);
-                }}
-                className="flex-1 rounded-xl bg-zinc-900 py-2.5 text-sm font-bold text-white transition-colors hover:bg-zinc-700"
-              >
-                물어보기
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
 
       {/* CTA 푸터 */}
       {(cta || secondary) && (

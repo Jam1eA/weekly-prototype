@@ -40,19 +40,35 @@ export default function CandidateCard({
       )}
 
       <ul className="space-y-1.5">
-        {otherFacts.map((f) => (
-          <li key={f.label} className="flex items-start gap-1.5 text-xs">
-            <span
-              className={`mt-0.5 flex h-3.5 w-3.5 shrink-0 items-center justify-center rounded-full text-[9px] font-bold ${
-                f.ok ? 'bg-emerald-100 text-emerald-600' : 'bg-amber-100 text-amber-600'
-              }`}
-            >
-              {f.ok ? '✓' : '!'}
-            </span>
-            <span className="text-zinc-500">{f.label}</span>
-            <span className="ml-auto text-right font-medium text-zinc-700">{f.value}</span>
-          </li>
-        ))}
+        {otherFacts.map((f) => {
+          // 위계: 필수 참석자 충돌은 주요 근거(빨강 강조), 선택 참석자 비선호는 참고(앰버)
+          const requiredConflict = f.label === '필수 참석자' && !f.ok;
+          return (
+            <li key={f.label} className="flex items-start gap-1.5 text-xs">
+              <span
+                className={`mt-0.5 flex h-3.5 w-3.5 shrink-0 items-center justify-center rounded-full text-[9px] font-bold ${
+                  f.ok
+                    ? 'bg-emerald-100 text-emerald-600'
+                    : requiredConflict
+                      ? 'bg-red-100 text-red-600'
+                      : 'bg-amber-100 text-amber-600'
+                }`}
+              >
+                {f.ok ? '✓' : '!'}
+              </span>
+              <span className={requiredConflict ? 'font-semibold text-zinc-700' : 'text-zinc-500'}>
+                {f.label}
+              </span>
+              <span
+                className={`ml-auto text-right ${
+                  requiredConflict ? 'font-semibold text-red-600' : 'font-medium text-zinc-700'
+                }`}
+              >
+                {f.value}
+              </span>
+            </li>
+          );
+        })}
       </ul>
 
       {onDetail && (

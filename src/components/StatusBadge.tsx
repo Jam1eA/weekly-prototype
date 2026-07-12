@@ -16,12 +16,10 @@ const stepStatus: Record<Step, { label: string; className: string; dot: string }
   11: { label: '확정 완료', className: 'bg-emerald-50 text-emerald-600', dot: 'bg-emerald-500' },
 };
 
-// 필수 참석자 응답이 모두 완료되면(ready) 확인 요청 중 → 확정 준비 완료로 전환
+// ready prop은 이전 전원 응답 플로우와의 호환용으로만 남긴다.
 export default function StatusBadge({ step, ready = false }: { step: Step; ready?: boolean }) {
-  const s =
-    step === 6 && ready
-      ? { label: '확정 준비 완료', className: 'bg-emerald-50 text-emerald-600', dot: 'bg-emerald-500' }
-      : stepStatus[step];
+  void ready;
+  const s = stepStatus[step];
   return (
     <span
       className={`inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 text-xs font-semibold ${s.className}`}
