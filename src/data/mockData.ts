@@ -194,14 +194,13 @@ export const alternatives: CandidateSlot[] = [
     room: { name: '회의실 B', place: '본관 3층', capacity: '6인실' },
     facts: [
       { label: '다시 확인', value: '박서준님 1명', ok: false },
-      { label: '그대로 유지', value: '5명 · 변경 알림만 보내요', ok: true },
+      { label: '그대로 유지', value: '4명 · 변경 알림만 보내요', ok: true },
       { label: '회의실', value: '회의실 B · 본관 3층 · 6인실', ok: true },
       { label: '최신 일정', value: '충돌 없음', ok: true },
     ],
     // 새 시간에 신호가 있는 사람만 다시 확인. 캘린더·조건에 걸리는 게 없으면 알림만 보낸다.
-    // 전체 6명 중 박서준만 재확인, 주최자 포함 나머지 5명은 수요일 15:00에도 충돌이 없다.
+    // 주최자(유나영)를 뺀 참석자 5명 중 박서준만 재확인, 나머지 4명은 수요일 15:00에도 충돌이 없다.
     recheck: [
-      { id: 'yu', name: '유나영', state: 'valid', note: '주최자예요 · 수요일 15:00 캘린더가 비어 있어요' },
       { id: 'kim', name: '김민준', state: 'valid', note: '수요일 15:00 캘린더가 비어 있어요' },
       { id: 'park', name: '박서준', state: 'recheck', note: '새 외근 일정의 당사자라 직접 확인이 필요해요' },
       { id: 'lee', name: '이지은', state: 'valid', note: '수요일 15:00 캘린더가 비어 있어요' },

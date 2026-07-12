@@ -1210,8 +1210,8 @@ export default function MeetingPanel({
 
             <Card tone="blue">
               <p className="text-[13px] font-medium leading-relaxed text-zinc-700">
-                다른 참석자 5명은 수요일 15:00에도 캘린더 충돌이 없어 다시 묻지 않아요.
-                새 외근의 당사자인 박서준님만 다시 확인하면 돼요.
+                다른 참석자들은 새 시간에도 캘린더상 일정 충돌이 없어요. 박서준님만 다시
+                확인하면 돼요.
               </p>
             </Card>
 
@@ -1231,8 +1231,8 @@ export default function MeetingPanel({
         <>
           <PanelTitle>박서준님에게 다시 확인하고 있어요</PanelTitle>
           <PanelDesc>
-            {nextSlot.label.replace(/ - .*$/, '')}은 다른 5명 모두 캘린더 충돌이 없어요.
-            새 외근의 당사자인 박서준님만 다시 물어봐요.
+            다른 참석자들은 새 시간({nextSlot.label.replace(/ - .*$/, '')})에도 캘린더상
+            일정 충돌이 없어요. 박서준님만 다시 확인하면 돼요.
           </PanelDesc>
 
           <div className="mt-4 space-y-3">
@@ -1330,7 +1330,7 @@ export default function MeetingPanel({
             <Card>
               <ul className="space-y-2">
                 <CheckItem>영향받은 박서준님만 다시 확인했어요</CheckItem>
-                <CheckItem>나머지 5명은 충돌이 없어 변경 알림만 받았어요</CheckItem>
+                <CheckItem>나머지 4명은 충돌이 없어 변경 알림만 받았어요</CheckItem>
                 <CheckItem>회의실 B 다시 잡았어요</CheckItem>
                 <CheckItem>캘린더 업데이트했어요</CheckItem>
               </ul>
